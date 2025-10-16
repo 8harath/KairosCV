@@ -54,7 +54,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Connect</h4>
             <div className="flex gap-4">
-              <a href="#" className="text-slate-400 hover:text-white transition">
+              <a href="https://github.com/8harath/KairosCV" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition">
                 <Github className="w-5 h-5" />
               </a>
               <a href="#" className="text-slate-400 hover:text-white transition">
