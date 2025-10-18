@@ -1,80 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ResumeComparison from "@/components/resume-comparison"
 import DownloadOptions from "@/components/download-options"
-import { Eye, Download, ArrowLeft, ChevronLeft } from "lucide-react"
+import { Eye, Download, ArrowLeft, ChevronLeft, RefreshCw } from "lucide-react"
+import { ResumeDocument } from "@/lib/types"
 
 export default function ComparisonPage() {
+  const searchParams = useSearchParams()
+  const resumeId = searchParams.get('resumeId')
+  
   const [activeTab, setActiveTab] = useState("comparison")
+  const [resume, setResume] = useState<ResumeDocument | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data for comparison
-  const originalResume = {
-    title: "Original Resume",
-    content: `JOHN SMITH
-john.smith@email.com | (555) 123-4567
+  useEffect(() => {
+    const fetchResume = async () => {
+      if (!resumeId) {
+        setError("No resume ID provided")
+        setIsLoading(false)
+        return
+      }
 
-PROFESSIONAL SUMMARY
-Experienced developer with 5+ years of experience in web development.
+      try {
+        const response = await fetch(`/api/resume?resumeId=${resumeId}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch resume")
+        }
+        
+        const data = await response.json()
+        setResume(data.resume)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load resume")
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-EXPERIENCE
-Senior Software Engineer - Tech Corp (2021 - Present)
-- Worked on various projects
-- Improved performance
-- Mentored team members
-
-Full Stack Developer - StartUp Inc (2019 - 2021)
-- Built applications
-- Fixed bugs
-- Worked with databases
-
-SKILLS
-React, Node.js, JavaScript, CSS, HTML, SQL, Git
-
-EDUCATION
-B.S. Computer Science - State University (2019)`,
-    highlights: ["Contact Info", "Experience", "Skills", "Education"],
-  }
-
-  const tailoredResume = {
-    title: "Tailored Resume",
-    content: `JOHN SMITH
-john.smith@email.com | (555) 123-4567 | linkedin.com/in/johnsmith
-
-PROFESSIONAL SUMMARY
-Results-driven Full Stack Engineer with 5+ years of proven expertise building scalable web applications using React, Node.js, and cloud technologies. Demonstrated track record of delivering high-impact solutions and mentoring engineering teams.
-
-EXPERIENCE
-Senior Software Engineer - Tech Corp (2021 - Present)
-- Architected and led development of microservices platform serving 1M+ users, reducing latency by 40%
-- Mentored 5+ junior developers, establishing best practices for code quality and system design
-- Implemented CI/CD pipelines using Docker and Kubernetes, improving deployment frequency by 60%
-
-Full Stack Developer - StartUp Inc (2019 - 2021)
-- Developed and maintained React applications with Node.js backends, serving 100K+ active users
-- Optimized database queries and implemented caching strategies, improving application performance by 40%
-- Collaborated with product team to deliver 15+ features, maintaining 99.9% uptime
-
-TECHNICAL SKILLS
-Frontend: React, TypeScript, CSS, HTML5, Redux
-Backend: Node.js, Express, GraphQL, REST APIs
-Databases: PostgreSQL, MongoDB, Redis
-Cloud & DevOps: AWS, Docker, Kubernetes, CI/CD
-Tools: Git, GitHub, Jira, VS Code
-
-EDUCATION
-B.S. Computer Science - State University (2019)
-Relevant Coursework: Data Structures, Algorithms, Database Design, Software Engineering`,
-    highlights: [
-      "Quantified achievements",
-      "Technical keywords",
-      "Action verbs",
-      "ATS optimized",
-      "Role-specific skills",
-    ],
-  }
+    fetchResume()
+  }, [resumeId])
 
   const handleDownload = (format: "pdf" | "docx" | "txt") => {
     console.log(`Downloading resume as ${format}`)

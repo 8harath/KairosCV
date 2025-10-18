@@ -166,7 +166,36 @@ export default function PreviewPage() {
             </TabsList>
 
             <TabsContent value="preview" className="space-y-6">
-              <ExtractionPreview data={mockExtractedData} isLoading={false} />
+              {resume.processedResume ? (
+                <div className="space-y-6">
+                  <div className="glass dark:glass-dark p-6 rounded-lg">
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">AI Summary</h3>
+                    <p className="text-slate-600 dark:text-slate-300">{resume.processedResume.summary}</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {resume.processedResume.sections.map((section, index) => (
+                      <div key={index} className="glass dark:glass-dark p-6 rounded-lg">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{section.title}</h3>
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                            Relevance: {Math.round(section.relevance * 100)}%
+                          </span>
+                        </div>
+                        <div className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                          {section.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-slate-600 dark:text-slate-300 mb-4">Processing your resume...</p>
+                  <RefreshCw className="w-6 h-6 animate-spin text-slate-600 dark:text-slate-300 mx-auto" />
+                </div>
+              )}
+              
               <div className="flex gap-4">
                 <Link
                   href="/upload"
@@ -175,10 +204,18 @@ export default function PreviewPage() {
                   Upload Different File
                 </Link>
                 <button
+                  onClick={handleDownloadPDF}
+                  disabled={!resume.processedResume}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </button>
+                <button
                   onClick={() => document.querySelector('[value="tailor"]')?.click()}
                   className="flex-1 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
                 >
-                  Continue to Job Details
+                  Tailor for Job
                 </button>
               </div>
             </TabsContent>
