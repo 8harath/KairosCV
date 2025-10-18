@@ -1,58 +1,134 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ChevronLeft } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { ChevronLeft, Download, RefreshCw } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ExtractionPreview from "@/components/extraction-preview"
 import JobDetailsForm, { type JobDetails } from "@/components/job-details-form"
 import { Eye, FileText } from "lucide-react"
+import { ResumeDocument, ProcessedResume } from "@/lib/types"
 
 export default function PreviewPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const resumeId = searchParams.get('resumeId')
+  
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [jobDetails, setJobDetails] = useState<JobDetails | null>(null)
+  const [resume, setResume] = useState<ResumeDocument | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock extracted data
-  const mockExtractedData = {
-    name: "John Smith",
-    email: "john.smith@email.com",
-    phone: "+1 (555) 123-4567",
-    summary:
-      "Experienced Full Stack Developer with 5+ years of expertise in building scalable web applications using React, Node.js, and cloud technologies.",
-    experience: [
-      {
-        title: "Senior Software Engineer",
-        company: "Tech Corp",
-        duration: "2021 - Present",
-        description: "Led development of microservices architecture serving 1M+ users. Mentored junior developers.",
-      },
-      {
-        title: "Full Stack Developer",
-        company: "StartUp Inc",
-        duration: "2019 - 2021",
-        description: "Built and maintained React applications with Node.js backends. Improved performance by 40%.",
-      },
-    ],
-    skills: ["React", "Node.js", "TypeScript", "AWS", "Docker", "PostgreSQL", "GraphQL", "Git"],
-    education: [
-      {
-        degree: "B.S. Computer Science",
-        school: "State University",
-        year: "2019",
-      },
-    ],
-  }
+  useEffect(() => {
+    const fetchResume = async () => {
+      if (!resumeId) {
+        setError("No resume ID provided")
+        setIsLoading(false)
+        return
+      }
 
-  const handleJobDetailsSubmit = (details: JobDetails) => {
+      try {
+        const response = await fetch(`/api/resume?resumeId=${resumeId}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch resume")
+        }
+        
+        const data = await response.json()
+        setResume(data.resume)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load resume")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchResume()
+  }, [resumeId])
+
+  const handleJobDetailsSubmit = async (details: JobDetails) => {
     setJobDetails(details)
     setIsGenerating(true)
 
-    setTimeout(() => {
+    try {
+      // Reprocess resume with job details
+      const response = await fetch("/api/process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          resumeId: resumeId,
+          jobDescription: `${details.title} at ${details.company}: ${details.description}`,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to reprocess resume")
+      }
+
+      const result = await response.json()
+      setResume(prev => prev ? { ...prev, processedResume: result.processedResume } : null)
+      
+      setTimeout(() => {
+        setIsGenerating(false)
+        router.push(`/comparison?resumeId=${resumeId}`)
+      }, 2000)
+    } catch (error) {
+      console.error("Reprocessing error:", error)
       setIsGenerating(false)
-      router.push("/comparison")
-    }, 3000)
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    if (!resumeId) return
+
+    try {
+      const response = await fetch(`/api/generate-pdf?resumeId=${resumeId}`)
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF")
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${resume?.originalFileName.replace(/\.[^/.]+$/, "")}_optimized.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error("Download error:", error)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-slate-600 dark:text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-300">Loading resume...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error || !resume) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error || "Resume not found"}</p>
+          <Link
+            href="/upload"
+            className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+          >
+            Upload New Resume
+          </Link>
+        </div>
+      </main>
+    )
   }
 
   return (
