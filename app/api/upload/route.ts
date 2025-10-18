@@ -1,62 +1,67 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
+import { extractTextFromFile } from "@/lib/file-processor";
+import { getDatabase } from "@/lib/mongodb";
+import { ResumeDocument } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const file = formData.get("file") as File
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 })
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (file.type !== "application/pdf") {
-      return NextResponse.json({ error: "Only PDF files are supported" }, { status: 400 })
+    // Validate file type
+    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json({ 
+        error: "Only PDF and DOCX files are supported" 
+      }, { status: 400 });
     }
 
+    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size exceeds 10MB limit" }, { status: 400 })
+      return NextResponse.json({ 
+        error: "File size exceeds 10MB limit" 
+      }, { status: 400 });
     }
 
     // Convert file to buffer
-    const buffer = await file.arrayBuffer()
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // In a real implementation, you would:
-    // 1. Save the file to storage (Vercel Blob, S3, etc.)
-    // 2. Process the PDF to extract text
-    // 3. Return the extracted data
+    // Extract text from file
+    const extractedData = await extractTextFromFile(buffer, file.name);
 
-    // Mock response for now
-    const mockExtractedData = {
+    // Save to MongoDB
+    const db = await getDatabase();
+    const resumesCollection = db.collection<ResumeDocument>("resumes");
+
+    const resumeDoc: ResumeDocument = {
+      userId: userId || "anonymous",
+      originalFileName: file.name,
+      extractedText: extractedData.text,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: "uploaded",
+    };
+
+    const result = await resumesCollection.insertOne(resumeDoc);
+
+    return NextResponse.json({
+      success: true,
+      resumeId: result.insertedId.toString(),
       fileName: file.name,
-      fileSize: file.size,
-      uploadedAt: new Date().toISOString(),
-      extractedData: {
-        name: "John Smith",
-        email: "john.smith@email.com",
-        phone: "+1 (555) 123-4567",
-        summary: "Experienced Full Stack Developer with 5+ years of expertise",
-        experience: [
-          {
-            title: "Senior Software Engineer",
-            company: "Tech Corp",
-            duration: "2021 - Present",
-            description: "Led development of microservices architecture",
-          },
-        ],
-        skills: ["React", "Node.js", "TypeScript", "AWS", "Docker"],
-        education: [
-          {
-            degree: "B.S. Computer Science",
-            school: "State University",
-            year: "2019",
-          },
-        ],
-      },
-    }
+      extractedText: extractedData.text,
+      message: "File uploaded and processed successfully",
+    }, { status: 200 });
 
-    return NextResponse.json(mockExtractedData, { status: 200 })
   } catch (error) {
-    console.error("Upload error:", error)
-    return NextResponse.json({ error: "Failed to process file" }, { status: 500 })
+    console.error("Upload error:", error);
+    return NextResponse.json({ 
+      error: "Failed to process file",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }
