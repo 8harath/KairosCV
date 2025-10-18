@@ -170,7 +170,7 @@ export default function ComparisonPage() {
 
               <div className="flex gap-4">
                 <Link
-                  href="/preview"
+                  href={`/preview?resumeId=${resumeId}`}
                   className="flex-1 px-6 py-3 glass dark:glass-dark text-slate-900 dark:text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
