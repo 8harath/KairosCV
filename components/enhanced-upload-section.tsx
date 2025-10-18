@@ -168,7 +168,7 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
 
             {/* File info */}
             <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-              <p>Maximum file size: 10MB • PDF format only</p>
+              <p>Maximum file size: 10MB • PDF or DOCX format</p>
             </div>
           </>
         ) : processingStatus === "error" ? (
