@@ -5,10 +5,10 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 
 interface HeroSectionProps {
-  onGetStarted: () => void
+  onGetStarted?: () => void
 }
 
-export default function HeroSection({ onGetStarted }: HeroSectionProps) {
+export default function HeroSection({ onGetStarted }: HeroSectionProps = {}) {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
