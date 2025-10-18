@@ -41,8 +41,9 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
 
   const handleFile = async (selectedFile: File) => {
     // Validate file
-    if (selectedFile.type !== "application/pdf") {
-      setErrorMessage("Please upload a PDF file")
+    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setErrorMessage("Please upload a PDF or DOCX file")
       setProcessingStatus("error")
       return
     }
@@ -58,48 +59,67 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
     setProcessingStatus("uploading")
     setProgress(0)
 
-    // Simulate upload progress
-    const uploadInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 30) {
-          clearInterval(uploadInterval)
-          return 30
-        }
-        return prev + Math.random() * 15
+    try {
+      // Create FormData for upload
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+      formData.append("userId", "anonymous") // You can implement user auth later
+
+      // Upload file
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
       })
-    }, 200)
 
-    // Simulate processing stages
-    setTimeout(() => {
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || "Upload failed")
+      }
+
+      const uploadResult = await uploadResponse.json()
+      setProgress(50)
       setProcessingStatus("analyzing")
-      setProgress(30)
-    }, 1000)
 
-    setTimeout(() => {
-      setProgress(65)
-    }, 2000)
+      // Process with AI
+      const processResponse = await fetch("/api/process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          resumeId: uploadResult.resumeId,
+          jobDescription: "", // Optional job description
+        }),
+      })
 
-    setTimeout(() => {
-      setProcessingStatus("extracting")
-      setProgress(85)
-    }, 3000)
+      if (!processResponse.ok) {
+        const errorData = await processResponse.json()
+        throw new Error(errorData.error || "Processing failed")
+      }
 
-    setTimeout(() => {
+      const processResult = await processResponse.json()
       setProgress(100)
       setProcessingStatus("complete")
 
-      // Simulate file processing
+      // Store the resume ID for the preview page
+      localStorage.setItem("currentResumeId", uploadResult.resumeId)
+
       if (onFileProcessed) {
         onFileProcessed({
           name: selectedFile.name,
-          content: `Processed: ${selectedFile.name}`,
+          content: processResult.processedResume?.summary || "Processing complete",
         })
       }
 
       setTimeout(() => {
-        router.push("/preview")
+        router.push(`/preview?resumeId=${uploadResult.resumeId}`)
       }, 1500)
-    }, 4000)
+
+    } catch (error) {
+      console.error("File processing error:", error)
+      setErrorMessage(error instanceof Error ? error.message : "Processing failed")
+      setProcessingStatus("error")
+    }
   }
 
   const handleRetry = () => {
@@ -134,7 +154,7 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf"
+                accept=".pdf,.docx"
                 onChange={(e) => e.target.files && handleFile(e.target.files[0])}
                 className="hidden"
               />
@@ -142,7 +162,7 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
               <div className="flex flex-col items-center justify-center">
                 <Upload className="w-16 h-16 text-slate-600 dark:text-slate-300 mb-4" />
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">Drop your resume here</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">or click to browse (PDF only)</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">or click to browse (PDF or DOCX)</p>
               </div>
             </div>
 
