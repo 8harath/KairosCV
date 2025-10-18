@@ -44,8 +44,79 @@ export default function ComparisonPage() {
     fetchResume()
   }, [resumeId])
 
-  const handleDownload = (format: "pdf" | "docx" | "txt") => {
-    console.log(`Downloading resume as ${format}`)
+  const handleDownload = async (format: "pdf" | "docx" | "txt") => {
+    if (!resumeId) return
+
+    try {
+      if (format === "pdf") {
+        const response = await fetch(`/api/generate-pdf?resumeId=${resumeId}`)
+        if (!response.ok) {
+          throw new Error("Failed to generate PDF")
+        }
+
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${resume?.originalFileName.replace(/\.[^/.]+$/, "")}_optimized.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        // For other formats, you could implement additional endpoints
+        console.log(`Downloading resume as ${format}`)
+      }
+    } catch (error) {
+      console.error("Download error:", error)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-slate-600 dark:text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-300">Loading resume...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error || !resume || !resume.processedResume) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error || "Resume not found or not processed"}</p>
+          <Link
+            href="/upload"
+            className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+          >
+            Upload New Resume
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
+  // Prepare data for comparison
+  const originalResume = {
+    title: "Original Resume",
+    content: resume.extractedText,
+    highlights: ["Raw extracted text", "Unprocessed content"],
+  }
+
+  const tailoredResume = {
+    title: "AI-Optimized Resume",
+    content: resume.processedResume.sections
+      .map(section => `${section.title}\n${section.content}`)
+      .join('\n\n'),
+    highlights: [
+      "AI-optimized content",
+      "Relevance-scored sections",
+      "Professional formatting",
+      "ATS-friendly structure",
+    ],
   }
 
   return (
@@ -53,7 +124,7 @@ export default function ComparisonPage() {
       {/* Back button */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          href="/preview"
+          href={`/preview?resumeId=${resumeId}`}
           className="flex items-center gap-2 px-4 py-2 rounded-full glass dark:glass-dark text-slate-900 dark:text-white hover:glass-hover transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
