@@ -3,6 +3,9 @@ import { processResumeWithAI } from "@/lib/gemini";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
 
+// Increase timeout for AI processing
+export const maxDuration = 60; // 60 seconds for AI processing
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

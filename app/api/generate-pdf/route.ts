@@ -3,6 +3,9 @@ import { generatePDFFromResume } from "@/lib/pdf-generator";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
 
+// Increase timeout for PDF generation
+export const maxDuration = 60; // 60 seconds for PDF generation
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
