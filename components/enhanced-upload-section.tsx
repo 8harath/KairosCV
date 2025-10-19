@@ -73,10 +73,12 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json()
+        console.error("Upload error response:", errorData)
         throw new Error(errorData.error || "Upload failed")
       }
 
       const uploadResult = await uploadResponse.json()
+      console.log("Upload successful:", uploadResult)
       setProgress(50)
       setProcessingStatus("analyzing")
 
@@ -94,10 +96,12 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
 
       if (!processResponse.ok) {
         const errorData = await processResponse.json()
+        console.error("Process error response:", errorData)
         throw new Error(errorData.error || "Processing failed")
       }
 
       const processResult = await processResponse.json()
+      console.log("Processing successful:", processResult)
       setProgress(100)
       setProcessingStatus("complete")
 

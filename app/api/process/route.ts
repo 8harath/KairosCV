@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { processResumeWithAI } from "@/lib/gemini";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
+import { ObjectId } from "mongodb";
 
 // Increase timeout for AI processing
 export const maxDuration = 60; // 60 seconds for AI processing
@@ -19,7 +20,15 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
     const resumesCollection = db.collection<ResumeDocument>("resumes");
     
-    const resume = await resumesCollection.findOne({ _id: resumeId });
+    // Convert string ID to ObjectId
+    let objectId: ObjectId;
+    try {
+      objectId = new ObjectId(resumeId);
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid resume ID format" }, { status: 400 });
+    }
+    
+    const resume = await resumesCollection.findOne({ _id: objectId } as any);
     if (!resume) {
       return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
@@ -30,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Update status to processing
     await resumesCollection.updateOne(
-      { _id: resumeId },
+      { _id: objectId } as any,
       { 
         $set: { 
           status: "processing",
@@ -48,7 +57,7 @@ export async function POST(request: NextRequest) {
 
       // Update resume with processed data
       await resumesCollection.updateOne(
-        { _id: resumeId },
+        { _id: objectId } as any,
         { 
           $set: { 
             processedResume,
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
     } catch (aiError) {
       // Update status to error
       await resumesCollection.updateOne(
-        { _id: resumeId },
+        { _id: objectId } as any,
         { 
           $set: { 
             status: "error",

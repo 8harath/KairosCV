@@ -55,15 +55,33 @@ export const processResumeWithAI = async (
     const response = await result.response;
     const text = response.text();
     
-    // Extract JSON from the response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    console.log("Gemini raw response:", text);
+    
+    // Extract JSON from the response - handle markdown code blocks
+    let jsonText = text;
+    
+    // Remove markdown code blocks if present
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) {
+      jsonText = codeBlockMatch[1].trim();
+    }
+    
+    // Find JSON object
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error("No valid JSON found in AI response:", text);
       throw new Error('No valid JSON found in AI response');
     }
     
-    return JSON.parse(jsonMatch[0]);
+    const parsedResponse = JSON.parse(jsonMatch[0]);
+    console.log("Parsed Gemini response:", parsedResponse);
+    
+    return parsedResponse;
   } catch (error) {
     console.error('Error processing resume with AI:', error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to process resume with AI: ${error.message}`);
+    }
     throw new Error('Failed to process resume with AI');
   }
 };
