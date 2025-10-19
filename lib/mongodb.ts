@@ -1,10 +1,7 @@
 import { MongoClient, Db } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MongoDB URI to .env.local');
-}
-
-const uri = process.env.MONGODB_URI;
+// MongoDB Atlas connection string - embedded directly
+const uri = 'mongodb+srv://8harathk_db_user:gKJhnJyZXN3yufLK@kairoscv.hso5vhi.mongodb.net/kairos-cv?retryWrites=true&w=majority&appName=KairosCV';
 const options = {};
 
 let client: MongoClient;

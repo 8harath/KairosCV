@@ -1,10 +1,14 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('Please add your GEMINI_API_KEY to .env.local');
+// Gemini API key - you'll need to get this from Google AI Studio
+// Go to: https://makersuite.google.com/app/apikey
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'your-gemini-api-key-here';
+
+if (GEMINI_API_KEY === 'your-gemini-api-key-here') {
+  console.warn('⚠️  Please set your GEMINI_API_KEY in .env.local or update this file with your actual API key');
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
