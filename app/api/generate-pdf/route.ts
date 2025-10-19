@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { generatePDFFromResume } from "@/lib/pdf-generator";
+import { generateSimplePDF, generateTextResume } from "@/lib/simple-pdf-generator";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
 
@@ -30,18 +31,34 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Generate PDF
-    const pdfBuffer = await generatePDFFromResume(resume.processedResume);
+    try {
+      // Try Puppeteer PDF generation first
+      const pdfBuffer = await generatePDFFromResume(resume.processedResume);
+      const pdfBase64 = pdfBuffer.toString('base64');
 
-    // Return PDF as base64 for frontend download
-    const pdfBase64 = pdfBuffer.toString('base64');
+      return NextResponse.json({
+        success: true,
+        pdfData: pdfBase64,
+        fileName: `${resume.originalFileName.replace(/\.[^/.]+$/, "")}_optimized.pdf`,
+        message: "PDF generated successfully",
+      }, { status: 200 });
 
-    return NextResponse.json({
-      success: true,
-      pdfData: pdfBase64,
-      fileName: `${resume.originalFileName.replace(/\.[^/.]+$/, "")}_optimized.pdf`,
-      message: "PDF generated successfully",
-    }, { status: 200 });
+    } catch (puppeteerError) {
+      console.warn("Puppeteer PDF generation failed, using fallback:", puppeteerError);
+      
+      // Fallback: Generate HTML content for client-side PDF conversion
+      const htmlContent = await generateSimplePDF(resume.processedResume);
+      const textContent = generateTextResume(resume.processedResume);
+
+      return NextResponse.json({
+        success: true,
+        fallback: true,
+        htmlContent: htmlContent,
+        textContent: textContent,
+        fileName: `${resume.originalFileName.replace(/\.[^/.]+$/, "")}_optimized`,
+        message: "PDF generation using fallback method",
+      }, { status: 200 });
+    }
 
   } catch (error) {
     console.error("PDF generation error:", error);
