@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         userId: resume.userId,
         originalFileName: resume.originalFileName,
         extractedText: resume.extractedText,
+        structuredData: resume.structuredData,
         processedResume: resume.processedResume,
         createdAt: resume.createdAt,
         updatedAt: resume.updatedAt,
