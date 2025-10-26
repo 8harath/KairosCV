@@ -71,8 +71,8 @@ const generateResumeHTML = (resume: ProcessedResume): string => {
         body {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           line-height: 1.6;
-          color: #333;
-          background: white;
+          color: #121212;
+          background: #F5F4ED;
         }
         
         .container {
@@ -84,22 +84,22 @@ const generateResumeHTML = (resume: ProcessedResume): string => {
         .header {
           text-align: center;
           margin-bottom: 30px;
-          border-bottom: 2px solid #2563eb;
+          border-bottom: 2px solid #C6613F;
           padding-bottom: 20px;
         }
         
         .header h1 {
           font-size: 2.5em;
-          color: #2563eb;
+          color: #C6613F;
           margin-bottom: 10px;
         }
         
         .summary {
-          background: #f8fafc;
+          background: #FEF3C7;
           padding: 20px;
           border-radius: 8px;
           margin-bottom: 30px;
-          border-left: 4px solid #2563eb;
+          border-left: 4px solid #C6613F;
         }
         
         .section {
@@ -108,9 +108,9 @@ const generateResumeHTML = (resume: ProcessedResume): string => {
         
         .section-title {
           font-size: 1.4em;
-          color: #2563eb;
+          color: #C6613F;
           margin-bottom: 15px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid rgba(18, 18, 18, 0.1);
           padding-bottom: 5px;
         }
         
