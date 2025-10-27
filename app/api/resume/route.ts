@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
+import { ObjectId } from "mongodb";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,8 +19,14 @@ export async function GET(request: NextRequest) {
     let resume: ResumeDocument | null = null;
 
     if (resumeId) {
-      // Get specific resume by ID
-      resume = await resumesCollection.findOne({ _id: resumeId });
+      // Get specific resume by ID - convert string to ObjectId
+      try {
+        const objectId = new ObjectId(resumeId);
+        resume = await resumesCollection.findOne({ _id: objectId } as any);
+      } catch (error) {
+        console.error("Invalid ObjectId format:", error);
+        return NextResponse.json({ error: "Invalid resume ID format" }, { status: 400 });
+      }
     } else if (userId) {
       // Get latest resume for user
       resume = await resumesCollection.findOne(
@@ -68,16 +75,23 @@ export async function DELETE(request: NextRequest) {
     const db = await getDatabase();
     const resumesCollection = db.collection<ResumeDocument>("resumes");
 
-    const result = await resumesCollection.deleteOne({ _id: resumeId });
+    // Convert string to ObjectId
+    try {
+      const objectId = new ObjectId(resumeId);
+      const result = await resumesCollection.deleteOne({ _id: objectId } as any);
 
-    if (result.deletedCount === 0) {
-      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Resume deleted successfully",
+      }, { status: 200 });
+    } catch (error) {
+      console.error("Invalid ObjectId format:", error);
+      return NextResponse.json({ error: "Invalid resume ID format" }, { status: 400 });
     }
-
-    return NextResponse.json({
-      success: true,
-      message: "Resume deleted successfully",
-    }, { status: 200 });
 
   } catch (error) {
     console.error("Delete resume error:", error);

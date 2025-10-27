@@ -3,6 +3,7 @@ import { generatePDFFromResume } from "@/lib/pdf-generator";
 import { generateSimplePDF, generateTextResume } from "@/lib/simple-pdf-generator";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
+import { ObjectId } from "mongodb";
 
 // Increase timeout for PDF generation
 export const maxDuration = 60; // 60 seconds for PDF generation
@@ -20,7 +21,9 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
     const resumesCollection = db.collection<ResumeDocument>("resumes");
     
-    const resume = await resumesCollection.findOne({ _id: resumeId });
+    // Convert string to ObjectId
+    const objectId = new ObjectId(resumeId);
+    const resume = await resumesCollection.findOne({ _id: objectId } as any);
     if (!resume) {
       return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
@@ -82,7 +85,9 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
     const resumesCollection = db.collection<ResumeDocument>("resumes");
     
-    const resume = await resumesCollection.findOne({ _id: resumeId });
+    // Convert string to ObjectId
+    const objectId = new ObjectId(resumeId);
+    const resume = await resumesCollection.findOne({ _id: objectId } as any);
     if (!resume) {
       return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
