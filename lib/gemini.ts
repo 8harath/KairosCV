@@ -87,11 +87,14 @@ export const extractStructuredDataFromResume = async (
 
   try {
     console.log("Calling Gemini to extract structured data...");
+    console.log("Text length:", extractedText.length);
+    
     const result = await geminiModel.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    console.log("Gemini extraction response:", text);
+    console.log("Gemini extraction response length:", text.length);
+    console.log("Gemini extraction response preview:", text.substring(0, 200));
     
     // Extract JSON from the response - handle markdown code blocks
     let jsonText = text;
@@ -100,25 +103,36 @@ export const extractStructuredDataFromResume = async (
     const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeBlockMatch) {
       jsonText = codeBlockMatch[1].trim();
+      console.log("Found markdown code block, extracted JSON");
     }
     
     // Find JSON object
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error("No valid JSON found in AI response:", text);
-      throw new Error('No valid JSON found in AI response');
+      console.error("No valid JSON found in AI response. Response was:", text.substring(0, 500));
+      // Return a minimal structured data object as fallback
+      return {
+        name: "Extracted from resume",
+        summary: extractedText.substring(0, 300),
+        skills: []
+      } as StructuredResumeData;
     }
     
+    console.log("Found JSON match, length:", jsonMatch[0].length);
     const parsedResponse: StructuredResumeData = JSON.parse(jsonMatch[0]);
-    console.log("Parsed structured data:", parsedResponse);
+    console.log("Parsed structured data successfully");
     
     return parsedResponse;
   } catch (error) {
     console.error('Error extracting structured data:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to extract structured data: ${error.message}`);
-    }
-    throw new Error('Failed to extract structured data from resume');
+    
+    // Return a fallback structured data object instead of throwing
+    console.log("Returning fallback structured data");
+    return {
+      name: "Extracted from resume",
+      summary: extractedText.substring(0, 300),
+      skills: []
+    } as StructuredResumeData;
   }
 };
 
@@ -158,7 +172,8 @@ export const processResumeWithAI = async (
     const response = await result.response;
     const text = response.text();
     
-    console.log("Gemini raw response:", text);
+    console.log("Gemini raw response length:", text.length);
+    console.log("Gemini raw response preview:", text.substring(0, 200));
     
     // Extract JSON from the response - handle markdown code blocks
     let jsonText = text;
@@ -167,24 +182,46 @@ export const processResumeWithAI = async (
     const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeBlockMatch) {
       jsonText = codeBlockMatch[1].trim();
+      console.log("Found markdown code block");
     }
     
     // Find JSON object
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error("No valid JSON found in AI response:", text);
-      throw new Error('No valid JSON found in AI response');
+      console.error("No valid JSON found in AI response");
+      console.error("Response preview:", text.substring(0, 500));
+      // Return fallback
+      return {
+        sections: [
+          {
+            title: "Summary",
+            content: extractedText.substring(0, 500),
+            relevance: 1.0
+          }
+        ],
+        summary: extractedText.substring(0, 200),
+        optimized: false
+      };
     }
     
     const parsedResponse = JSON.parse(jsonMatch[0]);
-    console.log("Parsed Gemini response:", parsedResponse);
+    console.log("Parsed Gemini response successfully");
     
     return parsedResponse;
   } catch (error) {
     console.error('Error processing resume with AI:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to process resume with AI: ${error.message}`);
-    }
-    throw new Error('Failed to process resume with AI');
+    
+    // Return fallback instead of throwing
+    return {
+      sections: [
+        {
+          title: "Summary",
+          content: extractedText.substring(0, 500),
+          relevance: 1.0
+        }
+      ],
+      summary: extractedText.substring(0, 200),
+      optimized: false
+    };
   }
 };

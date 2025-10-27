@@ -66,12 +66,30 @@ export async function POST(request: NextRequest) {
     try {
       // Process with AI
       console.log("Processing with Gemini AI...");
-      const processedResume = await processResumeWithAI(
-        resume.extractedText,
-        jobDescription
-      );
-
-      console.log("AI processing complete");
+      let processedResume;
+      
+      try {
+        processedResume = await processResumeWithAI(
+          resume.extractedText,
+          jobDescription
+        );
+        console.log("AI processing complete");
+      } catch (aiError) {
+        console.error("AI processing error:", aiError);
+        // Create a fallback processed resume
+        processedResume = {
+          sections: [
+            {
+              title: "Summary",
+              content: resume.extractedText.substring(0, 500),
+              relevance: 1.0
+            }
+          ],
+          summary: resume.extractedText.substring(0, 200),
+          optimized: false
+        };
+        console.log("Using fallback processed resume");
+      }
 
       // Update resume with processed data
       console.log("Updating database with processed data...");
@@ -96,23 +114,39 @@ export async function POST(request: NextRequest) {
       }, { status: 200 });
 
     } catch (aiError) {
-      console.error("AI processing error:", aiError);
+      console.error("Processing error:", aiError);
       // Update status to error
-      await resumesCollection.updateOne(
-        { _id: objectId } as any,
-        { 
-          $set: { 
-            status: "error",
-            updatedAt: new Date()
+      try {
+        await resumesCollection.updateOne(
+          { _id: objectId } as any,
+          { 
+            $set: { 
+              status: "error",
+              updatedAt: new Date()
+            }
           }
-        }
-      );
+        );
+      } catch (dbError) {
+        console.error("Failed to update status:", dbError);
+      }
 
-      console.error("AI processing error:", aiError);
       return NextResponse.json({ 
+        success: false,
         error: "Failed to process resume with AI",
-        details: aiError instanceof Error ? aiError.message : "Unknown AI error"
-      }, { status: 500 });
+        details: aiError instanceof Error ? aiError.message : "Unknown AI error",
+        // Return basic data so frontend can still show something
+        processedResume: {
+          sections: [
+            {
+              title: "Raw Text",
+              content: resume.extractedText.substring(0, 500),
+              relevance: 1.0
+            }
+          ],
+          summary: resume.extractedText.substring(0, 200),
+          optimized: false
+        }
+      }, { status: 200 }); // Return 200 with error flag so frontend can handle it
     }
 
   } catch (error) {
