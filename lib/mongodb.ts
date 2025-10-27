@@ -1,7 +1,7 @@
 import { MongoClient, Db } from 'mongodb';
 
-// MongoDB Atlas connection string - embedded directly
-const uri = 'mongodb+srv://8harathk_db_user:gKJhnJyZXN3yufLK@kairoscv.hso5vhi.mongodb.net/kairos-cv?retryWrites=true&w=majority&appName=KairosCV';
+// MongoDB Atlas connection string - from environment variables
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/kairos-cv';
 const options = {};
 
 let client: MongoClient;

@@ -195,12 +195,30 @@ cd kairosCV
 npm install
 
 # Set up environment variables
-cp .env.example .env.local
-# Add your GEMINI_API_KEY to .env.local
+# Create a .env.local file with the following variables:
+# GEMINI_API_KEY=your_gemini_api_key
+# MONGODB_URI=your_mongodb_connection_string
+# NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Run development server
 npm run dev
 ```
+
+### Deployment to Vercel
+
+The application is ready for deployment. Follow these steps:
+
+1. **Push your code to GitHub**
+2. **Connect your repository to Vercel**
+3. **Add Environment Variables in Vercel Dashboard:**
+   - `GEMINI_API_KEY` - Your Google Gemini API key
+   - `MONGODB_URI` - Your MongoDB Atlas connection string
+   - `NEXT_PUBLIC_APP_URL` - Your production URL (e.g., https://your-app.vercel.app)
+   - `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` - Set to `true` (handled by vercel.json)
+
+4. **Deploy** - Vercel will automatically deploy on push
+
+**Important Security Note:** Never commit API keys or database credentials to your repository. Use environment variables.
 
 ## 🧪 Testing Strategy
 
@@ -210,12 +228,26 @@ npm run dev
 
 ## 📝 Environment Variables
 
-Create a `.env.local` file:
+Create a `.env.local` file for local development:
 
 ```env
+# Required: Google Gemini API Key
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# Required: MongoDB Atlas Connection String
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kairos-cv?retryWrites=true&w=majority
+
+# Optional: Application URL (defaults to localhost:3000)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional: Puppeteer executable path (required for Vercel)
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ```
+
+**For Production Deployment on Vercel:**
+1. Add these environment variables in Vercel Dashboard → Settings → Environment Variables
+2. Make sure to use your production MongoDB Atlas connection string
+3. Set `NEXT_PUBLIC_APP_URL` to your Vercel app URL
 
 ## 🎯 MVP Success Criteria
 

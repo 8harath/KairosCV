@@ -1,8 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { StructuredResumeData } from './types';
 
-// Gemini API key - embedded directly
-const GEMINI_API_KEY = 'AIzaSyDq3kph1f98FvpaGiigOY2p8mqHcFFe3OE';
+// Gemini API key - from environment variables
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY environment variable is not set');
+}
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
