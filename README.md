@@ -1,364 +1,249 @@
-# KairosCV - AI-Powered Resume Enhancement Platform
+# 🚀 KairosCV - AI-Powered Resume Enhancement Platform
 
-Transform your resume with AI. Upload your PDF or DOCX, get a professionally formatted, job-tailored resume in seconds.
+An intelligent web application that automatically improves, restructures, and regenerates resumes using AI-powered text processing and professional LaTeX formatting.
 
-## 🚀 Features
+## 📋 Project Overview
 
-- **File Upload**: Support for PDF and DOCX files
-- **AI Processing**: Uses Google Gemini AI to analyze and optimize resume content
-- **Section Filtering**: Automatically removes irrelevant sections and scores relevance
-- **Content Optimization**: Rewrites content to be more impactful and ATS-friendly
-- **PDF Generation**: Creates professional PDF resumes using Puppeteer
-- **Job Tailoring**: Customize resume for specific job descriptions
-- **Side-by-Side Comparison**: View original vs optimized resume
-- **Modern UI**: Beautiful, responsive interface with dark mode support
+KairosCV leverages PDF parsing, natural language processing (LLM integration via Gemini API), and LaTeX-based document generation to produce professionally formatted, grammatically accurate, and ATS-optimized resumes.
+
+**Key Features:**
+- ✅ Grammar correction and professional language enhancement
+- ✅ ATS (Applicant Tracking System) optimization
+- ✅ Automatic content rephrasing for clarity and impact
+- ✅ Consistent, modern resume formatting
+- ✅ PDF-to-PDF enhancement workflow
+
+## 🎯 MVP Development Phases
+
+This project is organized into 5 phases to systematically build toward a working MVP.
+
+---
+
+## Phase 1: Project Foundation & Basic File Upload
+
+**Goal:** Set up the development environment and enable users to upload PDF files.
+
+### Tasks
+- [ ] Initialize Next.js project with TypeScript
+- [ ] Install core dependencies (`pdf-parse`, `pdfjs-dist`)
+- [ ] Set up Tailwind CSS configuration
+- [ ] Create basic landing page UI
+- [ ] Implement PDF file upload component (drag & drop)
+- [ ] Add basic file validation (PDF only, size limits)
+- [ ] Display upload status to user
+
+### Deliverables
+- Working Next.js application
+- Functional file upload interface
+- Basic error handling for invalid files
+
+### Estimated Time: 2-3 days
+
+---
+
+## Phase 2: PDF Text Extraction & Display
+
+**Goal:** Extract and display raw text content from uploaded PDFs.
+
+### Tasks
+- [ ] Implement server-side API route for PDF processing (`/api/upload`)
+- [ ] Integrate PDF parsing library (pdf-parse or pdfplumber)
+- [ ] Extract all text content from uploaded PDF
+- [ ] Handle multi-page PDFs
+- [ ] Create UI component to display extracted text
+- [ ] Add "loading state" during processing
+- [ ] Implement basic error handling for corrupted PDFs
+
+### Deliverables
+- Extracted text displayed to user
+- Proper handling of various PDF structures
+- Loading and error states
+
+### Estimated Time: 2-3 days
+
+---
+
+## Phase 3: AI Integration & Content Enhancement
+
+**Goal:** Process extracted text through Gemini API to improve language and ATS compatibility.
+
+### Tasks
+- [ ] Set up Gemini API integration (API key management)
+- [ ] Create AI service layer for text processing
+- [ ] Design prompts for:
+  - Grammar and spelling correction
+  - Content rephrasing for clarity
+  - ATS keyword optimization
+  - Section structure detection
+- [ ] Process extracted text through Gemini API
+- [ ] Create UI component to display "Before/After" comparison
+- [ ] Add loading indicators for AI processing
+- [ ] Implement error handling for API failures
+
+### Deliverables
+- AI-enhanced resume content
+- Visual comparison of original vs. improved text
+- Functional Gemini API integration
+
+### Estimated Time: 3-4 days
+
+---
+
+## Phase 4: LaTeX Template Generation & PDF Export
+
+**Goal:** Convert enhanced content into a professionally formatted LaTeX document and generate PDF.
+
+### Tasks
+- [ ] Design LaTeX resume template structure
+- [ ] Implement LaTeX document generator service
+- [ ] Map processed content to LaTeX sections (Education, Experience, Skills, etc.)
+- [ ] Handle special characters and formatting in LaTeX
+- [ ] Integrate PDF compilation tool (latex.js or pdflatex)
+- [ ] Create "Download PDF" button
+- [ ] Generate downloadable PDF resume
+- [ ] Test LaTeX template with various content lengths
+
+### Deliverables
+- Generated LaTeX document
+- Compiled PDF resume
+- Download functionality
+
+### Estimated Time: 4-5 days
+
+---
+
+## Phase 5: Polish, Optimization & Deployment
+
+**Goal:** Refine UI/UX, optimize performance, and deploy to production.
+
+### Tasks
+- [ ] Improve responsive design across devices
+- [ ] Enhance UI/UX with better loading states
+- [ ] Implement progress tracking for multi-step process
+- [ ] Add input validation and error messages
+- [ ] Optimize API calls and reduce processing time
+- [ ] Add user feedback mechanisms
+- [ ] Set up environment variables for production
+- [ ] Configure Vercel deployment
+- [ ] Add analytics/tracking (optional)
+- [ ] Write documentation for users
+- [ ] Conduct end-to-end testing
+
+### Deliverables
+- Polished, responsive UI
+- Optimized performance
+- Deployed application on Vercel
+- User documentation
+
+### Estimated Time: 3-4 days
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: MongoDB Atlas
-- **AI**: Google Gemini API
-- **PDF Generation**: Puppeteer
-- **File Processing**: pdf-parse, mammoth
-- **Authentication**: Firebase Auth (ready for implementation)
-- **Deployment**: Vercel
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 14+, React, TypeScript, Tailwind CSS |
+| **Backend** | Next.js API Routes (Serverless Functions) |
+| **AI Processing** | Google Gemini API |
+| **PDF Parsing** | pdf-parse / pdfplumber |
+| **PDF Generation** | LaTeX (via latex.js or pdflatex) |
+| **Deployment** | Vercel |
+| **Storage** | Local file processing (or optional: Supabase/Firebase) |
 
-## 📋 Prerequisites
-
-Before you begin, ensure you have:
-
-1. **Node.js** (v18 or higher)
-2. **MongoDB Atlas** account
-3. **Google Gemini API** key
-4. **Firebase** project (optional, for authentication)
-
-## 🔧 Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repo-url>
-cd kairosCV
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-# or
-pnpm install
-```
-
-### 3. Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-# MongoDB Atlas Connection
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kairos-cv
-
-# Google Gemini API
-GEMINI_API_KEY=your-gemini-api-key
-
-# Firebase Configuration (optional)
-NEXT_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
-
-# Next.js Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
-```
-
-### 4. MongoDB Atlas Setup
-
-1. Create a MongoDB Atlas account
-2. Create a new cluster
-3. Create a database user
-4. Whitelist your IP address
-5. Get your connection string and add it to `.env.local`
-
-### 5. Google Gemini API Setup
-
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create a new API key
-3. Add it to your `.env.local` file
-
-### 6. Firebase Setup (Optional)
-
-1. Create a Firebase project
-2. Enable Authentication
-3. Add your Firebase config to `.env.local`
-
-## 🚀 Running the Application
-
-### Development Mode
-
-```bash
-npm run dev
-# or
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Production Build
-
-```bash
-npm run build
-npm start
-# or
-pnpm build
-pnpm start
-```
-
-## 📁 Project Structure
+## 📁 Project Structure (After Phase 1)
 
 ```
 kairosCV/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   │   ├── upload/        # File upload endpoint
-│   │   ├── process/       # AI processing endpoint
-│   │   ├── generate-pdf/  # PDF generation endpoint
-│   │   └── resume/        # Resume CRUD operations
-│   ├── upload/            # Upload page
-│   ├── preview/           # Resume preview page
-│   ├── comparison/        # Before/after comparison
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   ├── ui/               # Reusable UI components
-│   └── ...               # Feature-specific components
-├── lib/                   # Utility libraries
-│   ├── firebase.ts       # Firebase configuration
-│   ├── mongodb.ts        # MongoDB connection
-│   ├── gemini.ts         # AI processing logic
-│   ├── pdf-generator.ts  # PDF generation
-│   ├── file-processor.ts # File processing utilities
-│   └── types.ts          # TypeScript type definitions
-└── styles/               # Global styles
+├── app/
+│   ├── api/
+│   │   ├── upload/          # PDF upload endpoint
+│   │   └── process/         # AI processing endpoint
+│   ├── layout.tsx
+│   ├── page.tsx            # Landing page
+│   └── globals.css
+├── components/
+│   ├── FileUpload.tsx
+│   ├── TextDisplay.tsx
+│   └── ComparisonView.tsx
+├── lib/
+│   ├── pdfExtractor.ts     # PDF parsing logic
+│   ├── geminiService.ts    # AI integration
+│   ├── latexGenerator.ts   # LaTeX template generation
+│   └── pdfCompiler.ts      # PDF compilation
+├── public/
+└── README.md
 ```
 
-## 🔄 API Endpoints
+## 🚦 Getting Started
 
-### POST /api/upload
-Upload and extract text from PDF/DOCX files.
+### Prerequisites
+- Node.js 18+ and npm/yarn
+- Gemini API key
+- LaTeX distribution (for PDF compilation)
 
-**Request:**
-- `file`: PDF or DOCX file
-- `userId`: User identifier (optional)
+### Installation
 
-**Response:**
-```json
-{
-  "success": true,
-  "resumeId": "string",
-  "fileName": "string",
-  "extractedText": "string",
-  "message": "string"
-}
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd kairosCV
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Add your GEMINI_API_KEY to .env.local
+
+# Run development server
+npm run dev
 ```
 
-### POST /api/process
-Process resume with AI optimization.
+## 🧪 Testing Strategy
 
-**Request:**
-```json
-{
-  "resumeId": "string",
-  "jobDescription": "string" // optional
-}
-```
+- **Unit Tests:** Test individual functions (text extraction, API calls)
+- **Integration Tests:** Test API routes and AI processing
+- **E2E Tests:** Test complete user workflow (upload → process → download)
 
-**Response:**
-```json
-{
-  "success": true,
-  "resumeId": "string",
-  "processedResume": {
-    "sections": [...],
-    "summary": "string",
-    "optimized": true
-  }
-}
-```
+## 📝 Environment Variables
 
-### GET /api/generate-pdf?resumeId=xxx
-Generate and download optimized PDF.
+Create a `.env.local` file:
 
-**Response:** PDF file download
-
-### GET /api/resume?resumeId=xxx
-Retrieve resume data.
-
-**Response:**
-```json
-{
-  "success": true,
-  "resume": {
-    "_id": "string",
-    "userId": "string",
-    "originalFileName": "string",
-    "extractedText": "string",
-    "processedResume": {...},
-    "status": "string",
-    "createdAt": "date",
-    "updatedAt": "date"
-  }
-}
-```
-
-## 🚀 Deployment
-
-### Deploy to Vercel
-
-1. **Install Vercel CLI:**
-   ```bash
-   npm i -g vercel
-   ```
-
-2. **Login to Vercel:**
-   ```bash
-   vercel login
-   ```
-
-3. **Deploy:**
-   ```bash
-   vercel --prod
-   ```
-
-4. **Set Environment Variables:**
-   - Go to your Vercel dashboard
-   - Navigate to your project settings
-   - Add all environment variables from `.env.local`
-
-### Environment Variables for Production
-
-Make sure to set these in your Vercel dashboard:
-
-- `MONGODB_URI`
-- `GEMINI_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_API_KEY` (if using Firebase)
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `NEXTAUTH_URL`
-- `NEXTAUTH_SECRET`
-
-## 🧪 Testing
-
-### Local Testing
-
-1. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-
-2. **Test file upload:**
-   - Navigate to `/upload`
-   - Upload a PDF or DOCX file
-   - Verify text extraction works
-
-3. **Test AI processing:**
-   - Check that the `/api/process` endpoint works
-   - Verify Gemini API integration
-
-4. **Test PDF generation:**
-   - Test the `/api/generate-pdf` endpoint
-   - Verify PDF downloads correctly
-
-### Production Testing
-
-1. **Deploy to Vercel:**
-   ```bash
-   vercel --prod
-   ```
-
-2. **Test all endpoints in production**
-3. **Verify environment variables are set correctly**
-4. **Test file upload and processing flow**
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-1. **MongoDB Connection Issues:**
-   - Verify your connection string
-   - Check IP whitelist settings
-   - Ensure database user has proper permissions
-
-2. **Gemini API Errors:**
-   - Verify API key is correct
-   - Check API quota limits
-   - Ensure API is enabled in Google Cloud Console
-
-3. **File Upload Issues:**
-   - Check file size limits (10MB)
-   - Verify file type is PDF or DOCX
-   - Check server logs for errors
-
-4. **PDF Generation Issues:**
-   - Ensure Puppeteer dependencies are installed
-   - Check Vercel function timeout settings
-   - Verify HTML template generation
-
-### Debug Mode
-
-Enable debug logging by setting:
 ```env
-NODE_ENV=development
+GEMINI_API_KEY=your_gemini_api_key_here
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-## 📝 Development Notes
+## 🎯 MVP Success Criteria
 
-### Adding New Features
+By the end of Phase 5, the MVP should:
+- ✅ Accept PDF resume uploads
+- ✅ Extract and parse PDF content
+- ✅ Improve content via AI processing
+- ✅ Generate professionally formatted PDF output
+- ✅ Provide seamless user experience
+- ✅ Work reliably with various resume formats
 
-1. **New API Routes:** Add to `app/api/` directory
-2. **New Components:** Add to `components/` directory
-3. **New Pages:** Add to `app/` directory
-4. **New Utilities:** Add to `lib/` directory
+## 🔮 Future Enhancements (Post-MVP)
 
-### Code Style
-
-- Use TypeScript for all new code
-- Follow Next.js App Router conventions
-- Use Tailwind CSS for styling
-- Implement proper error handling
-- Add loading states for async operations
+- User accounts and resume history
+- Multiple LaTeX template designs
+- Custom formatting options
+- Batch processing for multiple resumes
+- Integration with job boards
+- Analytics dashboard
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+This project is currently in development. Once MVP is complete, contribution guidelines will be added.
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+[Add your license here]
 
-## 🆘 Support
+---
 
-If you encounter any issues:
-
-1. Check the troubleshooting section
-2. Review the API documentation
-3. Check server logs for errors
-4. Create an issue in the repository
-
-## 🎯 Roadmap
-
-- [ ] User authentication with Firebase
-- [ ] Resume history and management
-- [ ] Multiple resume templates
-- [ ] Advanced job matching
-- [ ] Resume analytics and insights
-- [ ] Team collaboration features
-- [ ] Mobile app development
+**Current Phase:** Phase 1 - Foundation & File Upload  
+**Target MVP Completion:** [Set your target date]  
+**Last Updated:** [Current Date]
