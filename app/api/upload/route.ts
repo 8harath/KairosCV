@@ -4,7 +4,7 @@ import { extractStructuredDataFromResume } from "@/lib/gemini";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
 
-export const maxDuration = 60; // 60 seconds for file processing
+export const maxDuration = 30; // 30 seconds for file processing (increased to 60 in production)
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,22 +77,14 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Extract structured data using Gemini - simplified for MVP
-    console.log("Extracting structured data with Gemini...");
-    let structuredData = null;
-    try {
-      structuredData = await extractStructuredDataFromResume(extractedData.text);
-      console.log("Structured data extracted successfully:", JSON.stringify(structuredData));
-    } catch (geminiError) {
-      console.error("Failed to extract structured data with Gemini:", geminiError);
-      console.log("Continuing without structured data - text extraction was successful");
-      // Create a simple structured data object for MVP
-      structuredData = {
-        name: "Extracted from PDF",
-        summary: extractedData.text.substring(0, 500) + "...",
-        extractedText: extractedData.text
-      };
-    }
+    // Skip AI processing during upload for faster response
+    // AI processing will happen separately via /api/process
+    console.log("Skipping Gemini AI processing for now - will process separately");
+    const structuredData = {
+      name: "Extracted from PDF",
+      summary: extractedData.text.substring(0, 500) + "...",
+      extractedText: extractedData.text
+    };
 
     // Save to MongoDB
     console.log("Connecting to MongoDB...");
