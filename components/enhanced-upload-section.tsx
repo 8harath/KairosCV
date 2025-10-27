@@ -94,49 +94,6 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
         throw new Error("Failed to parse server response")
       }
       
-      setProgress(50)
-      setProcessingStatus("analyzing")
-
-      // Process with AI
-      const processResponse = await fetch("/api/process", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resumeId: uploadResult.resumeId,
-          jobDescription: "", // Optional job description
-        }),
-      })
-
-      let processResult;
-      try {
-        if (!processResponse.ok) {
-          try {
-            const errorData = await processResponse.json()
-            console.error("Process error response:", errorData)
-            throw new Error(errorData.error || "Processing failed")
-          } catch (parseError) {
-            console.error("Failed to parse error response:", parseError)
-            throw new Error("Processing failed - server error")
-          }
-        }
-
-        processResult = await processResponse.json()
-        console.log("Processing successful:", processResult)
-      } catch (jsonError) {
-        console.error("Failed to parse process response:", jsonError)
-        // Continue even if parsing fails - we have the upload result
-        processResult = {
-          success: true,
-          processedResume: {
-            sections: [{ title: "Extracted Text", content: uploadResult.extractedText?.substring(0, 500) || "No content", relevance: 1.0 }],
-            summary: uploadResult.extractedText?.substring(0, 200) || "Processed",
-            optimized: false
-          }
-        }
-      }
-      
       setProgress(100)
       setProcessingStatus("complete")
 
@@ -146,7 +103,7 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
       if (onFileProcessed) {
         onFileProcessed({
           name: selectedFile.name,
-          content: processResult.processedResume?.summary || "Processing complete",
+          content: uploadResult.extractedText?.substring(0, 200) || "Processing complete",
         })
       }
 

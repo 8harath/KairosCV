@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { extractTextFromFile } from "@/lib/file-processor";
-import { extractStructuredDataFromResume } from "@/lib/gemini";
 import { getDatabase } from "@/lib/mongodb";
 import { ResumeDocument } from "@/lib/types";
 
