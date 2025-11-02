@@ -7,6 +7,7 @@ import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
 import LoadingAnimation from "@/components/loading-animation"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
+import { toast } from "@/hooks/use-toast"
 
 export default function Home() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)

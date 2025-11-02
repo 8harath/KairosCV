@@ -17,8 +17,7 @@ export function useResumeOptimizer() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const wsRef = useRef<WebSocket | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const eventSourceRef = useRef<EventSource | null>(null)
 
   const startProcessing = useCallback((fileId: string) => {
     setIsProcessing(true)
@@ -26,29 +25,21 @@ export function useResumeOptimizer() {
     setProgress(0)
     setStage("")
     setMessage("Initializing...")
+    setDownloadUrl(null)
 
-    // Simulate processing with progressive updates
-    const processingStages: ProcessingUpdate[] = [
-      { stage: "parsing", progress: 15, message: "Parsing resume content..." },
-      { stage: "parsing", progress: 35, message: "Extracting sections and formatting..." },
-      { stage: "enhancing", progress: 45, message: "Enhancing content with AI..." },
-      { stage: "enhancing", progress: 65, message: "Optimizing bullet points for ATS..." },
-      { stage: "generating", progress: 75, message: "Generating optimized document..." },
-      { stage: "compiling", progress: 85, message: "Compiling to PDF..." },
-      { stage: "compiling", progress: 95, message: "Finalizing..." },
-      {
-        stage: "complete",
-        progress: 100,
-        message: "Resume optimization complete!",
-        download_url: `/api/download/${fileId}`,
-      },
-    ]
+    // Close existing connection if any
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+    }
 
-    let stageIndex = 0
+    // Create EventSource for Server-Sent Events
+    const eventSource = new EventSource(`/api/stream/${fileId}`)
+    eventSourceRef.current = eventSource
 
-    const processNextStage = () => {
-      if (stageIndex < processingStages.length) {
-        const update = processingStages[stageIndex]
+    eventSource.onmessage = (event) => {
+      try {
+        const update: ProcessingUpdate = JSON.parse(event.data)
+
         setProgress(update.progress)
         setStage(update.stage)
         setMessage(update.message)
@@ -57,24 +48,42 @@ export function useResumeOptimizer() {
           setDownloadUrl(update.download_url)
         }
 
-        if (update.stage === "complete") {
+        if (update.error) {
+          setError(update.error)
           setIsProcessing(false)
+          eventSource.close()
         }
 
-        stageIndex++
-        timeoutRef.current = setTimeout(processNextStage, 1200)
+        if (update.stage === "complete") {
+          setIsProcessing(false)
+          eventSource.close()
+        }
+
+        if (update.stage === "error") {
+          setError(update.error || "Processing failed")
+          setIsProcessing(false)
+          eventSource.close()
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE message:", err)
+        setError("Failed to process update")
+        setIsProcessing(false)
+        eventSource.close()
       }
     }
 
-    processNextStage()
+    eventSource.onerror = (err) => {
+      console.error("EventSource error:", err)
+      setError("Connection error. Please try again.")
+      setIsProcessing(false)
+      eventSource.close()
+    }
   }, [])
 
   const cleanup = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    if (wsRef.current) {
-      wsRef.current.close()
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+      eventSourceRef.current = null
     }
     setIsProcessing(false)
   }, [])

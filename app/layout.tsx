@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Space_Mono, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 const spaceMono = Space_Mono({
@@ -130,6 +131,7 @@ export default function RootLayout({
       </head>
       <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-display antialiased`}>
         {children}
+        <Toaster />
         <Analytics />
       </body>
     </html>
