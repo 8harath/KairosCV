@@ -55,12 +55,18 @@ export async function GET(
           }
         }
 
-        // If generator completed without explicit complete stage, send it
+        // If generator completed without explicit complete stage, send completion with download URL
         if (!lastProgress || lastProgress.stage !== "complete") {
           send({
             stage: "complete",
             progress: 100,
             message: "Resume optimization complete!",
+            download_url: `/api/download/${fileId}`,
+          })
+        } else if (lastProgress.stage === "complete") {
+          // Ensure download_url is included in completion message
+          send({
+            ...lastProgress,
             download_url: `/api/download/${fileId}`,
           })
         }
