@@ -3,7 +3,7 @@ services:
     name: kairoscv
     env: node
     plan: free
-    buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build
+    buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build
     startCommand: pnpm start
     healthCheckPath: /api/health
     envVars:

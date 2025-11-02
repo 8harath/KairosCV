@@ -120,8 +120,10 @@ envVars:
 The build command does the following:
 1. `corepack enable` - Enables Corepack (Node.js package manager manager)
 2. `corepack prepare pnpm@latest --activate` - Prepares and activates pnpm
-3. `pnpm install` - Installs all dependencies
+3. `pnpm install --no-frozen-lockfile` - Installs all dependencies (allows lockfile updates if needed)
 4. `pnpm run build` - Builds the Next.js application
+
+**Note:** The `--no-frozen-lockfile` flag is used to allow pnpm to update the lockfile during build if needed. For production, ensure `pnpm-lock.yaml` is committed and up-to-date to avoid lockfile mismatches.
 
 ### Node.js Version
 
@@ -148,6 +150,30 @@ If the build fails:
 2. Verify Node.js version compatibility (requires 18.17+)
 3. Ensure all dependencies are listed in `package.json`
 4. Check for TypeScript errors (currently ignored via `ignoreBuildErrors: true` in `next.config.mjs`)
+
+#### Lockfile Mismatch Error
+
+**Error:** `ERR_PNPM_OUTDATED_LOCKFILE Cannot install with "frozen-lockfile"`
+
+**Cause:** The `pnpm-lock.yaml` file is out of sync with `package.json`. This happens when dependencies are added/modified but the lockfile wasn't regenerated.
+
+**Solutions:**
+
+1. **Regenerate lockfile locally (Recommended):**
+   ```bash
+   pnpm install
+   git add pnpm-lock.yaml
+   git commit -m "Update pnpm-lock.yaml"
+   git push
+   ```
+
+2. **Use --no-frozen-lockfile (Already configured):**
+   - The build command in `render.yaml` includes `--no-frozen-lockfile` to allow lockfile updates during build
+   - This is a temporary solution; best practice is to keep the lockfile in sync
+
+3. **If Render ignores render.yaml:**
+   - Go to Render Dashboard → Your Service → Settings → Build & Deploy
+   - Update Build Command to: `corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build`
 
 ## Runtime Configuration
 
