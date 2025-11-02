@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,11 +32,18 @@ export async function POST(request: NextRequest) {
     // Generate a unique file ID using crypto
     const fileId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
-    // Get file extension
-    const ext = fileName.substring(fileName.lastIndexOf("."))
+    // Save file to filesystem
+    await saveUploadedFile(fileId, file)
 
-    // In production, store file in Vercel Blob or database
-    // For now, we return the file_id for WebSocket tracking
+    // Save file metadata
+    saveFileMetadata({
+      fileId,
+      filename: file.name,
+      size: file.size,
+      type: file.type,
+      uploadedAt: new Date(),
+    })
+
     return NextResponse.json({
       file_id: fileId,
       filename: file.name,
