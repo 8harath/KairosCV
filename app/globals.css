@@ -197,6 +197,85 @@
   }
 }
 
+/* Loading animation styles - Neobrutalistic */
+@keyframes pulse-neobrutal {
+  0%, 100% {
+    transform: scale(1) translate(0, 0);
+    box-shadow: 6px 6px 0px var(--foreground);
+  }
+  50% {
+    transform: scale(1.05) translate(2px, 2px);
+    box-shadow: 4px 4px 0px var(--foreground);
+  }
+}
+
+@keyframes slide-neobrutal {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(4px, 4px);
+  }
+}
+
+@keyframes bounce-neobrutal {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(5px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-neobrutal {
+  animation: pulse-neobrutal 1.5s ease-in-out infinite;
+  box-shadow: 6px 6px 0px var(--foreground);
+}
+
+.animate-pulse-neobrutal-delay-1 {
+  animation: pulse-neobrutal 1.5s ease-in-out infinite 0.3s;
+  box-shadow: 4px 4px 0px var(--foreground);
+}
+
+.animate-pulse-neobrutal-delay-2 {
+  animation: pulse-neobrutal 1.5s ease-in-out infinite 0.6s;
+  box-shadow: 2px 2px 0px var(--foreground);
+}
+
+.animate-slide-neobrutal {
+  animation: slide-neobrutal 2s ease-in-out infinite;
+  box-shadow: 3px 3px 0px var(--foreground);
+}
+
+.animate-slide-neobrutal-delay {
+  animation: slide-neobrutal 2s ease-in-out infinite 1s;
+  box-shadow: 3px 3px 0px var(--foreground);
+}
+
+.loading-letter {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.letter-hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.letter-visible {
+  opacity: 1;
+  transform: translateY(0);
+  animation: bounce-neobrutal 0.6s ease;
+}
+
+.loading-bar {
+  box-shadow: 2px 2px 0px var(--foreground);
+}
+
 .stage-indicator {
   @apply flex items-center gap-3 mb-3;
 }

@@ -5,12 +5,23 @@ import Header from "@/components/header"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
+import LoadingAnimation from "@/components/loading-animation"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 
 export default function Home() {
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [file, setFile] = useState<File | null>(null)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const { progress, stage, message, downloadUrl, error, isProcessing, startProcessing, cleanup } = useResumeOptimizer()
+
+  useEffect(() => {
+    // Show loading animation for 1.5 seconds on initial mount
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 1500)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleFileSelect = async (selectedFile: File | null) => {
     if (!selectedFile) {
@@ -81,6 +92,10 @@ export default function Home() {
       cleanup()
     }
   }, [cleanup])
+
+  if (isInitialLoading) {
+    return <LoadingAnimation />
+  }
 
   return (
     <main

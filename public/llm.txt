@@ -1,0 +1,143 @@
+# KairosCV (Kairos Resume | Resume Kairos) - AI-Powered ATS Resume Optimizer
+
+## Project Overview
+
+KairosCV (also known as Kairos Resume, Resume Kairos, Kairos Resume Optimizer, and KairosCV Resume Optimizer) is an AI-powered web application that transforms resumes into ATS-optimized PDFs. The application helps job seekers beat applicant tracking systems (ATS) and land more interviews by enhancing their resume content and formatting.
+
+## Brand Keywords
+
+- Kairos
+- KairosCV
+- Resume Kairos
+- Kairos Resume
+- KairosCV Resume
+- Kairos Resume Optimizer
+- KairosCV Resume Optimizer
+- Resume Kairos Optimizer
+- Kairos ATS Resume
+- KairosCV ATS Optimizer
+
+## Key Features
+
+1. **Multi-Format Resume Upload**: Accepts PDF, DOCX, and TXT file formats
+2. **AI-Powered Enhancement**: Uses AI to optimize resume content for ATS systems
+3. **Real-Time Progress Tracking**: WebSocket-based progress updates during processing
+4. **ATS Optimization**: Transforms resumes into ATS-friendly PDF format
+5. **Neobrutalistic UI Design**: Bold, high-contrast design with sharp corners and geometric shapes
+6. **PDF Generation**: Produces professionally formatted, optimized resume PDFs
+
+## Technology Stack
+
+- **Frontend Framework**: Next.js 16.0.0 (React 19.2.0)
+- **Styling**: Tailwind CSS 4.1.9 with custom neobrutalistic design system
+- **Fonts**: Space Mono (display), JetBrains Mono (monospace)
+- **Language**: TypeScript
+- **UI Components**: Radix UI primitives
+- **Analytics**: Vercel Analytics
+- **Deployment**: Next.js App Router
+
+## API Endpoints
+
+### POST /api/upload
+- **Purpose**: Upload and validate resume files
+- **Method**: POST
+- **Content-Type**: multipart/form-data
+- **Parameters**: 
+  - `file`: Resume file (PDF, DOCX, or TXT)
+  - Max file size: 5MB
+- **Response**: 
+  ```json
+  {
+    "file_id": "unique-file-id",
+    "filename": "resume.pdf",
+    "size": 123456,
+    "message": "File uploaded successfully"
+  }
+  ```
+
+### GET /api/health
+- **Purpose**: Health check endpoint
+- **Method**: GET
+- **Response**: 
+  ```json
+  {
+    "status": "healthy",
+    "message": "Resume Optimizer API is running"
+  }
+  ```
+
+### GET /api/ws/[fileId]
+- **Purpose**: WebSocket connection for real-time progress updates
+- **Method**: GET (with WebSocket upgrade)
+- **Parameters**: 
+  - `fileId`: Unique identifier for the uploaded file
+- **Response**: Progress updates in JSON format:
+  ```json
+  {
+    "stage": "parsing|enhancing|generating|compiling|complete",
+    "progress": 0-100,
+    "message": "Status message",
+    "download_url": "/api/download/{fileId}" // Only on complete
+  }
+  ```
+
+### GET /api/download/[fileId]
+- **Purpose**: Download the optimized resume PDF
+- **Method**: GET
+- **Parameters**: 
+  - `fileId`: Unique identifier for the uploaded file
+- **Response**: PDF file download
+
+### POST /api/mock-ws
+- **Purpose**: Mock WebSocket endpoint for testing
+- **Method**: POST
+- **Body**: 
+  ```json
+  {
+    "fileId": "unique-file-id"
+  }
+  ```
+- **Response**: Array of processing stages
+
+## Processing Stages
+
+1. **Uploading**: File upload and validation (0-25%)
+2. **Parsing**: Extracting content from resume file (25-45%)
+3. **Enhancing**: AI-powered content optimization (45-65%)
+4. **Generating**: Creating optimized document structure (65-75%)
+5. **Compiling**: Compiling to PDF format (75-95%)
+6. **Complete**: Optimization finished, ready for download (100%)
+
+## File Format Support
+
+- **PDF** (.pdf): Application/pdf
+- **Microsoft Word** (.docx): application/vnd.openxmlformats-officedocument.wordprocessingml.document
+- **Plain Text** (.txt): text/plain
+
+## Design System
+
+- **Style**: Neobrutalistic (neobrutalism)
+- **Colors**: High contrast black and white with gray accents
+- **Borders**: Bold 3px borders with sharp corners (border-radius: 0)
+- **Shadows**: Distinctive box shadows (4px 4px 0px, 6px 6px 0px)
+- **Typography**: Bold, uppercase text with wide letter-spacing
+- **Animations**: Geometric shapes with transform and shadow animations
+
+## SEO Keywords
+
+Primary: Kairos, KairosCV, Resume Kairos, Kairos Resume, Kairos Resume Optimizer, KairosCV Resume Optimizer, Resume Kairos Optimizer, Kairos ATS Resume, KairosCV ATS Optimizer
+
+Secondary: resume optimizer, ATS resume, resume builder, AI resume, resume optimization, job application, career tools, ATS optimization, resume enhancement, resume PDF, resume generator
+
+## Application URL
+
+- Production: https://kairoscv.app
+- Canonical URL: https://kairoscv.app
+
+## Metadata
+
+- **Application Name**: KairosCV
+- **Alternate Names**: Kairos Resume, Resume Kairos, Kairos Resume Optimizer, KairosCV Resume Optimizer
+- **Category**: Business Application (Resume Optimization Tool)
+- **Pricing**: Free (USD $0)
+

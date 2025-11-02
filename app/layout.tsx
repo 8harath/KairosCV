@@ -17,10 +17,20 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "KairosCV - AI-Powered ATS Resume Optimizer | Transform Your Resume",
+  title: "KairosCV - AI-Powered ATS Resume Optimizer | Kairos Resume | Resume Kairos",
   description:
-    "KairosCV transforms your resume into an ATS-optimized PDF using AI-powered enhancements. Beat applicant tracking systems and land more interviews.",
+    "KairosCV (Kairos Resume) transforms your resume into an ATS-optimized PDF using AI-powered enhancements. Beat applicant tracking systems and land more interviews with Kairos Resume Optimizer. The best Resume Kairos tool for job seekers.",
   keywords: [
+    "Kairos",
+    "KairosCV",
+    "Resume Kairos",
+    "Kairos Resume",
+    "KairosCV Resume",
+    "Kairos Resume Optimizer",
+    "KairosCV Resume Optimizer",
+    "Resume Kairos Optimizer",
+    "Kairos ATS Resume",
+    "KairosCV ATS Optimizer",
     "resume optimizer",
     "ATS resume",
     "resume builder",
@@ -28,6 +38,10 @@ export const metadata: Metadata = {
     "resume optimization",
     "job application",
     "career tools",
+    "ATS optimization",
+    "resume enhancement",
+    "resume PDF",
+    "resume generator",
   ],
   authors: [{ name: "KairosCV" }],
   creator: "KairosCV",
@@ -46,21 +60,21 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://kairoscv.app",
     siteName: "KairosCV",
-    title: "KairosCV - AI-Powered ATS Resume Optimizer",
-    description: "Transform your resume into an ATS-optimized PDF using AI enhancements",
+    title: "KairosCV - AI-Powered ATS Resume Optimizer | Kairos Resume | Resume Kairos",
+    description: "Transform your resume into an ATS-optimized PDF using AI enhancements. Kairos Resume Optimizer helps you beat applicant tracking systems. The best Resume Kairos tool for landing more interviews.",
     images: [
       {
         url: "https://kairoscv.app/og-image.png",
         width: 1200,
         height: 630,
-        alt: "KairosCV - Resume Optimizer",
+        alt: "KairosCV - Resume Kairos Optimizer | ATS Resume Optimization",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KairosCV - AI Resume Optimizer",
-    description: "Transform your resume into an ATS-optimized PDF",
+    title: "KairosCV - AI Resume Optimizer | Kairos Resume | Resume Kairos",
+    description: "Transform your resume into an ATS-optimized PDF with Kairos Resume Optimizer. Beat ATS systems with Resume Kairos.",
     images: ["https://kairoscv.app/og-image.png"],
   },
   robots: {
@@ -74,7 +88,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -86,9 +100,11 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "KairosCV",
-    description: "AI-powered ATS resume optimizer",
+    alternateName: ["Kairos Resume", "Resume Kairos", "Kairos Resume Optimizer", "KairosCV Resume Optimizer"],
+    description: "AI-powered ATS resume optimizer. Kairos Resume and Resume Kairos tool for transforming resumes into ATS-optimized PDFs. Best KairosCV Resume Optimizer for job seekers.",
     url: "https://kairoscv.app",
     applicationCategory: "BusinessApplication",
+    keywords: "Kairos, KairosCV, Resume Kairos, Kairos Resume, ATS resume optimizer, resume optimization, AI resume, resume builder",
     offers: {
       "@type": "Offer",
       price: "0",
@@ -97,6 +113,7 @@ export default function RootLayout({
     creator: {
       "@type": "Organization",
       name: "KairosCV",
+      alternateName: ["Kairos", "Resume Kairos"],
     },
   }
 
