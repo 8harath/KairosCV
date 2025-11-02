@@ -26,6 +26,14 @@ export default function Home() {
     }
   }, [error])
 
+  // Update PDF URL when download URL is available
+  useEffect(() => {
+    if (downloadUrl && !isProcessing) {
+      // Set PDF URL for preview when download is ready
+      setPdfUrl(downloadUrl)
+    }
+  }, [downloadUrl, isProcessing])
+
   useEffect(() => {
     // Show loading animation for 1.5 seconds on initial mount
     const timer = setTimeout(() => {
