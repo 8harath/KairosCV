@@ -1,0 +1,265 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Neobrutalism design system with black, white, and gray */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #000000;
+  --muted: #e5e5e5;
+  --muted-foreground: #4a4a4a;
+  --accent: #2d2d2d;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #000000;
+  --input: #ffffff;
+  --ring: #000000;
+  --chart-1: #000000;
+  --chart-2: #4a4a4a;
+  --chart-3: #6b6b6b;
+  --chart-4: #1a1a1a;
+  --chart-5: #2d2d2d;
+  --radius: 0;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #000000;
+  --sidebar-ring: #000000;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #0a0a0a;
+  --card-foreground: #ffffff;
+  --popover: #0a0a0a;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ffffff;
+  --muted: #2d2d2d;
+  --muted-foreground: #b0b0b0;
+  --accent: #e5e5e5;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #000000;
+  --border: #ffffff;
+  --input: #1a1a1a;
+  --ring: #ffffff;
+  --chart-1: #ffffff;
+  --chart-2: #b0b0b0;
+  --chart-3: #808080;
+  --chart-4: #e5e5e5;
+  --chart-5: #d0d0d0;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #ffffff;
+}
+
+/* Added unique font variables for neobrutalism theme */
+@theme inline {
+  --font-display: "Space Mono", monospace;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-mono;
+  }
+}
+
+/* Neobrutalism component styles with bold borders and shadows */
+.btn {
+  @apply bg-primary text-primary-foreground border-3 border-primary font-bold uppercase tracking-wide px-6 py-3 cursor-pointer transition-all duration-100;
+  box-shadow: 4px 4px 0px currentColor;
+  letter-spacing: 0.05em;
+}
+
+.btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px currentColor;
+}
+
+.btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px currentColor;
+}
+
+.btn-secondary {
+  @apply bg-white text-primary border-3 border-primary;
+}
+
+.btn-secondary:hover {
+  @apply bg-secondary;
+}
+
+.card {
+  @apply bg-card border-3 border-border p-6;
+  box-shadow: 6px 6px 0px var(--foreground);
+}
+
+.upload-zone {
+  @apply border-3 border-dashed border-primary p-12 text-center cursor-pointer transition-all duration-200 bg-secondary;
+  box-shadow: inset 0 0 0 2px var(--foreground);
+}
+
+.upload-zone.dragging {
+  @apply bg-primary text-primary-foreground;
+}
+
+.upload-icon {
+  @apply text-6xl mb-4;
+}
+
+.progress-bar {
+  @apply w-full h-2 bg-muted border-2 border-primary overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full bg-primary transition-all duration-300;
+  box-shadow: inset -2px 0px 0px rgba(0, 0, 0, 0.2);
+}
+
+.spinner {
+  @apply inline-block;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.stage-indicator {
+  @apply flex items-center gap-3 mb-3;
+}
+
+.stage-dot {
+  @apply w-8 h-8 border-2 border-primary flex items-center justify-center font-bold;
+}
+
+.stage-dot.completed {
+  @apply bg-primary text-primary-foreground;
+}
+
+.stage-dot.active {
+  @apply bg-primary text-primary-foreground;
+}
+
+.pdf-preview {
+  @apply w-full border-3 border-primary p-4 bg-secondary;
+  box-shadow: 4px 4px 0px var(--foreground);
+  min-height: 400px;
+}
+
+.container {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+h1 {
+  @apply text-4xl md:text-5xl font-bold mb-2 tracking-widest;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+h2 {
+  @apply text-2xl md:text-3xl font-bold mb-4 tracking-wide;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+}
+
+h3 {
+  @apply text-xl font-bold tracking-wide;
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+p {
+  @apply text-base md:text-lg leading-relaxed;
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 768px) {
+  .card {
+    @apply p-4;
+  }
+
+  .upload-zone {
+    @apply p-6;
+  }
+
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+}
