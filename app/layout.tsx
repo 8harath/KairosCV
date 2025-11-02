@@ -1,12 +1,9 @@
 import type React from "react"
 import type { Metadata } from "next"
-// import { Geist, Geist_Mono } from "next/font/google"
+// Fonts will be loaded via CDN in production to avoid build issues
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import "../styles/globals.css"
-
-// const _geist = Geist({ subsets: ["latin"] })
-// const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "KairosCV - AI-Powered Resume Enhancement",
@@ -34,8 +31,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Load fonts via CDN for production */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`font-sans antialiased bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950`}
+        className="antialiased bg-white dark:bg-black"
+        style={{fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif'}}
       >
         {children}
         <Analytics />

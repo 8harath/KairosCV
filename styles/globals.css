@@ -4,79 +4,65 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Neubrutalism Color Palette - Minimal & Bold */
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --card: #FFFFFF;
+  --card-foreground: #000000;
+  --popover: #FFFFFF;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F5F5;
+  --secondary-foreground: #000000;
+  --muted: #F5F5F5;
+  --muted-foreground: #666666;
+  --accent: #FFD700;
+  --accent-foreground: #000000;
+  --destructive: #FF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #000000;
+  --input: #FFFFFF;
+  --ring: #000000;
+  --radius: 0rem;
+
+  /* Neubrutalism custom variables */
+  --neu-border: 3px;
+  --neu-shadow: 6px 6px 0px #000000;
+  --neu-shadow-lg: 10px 10px 0px #000000;
+  --neu-shadow-hover: 8px 8px 0px #000000;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card: #000000;
+  --card-foreground: #FFFFFF;
+  --popover: #000000;
+  --popover-foreground: #FFFFFF;
+  --primary: #FFFFFF;
+  --primary-foreground: #000000;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A1A1A;
+  --muted-foreground: #999999;
+  --accent: #FFD700;
+  --accent-foreground: #000000;
+  --destructive: #FF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #FFFFFF;
+  --input: #000000;
+  --ring: #FFFFFF;
+
+  /* Dark mode shadows */
+  --neu-shadow: 6px 6px 0px #FFFFFF;
+  --neu-shadow-lg: 10px 10px 0px #FFFFFF;
+  --neu-shadow-hover: 8px 8px 0px #FFFFFF;
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,47 +82,249 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: 0rem;
+  --radius-xl: 0rem;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+* {
+  border-color: var(--border);
 }
 
-/* Simplified glass classes to use standard Tailwind utilities */
-@layer components {
-  .glass {
-    @apply bg-white/10 border border-white/18 rounded-2xl shadow-lg;
-    backdrop-filter: blur(10px);
-  }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "kern", "liga", "clig", "calt";
+}
 
-  .glass-dark {
-    @apply bg-white/5 border border-white/10 rounded-2xl shadow-xl;
-    backdrop-filter: blur(10px);
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
 
-  .glass-hover {
-    @apply transition-all duration-300 hover:bg-white/20 hover:border-white/30;
-  }
+/* Neubrutalism Component Styles */
+@utility neu-card {
+  background-color: white;
+  border: 3px solid black;
+  box-shadow: var(--neu-shadow);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .neu-card {
+  background-color: black;
+  border-color: white;
+}
+
+.neu-card:hover {
+  box-shadow: var(--neu-shadow-hover);
+  transform: translate(2px, 2px);
+}
+
+@utility neu-card-lg {
+  background-color: white;
+  border: 4px solid black;
+  box-shadow: var(--neu-shadow-lg);
+}
+
+.dark .neu-card-lg {
+  background-color: black;
+  border-color: white;
+}
+
+@utility neu-btn {
+  background-color: black;
+  color: white;
+  border: 3px solid black;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: var(--neu-shadow);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .neu-btn {
+  background-color: white;
+  color: black;
+  border-color: white;
+}
+
+.neu-btn:hover {
+  box-shadow: var(--neu-shadow-hover);
+  transform: translate(2px, 2px);
+}
+
+.neu-btn:active {
+  box-shadow: 2px 2px 0px #000000;
+  transform: translate(4px, 4px);
+}
+
+.dark .neu-btn:active {
+  box-shadow: 2px 2px 0px #FFFFFF;
+}
+
+@utility neu-btn-accent {
+  background-color: #FFD700;
+  color: black;
+  border: 3px solid black;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 6px 6px 0px #000000;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-btn-accent:hover {
+  box-shadow: 8px 8px 0px #000000;
+  transform: translate(2px, 2px);
+}
+
+.neu-btn-accent:active {
+  box-shadow: 2px 2px 0px #000000;
+  transform: translate(4px, 4px);
+}
+
+@utility neu-input {
+  background-color: white;
+  color: black;
+  border: 3px solid black;
+  padding: 0.75rem 1rem;
+  box-shadow: 4px 4px 0px var(--border);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .neu-input {
+  background-color: black;
+  color: white;
+  border-color: white;
+}
+
+.neu-input:focus {
+  outline: none;
+  box-shadow: 6px 6px 0px var(--border);
+  transform: translate(-1px, -1px);
+}
+
+@utility neu-badge {
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  display: inline-block;
+  box-shadow: 3px 3px 0px var(--border);
+}
+
+.dark .neu-badge {
+  background-color: black;
+  color: white;
+  border-color: white;
+}
+
+@utility neu-badge-accent {
+  background-color: #FFD700;
+  color: black;
+  border: 2px solid black;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  display: inline-block;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+/* Grid pattern background */
+.neu-grid-bg {
+  background-image:
+    linear-gradient(0deg, #e5e5e5 1px, transparent 1px),
+    linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.dark .neu-grid-bg {
+  background-image:
+    linear-gradient(0deg, #1a1a1a 1px, transparent 1px),
+    linear-gradient(90deg, #1a1a1a 1px, transparent 1px);
+}
+
+/* Animated underline effect */
+.neu-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.neu-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0.25rem;
+  background-color: #FFD700;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Backward compatibility for old glass classes */
+.glass,
+.glass-dark {
+  background-color: white;
+  border: 3px solid black;
+  box-shadow: var(--neu-shadow);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .glass,
+.dark .glass-dark {
+  background-color: black;
+  border-color: white;
+}
+
+.glass-hover:hover {
+  box-shadow: var(--neu-shadow-hover);
+  transform: translate(2px, 2px);
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes slide-in {
+  0% { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.6s ease-out forwards;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, Sparkles, ArrowRight } from "lucide-react"
+import { Sparkles, ArrowRight } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 
@@ -16,99 +16,91 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps = {}) {
   }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-20">
-      {/* Animated background grid */}
-      <div className="absolute inset-0 opacity-30 dark:opacity-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-200 to-transparent dark:from-slate-700 dark:to-transparent" />
-        <svg className="absolute w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path
-                d="M 40 0 L 0 0 0 40"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="0.5"
-                className="text-slate-300 dark:text-slate-700"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-4">
+      {/* Decorative geometric shapes */}
+      <div className="absolute top-20 right-10 w-32 h-32 bg-[#FFD700] border-[3px] border-black dark:border-white transform rotate-12 animate-float" />
+      <div className="absolute bottom-40 left-10 w-24 h-24 bg-white dark:bg-black border-[3px] border-black dark:border-white transform -rotate-6"
+           style={{boxShadow: '6px 6px 0px #000000'}} />
+      <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-black dark:bg-white transform rotate-45" />
 
-      {/* Floating orbs */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-slate-200 dark:bg-slate-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-      <div className="absolute bottom-20 left-10 w-72 h-72 bg-slate-300 dark:bg-slate-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Logo/Badge */}
+      <div className="relative z-10 max-w-5xl mx-auto text-center">
+        {/* Badge */}
         <div
           className={`mb-8 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass dark:glass-dark">
-            <Sparkles className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-              AI-Powered Resume Enhancement
-            </span>
+          <div className="inline-flex items-center gap-2 neu-badge-accent">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-xs">AI-POWERED RESUME ENHANCEMENT</span>
           </div>
         </div>
 
         {/* Main Headline */}
         <h1
-          className={`text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          className={`text-5xl sm:text-6xl lg:text-8xl font-black tracking-tight mb-8 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          style={{fontFamily: 'var(--font-space-grotesk)'}}
         >
-          <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
-            Your Skills Deserve Better Than Bad Formatting
-          </span>
+          <span className="inline-block transform -rotate-1">YOUR SKILLS</span>
+          <br />
+          <span className="inline-block transform rotate-1">DESERVE BETTER</span>
+          <br />
+          <span className="inline-block relative">
+            THAN BAD
+            <span className="absolute -bottom-3 left-0 w-full h-4 bg-[#FFD700] -z-10"></span>
+          </span>{" "}
+          <span className="inline-block transform -rotate-1">FORMATTING</span>
         </h1>
 
         {/* Subheadline */}
         <p
-          className={`text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          className={`text-xl sm:text-2xl font-medium text-black dark:text-white mb-12 max-w-3xl mx-auto transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
-          AI-powered resume enhancement that puts your talent first. Upload your PDF, get a professionally formatted,
-          job-tailored resume in seconds.
+          Upload your PDF → AI extracts & enhances → Download professionally formatted resume.
+          <span className="font-bold"> No manual formatting needed.</span>
         </p>
 
         {/* CTA Buttons */}
         <div
-          className={`flex flex-col sm:flex-row gap-4 justify-center mb-12 transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          className={`flex flex-col sm:flex-row gap-6 justify-center mb-16 transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
           <Link
             href="/upload"
-            className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
+            className="neu-btn-accent text-lg group inline-flex items-center justify-center gap-2"
           >
-            Get Started
+            GET STARTED FREE
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <button className="px-8 py-4 glass dark:glass-dark text-slate-900 dark:text-white rounded-full font-semibold text-lg hover:glass-hover transition-all duration-300">
-            Learn More
-          </button>
+          <Link
+            href="#how-it-works"
+            className="neu-btn text-lg inline-flex items-center justify-center"
+          >
+            HOW IT WORKS
+          </Link>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Stats */}
         <div
-          className={`flex justify-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100" : "opacity-0"}`}
+          className={`grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto transition-all duration-700 delay-500 ${isVisible ? "opacity-100" : "opacity-0"}`}
         >
-          <div className="animate-bounce">
-            <ChevronDown className="w-6 h-6 text-slate-400 dark:text-slate-500" />
+          <div className="neu-card p-6">
+            <div className="text-4xl font-black mb-2" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+              30 SEC
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wide">Average Processing</div>
+          </div>
+          <div className="neu-card p-6 bg-[#FFD700] border-black" style={{boxShadow: '6px 6px 0px #000000'}}>
+            <div className="text-4xl font-black mb-2" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+              100%
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wide">ATS Compatible</div>
+          </div>
+          <div className="neu-card p-6">
+            <div className="text-4xl font-black mb-2" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+              FREE
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wide">No Credit Card</div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
     </section>
   )
 }

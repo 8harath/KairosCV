@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
-import { Upload, AlertCircle } from "lucide-react"
+import { Upload, AlertCircle, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProcessingStatus from "./processing-status"
 
@@ -63,12 +63,12 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
       // Create FormData for upload
       const formData = new FormData()
       formData.append("file", selectedFile)
-      formData.append("userId", "anonymous") // You can implement user auth later
+      formData.append("userId", "anonymous")
 
       // Upload file
       setProcessingStatus("uploading")
       setProgress(25)
-      
+
       const uploadResponse = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -93,7 +93,7 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
         console.error("Failed to parse upload response:", jsonError)
         throw new Error("Failed to parse server response")
       }
-      
+
       setProgress(100)
       setProcessingStatus("complete")
 
@@ -126,13 +126,18 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
   }
 
   return (
-    <section className="min-h-screen flex items-center justify-center py-20 px-4">
-      <div className="max-w-2xl w-full">
+    <section className="min-h-screen flex items-center justify-center py-20 px-4 neu-grid-bg">
+      <div className="max-w-3xl w-full">
         {processingStatus === "idle" ? (
           <>
-            <div className="mb-8 text-center">
-              <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">Upload Your Resume</h2>
-              <p className="text-slate-600 dark:text-slate-300">Drag and drop your PDF or click to browse</p>
+            <div className="mb-12 text-center">
+              <div className="inline-block neu-badge-accent mb-6">
+                <span>STEP 01</span>
+              </div>
+              <h2 className="text-5xl sm:text-6xl font-black mb-4" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+                UPLOAD YOUR RESUME
+              </h2>
+              <p className="text-xl font-medium">Drag and drop or click to browse</p>
             </div>
 
             {/* Upload Zone */}
@@ -141,11 +146,14 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`relative p-12 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
+              className={`relative p-16 border-[4px] border-dashed transition-all duration-300 cursor-pointer ${
                 isDragging
-                  ? "glass-hover border-slate-400 dark:border-slate-500 bg-slate-50 dark:bg-slate-900/50"
-                  : "glass dark:glass-dark border-dashed border-slate-300 dark:border-slate-600"
+                  ? "border-black dark:border-white bg-[#FFD700] scale-105"
+                  : "border-black dark:border-white bg-white dark:bg-black hover:bg-[#FFD700] hover:scale-105"
               }`}
+              style={{
+                boxShadow: isDragging ? '10px 10px 0px var(--border)' : '6px 6px 0px var(--border)'
+              }}
             >
               <input
                 ref={fileInputRef}
@@ -156,29 +164,52 @@ export default function EnhancedUploadSection({ onFileProcessed }: EnhancedUploa
               />
 
               <div className="flex flex-col items-center justify-center">
-                <Upload className="w-16 h-16 text-slate-600 dark:text-slate-300 mb-4" />
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">Drop your resume here</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">or click to browse (PDF or DOCX)</p>
+                <div className="w-24 h-24 bg-black dark:bg-white border-[3px] border-black dark:border-white flex items-center justify-center mb-6"
+                     style={{boxShadow: '4px 4px 0px var(--border)'}}>
+                  <Upload className="w-12 h-12 text-white dark:text-black" />
+                </div>
+                <p className="text-2xl font-black mb-2" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+                  DROP YOUR RESUME HERE
+                </p>
+                <p className="text-lg font-medium opacity-70">
+                  or click to browse (PDF or DOCX)
+                </p>
               </div>
             </div>
 
             {/* File info */}
-            <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-              <p>Maximum file size: 10MB • PDF or DOCX format</p>
+            <div className="mt-8 flex items-center justify-center gap-8">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-bold text-sm uppercase">Max 10MB</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-bold text-sm uppercase">PDF & DOCX</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-bold text-sm uppercase">100% Secure</span>
+              </div>
             </div>
           </>
         ) : processingStatus === "error" ? (
           <div className="text-center">
-            <div className="mb-6 flex justify-center">
-              <AlertCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
+            <div className="mb-8 inline-flex justify-center">
+              <div className="w-24 h-24 bg-[#FF4444] border-[3px] border-black dark:border-white flex items-center justify-center"
+                   style={{boxShadow: '6px 6px 0px var(--border)'}}>
+                <AlertCircle className="w-12 h-12 text-white" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upload Failed</h3>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">{errorMessage}</p>
+            <h3 className="text-4xl font-black mb-4" style={{fontFamily: 'var(--font-space-grotesk)'}}>
+              UPLOAD FAILED
+            </h3>
+            <p className="text-xl font-medium mb-8 max-w-md mx-auto">{errorMessage}</p>
             <button
               onClick={handleRetry}
-              className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-semibold hover:shadow-lg transition-all duration-300"
+              className="neu-btn text-lg"
             >
-              Try Again
+              TRY AGAIN
             </button>
           </div>
         ) : (
