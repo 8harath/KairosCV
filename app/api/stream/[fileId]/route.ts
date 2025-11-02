@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { processResume } from "@/lib/resume-processor"
+import { processResume, ProcessingProgress } from "@/lib/resume-processor"
 import { getFileMetadata, fileExists, getUploadFilePath } from "@/lib/file-storage"
 import path from "path"
 
@@ -43,31 +43,27 @@ export async function GET(
         }
 
         // Process resume and stream progress updates
+        let lastProgress: ProcessingProgress | null = null
         for await (const progress of processResume(fileId, metadata.type, metadata.filename)) {
+          lastProgress = progress
           send(progress)
 
-          // If processing is complete, send final message and close
-          if (progress.stage === "compiling" && progress.progress >= 95) {
-            // Wait a bit for final processing
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            send({
-              stage: "complete",
-              progress: 100,
-              message: "Resume optimization complete!",
-              download_url: `/api/download/${fileId}`,
-            })
+          // Check if this is the completion stage (from generator return)
+          if (progress.stage === "complete") {
             controller.close()
             return
           }
         }
 
-        // If we exit the loop, send completion
-        send({
-          stage: "complete",
-          progress: 100,
-          message: "Resume optimization complete!",
-          download_url: `/api/download/${fileId}`,
-        })
+        // If generator completed without explicit complete stage, send it
+        if (!lastProgress || lastProgress.stage !== "complete") {
+          send({
+            stage: "complete",
+            progress: 100,
+            message: "Resume optimization complete!",
+            download_url: `/api/download/${fileId}`,
+          })
+        }
         controller.close()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error"
