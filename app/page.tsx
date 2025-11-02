@@ -15,6 +15,17 @@ export default function Home() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const { progress, stage, message, downloadUrl, error, isProcessing, startProcessing, cleanup } = useResumeOptimizer()
 
+  // Display errors from processing
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Processing error",
+        description: error,
+        variant: "destructive",
+      })
+    }
+  }, [error])
+
   useEffect(() => {
     // Show loading animation for 1.5 seconds on initial mount
     const timer = setTimeout(() => {
@@ -41,10 +52,20 @@ export default function Home() {
     const hasValidExtension = validExtensions.some((ext) => fileName.endsWith(ext))
 
     if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF, DOCX, or TXT file.",
+        variant: "destructive",
+      })
       return
     }
 
     if (selectedFile.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 5MB. Please choose a smaller file.",
+        variant: "destructive",
+      })
       return
     }
 
@@ -69,16 +90,22 @@ export default function Home() {
       const uploadData = await uploadResponse.json()
       const fileId = uploadData.file_id
 
-      // Start processing simulation
+      // Start processing
       startProcessing(fileId)
 
-      // Simulate PDF availability after processing
-      setTimeout(() => {
-        setPdfUrl(`/placeholder.svg?height=800&width=600&query=resume`)
-      }, 9000)
+      toast({
+        title: "File uploaded",
+        description: "Your resume is being processed...",
+      })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
       console.error("[v0] Error:", errorMessage)
+      toast({
+        title: "Upload failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      setFile(null)
     }
   }
 
@@ -109,10 +136,17 @@ export default function Home() {
 
       <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
         <section aria-labelledby="upload-section">
-          {!isProcessing && !pdfUrl ? (
+          {!isProcessing && !pdfUrl && !error ? (
             <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
           ) : isProcessing ? (
             <ProgressTracker progress={progress} stage={stage} message={message} />
+          ) : error ? (
+            <div className="text-center space-y-4">
+              <p className="text-destructive">{error}</p>
+              <button onClick={handleReset} className="btn">
+                Try Again
+              </button>
+            </div>
           ) : (
             <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} onReset={handleReset} />
           )}
