@@ -271,6 +271,13 @@ export async function* processResume(
     await saveGeneratedPDF(fileId, pdfBuffer)
     yield { stage: "compiling", progress: 95, message: "Finalizing..." }
     
+    // Final completion message
+    yield {
+      stage: "complete",
+      progress: 100,
+      message: "Resume optimization complete!",
+    }
+    
     return enhancedData
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
