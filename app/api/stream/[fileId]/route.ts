@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
-  const { fileId } = params
+  const { fileId } = await params
 
   // Get file metadata
   const metadata = getFileMetadata(fileId)

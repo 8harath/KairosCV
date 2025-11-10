@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-export async function GET(request: Request, { params }: { params: { fileId: string } }) {
-  const { fileId } = params
+export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
+  const { fileId } = await params
 
   // WebSocket upgrade handling through Next.js
   if (!request.headers.get("upgrade")) {
