@@ -118,6 +118,39 @@ export async function enhanceWithAI(resumeData: ResumeData): Promise<ResumeData>
   return resumeData
 }
 
+// Sanitize text for WinAnsi encoding (pdf-lib limitation)
+function sanitizeTextForPDF(text: string): string {
+  if (!text) return ''
+
+  // Replace special bullets with standard hyphen
+  text = text.replace(/[●•◦▪▫○∙⦿⦾]/g, '-')
+
+  // Replace smart quotes with straight quotes
+  text = text.replace(/[""]/g, '"')
+  text = text.replace(/['']/g, "'")
+
+  // Replace em-dash and en-dash with standard hyphen
+  text = text.replace(/[—–]/g, '-')
+
+  // Replace ellipsis with three dots
+  text = text.replace(/…/g, '...')
+
+  // Remove emoji and other high Unicode characters
+  // WinAnsi only supports characters 0x20-0xFF
+  text = text.replace(/[\u0100-\uFFFF]/g, '')
+
+  // Remove control characters except newline, tab, and carriage return
+  text = text.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+
+  // Replace multiple spaces with single space
+  text = text.replace(/\s+/g, ' ')
+
+  // Trim whitespace
+  text = text.trim()
+
+  return text
+}
+
 // Generate LaTeX content (placeholder)
 export function generateLaTeX(resumeData: ResumeData): string {
   // TODO: Implement LaTeX template generation
@@ -125,7 +158,7 @@ export function generateLaTeX(resumeData: ResumeData): string {
   const sections = Object.entries(resumeData.sections)
     .map(([name, content]) => `\\section{${name}}\n${content.join("\n")}`)
     .join("\n\n")
-  
+
   return `\\documentclass{article}
 \\begin{document}
 ${sections}
@@ -158,18 +191,19 @@ export async function generatePDF(resumeData: ResumeData, originalFilename: stri
   // Sections
   for (const [sectionName, content] of Object.entries(resumeData.sections)) {
     if (content.length === 0) continue
-    
-    // Section header
-    page.drawText(sectionName.toUpperCase(), {
+
+    // Section header (sanitized)
+    const sanitizedSectionName = sanitizeTextForPDF(sectionName.toUpperCase())
+    page.drawText(sanitizedSectionName, {
       x: margin,
       y: yPosition,
       size: 14,
       font: boldFont,
       color: rgb(0, 0, 0),
     })
-    
+
     yPosition -= 20
-    
+
     // Section content
     for (const line of content) {
       if (yPosition < margin) {
@@ -177,9 +211,12 @@ export async function generatePDF(resumeData: ResumeData, originalFilename: stri
         const newPage = pdfDoc.addPage([612, 792])
         yPosition = 750
       }
-      
+
+      // Sanitize line content before processing
+      const sanitizedLine = sanitizeTextForPDF(line)
+
       // Wrap long lines
-      const words = line.split(" ")
+      const words = sanitizedLine.split(" ")
       let currentLine = ""
       
       for (const word of words) {
@@ -223,9 +260,10 @@ export async function generatePDF(resumeData: ResumeData, originalFilename: stri
     yPosition -= 15 // Spacing between sections
   }
   
-  // Footer
+  // Footer (sanitized)
   const footerPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1)
-  footerPage.drawText(`Generated from: ${originalFilename}`, {
+  const sanitizedFilename = sanitizeTextForPDF(originalFilename)
+  footerPage.drawText(`Generated from: ${sanitizedFilename}`, {
     x: margin,
     y: 30,
     size: 10,
