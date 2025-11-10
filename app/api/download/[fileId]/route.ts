@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 import { getGeneratedFilePath, fileExists, getFileMetadata } from "@/lib/file-storage"
 import { readFile } from "fs-extra"
 
-export async function GET(request: Request, { params }: { params: { fileId: string } }) {
-  const { fileId } = params
+export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
+  const { fileId } = await params
 
   try {
     // Get file metadata
