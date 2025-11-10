@@ -39,19 +39,40 @@ The repository includes a `render.yaml` file that automatically configures the s
 
 ### Option 2: Manual Configuration via Dashboard
 
-If you prefer to configure manually through the Render dashboard:
+If you prefer to configure manually through the Render dashboard, or if Render isn't detecting `render.yaml`:
 
 1. **Service Type:** Select "Web Service"
 2. **Environment:** Select "Node"
 3. **Build Command:** 
    ```
-   corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build
+   corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build
    ```
+   **Important:** Include `--no-frozen-lockfile` to allow pnpm to update the lockfile if needed.
 4. **Start Command:** 
    ```
    pnpm start
    ```
 5. **Plan:** Free (or upgrade as needed)
+
+### If render.yaml is Not Being Used
+
+If your service was created before `render.yaml` existed, or Render isn't auto-detecting it:
+
+1. Go to [Render Dashboard](https://dashboard.render.com)
+2. Select your service (e.g., `kairoscv`)
+3. Click on **Settings** in the left sidebar
+4. Scroll to **Build & Deploy** section
+5. Update the **Build Command** to:
+   ```
+   corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build
+   ```
+6. Update the **Start Command** to:
+   ```
+   pnpm start
+   ```
+7. Set **Health Check Path** to: `/api/health`
+8. Click **Save Changes**
+9. Trigger a new deploy: Click **Manual Deploy** → **Deploy latest commit**
 
 ## Deployment Steps
 
@@ -171,9 +192,21 @@ If the build fails:
    - The build command in `render.yaml` includes `--no-frozen-lockfile` to allow lockfile updates during build
    - This is a temporary solution; best practice is to keep the lockfile in sync
 
-3. **If Render ignores render.yaml:**
-   - Go to Render Dashboard → Your Service → Settings → Build & Deploy
-   - Update Build Command to: `corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build`
+3. **If Render ignores render.yaml (Most Common Issue):**
+   
+   **Symptoms:** Build logs show `pnpm install --frozen-lockfile` instead of your custom build command from `render.yaml`
+   
+   **Cause:** Service was created manually or Render isn't auto-detecting `render.yaml`
+   
+   **Solution:** Manually update the build command in Render dashboard:
+   1. Go to Render Dashboard → Your Service → **Settings** → **Build & Deploy**
+   2. Replace the **Build Command** with:
+      ```
+      corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build
+      ```
+   3. Ensure **Start Command** is: `pnpm start`
+   4. Click **Save Changes**
+   5. Click **Manual Deploy** → **Deploy latest commit**
 
 ## Runtime Configuration
 
