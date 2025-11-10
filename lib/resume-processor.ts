@@ -1,9 +1,11 @@
 import pdfParse from "pdf-parse"
 import mammoth from "mammoth"
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
 import fs from "fs-extra"
 import path from "path"
 import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
+import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
+import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured } from "./ai/gemini-service"
+import { generateResumePDF } from "./pdf/pdf-generator"
 
 export interface ResumeData {
   text: string
@@ -105,17 +107,47 @@ export function extractSections(text: string): ResumeData {
   }
 }
 
-// Enhance resume with AI (placeholder for Gemini API integration)
-export async function enhanceWithAI(resumeData: ResumeData): Promise<ResumeData> {
-  // TODO: Integrate with Gemini API for actual enhancement
-  // For now, return as-is
-  // This structure is ready for Gemini API integration:
-  // - Send resumeData to Gemini
-  // - Get enhanced bullet points
-  // - Extract keywords and skills
-  // - Optimize for ATS
-  
-  return resumeData
+// Enhance resume with AI using Gemini
+export async function enhanceWithAI(resumeData: ResumeData, parsedResume?: ParsedResume): Promise<ResumeData> {
+  if (!isGeminiConfigured()) {
+    console.warn("Gemini API not configured. Skipping AI enhancement.")
+    return resumeData
+  }
+
+  try {
+    // Extract and categorize skills using AI
+    const enhancedSkills = await extractSkills(resumeData.text)
+
+    // Generate professional summary if parsed resume is available
+    let summary = ""
+    if (parsedResume) {
+      summary = await generateSummary(resumeData.text)
+    }
+
+    // Enhance experience bullets if we have parsed experience data
+    if (parsedResume && parsedResume.experience.length > 0) {
+      for (const exp of parsedResume.experience) {
+        if (exp.bullets.length > 0) {
+          const enhanced = await enhanceBulletPoints(exp.bullets, exp.title, exp.company)
+          // Update the bullets with enhanced versions
+          exp.bullets = enhanced.map(e => e.enhanced)
+        }
+      }
+    }
+
+    return {
+      ...resumeData,
+      skills: [
+        ...enhancedSkills.languages,
+        ...enhancedSkills.frameworks,
+        ...enhancedSkills.tools,
+        ...enhancedSkills.databases,
+      ],
+    }
+  } catch (error) {
+    console.error("Error in AI enhancement:", error)
+    return resumeData // Return original on error
+  }
 }
 
 // Generate LaTeX content (placeholder)
@@ -132,108 +164,23 @@ ${sections}
 \\end{document}`
 }
 
-// Generate PDF from resume data
-export async function generatePDF(resumeData: ResumeData, originalFilename: string): Promise<Buffer> {
-  const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([612, 792]) // US Letter size
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  
-  let yPosition = 750
-  const margin = 50
-  const fontSize = 12
-  const lineHeight = 16
-  
-  // Title
-  page.drawText("OPTIMIZED RESUME", {
-    x: margin,
-    y: yPosition,
-    size: 18,
-    font: boldFont,
-    color: rgb(0, 0, 0),
-  })
-  
-  yPosition -= 30
-  
-  // Sections
-  for (const [sectionName, content] of Object.entries(resumeData.sections)) {
-    if (content.length === 0) continue
-    
-    // Section header
-    page.drawText(sectionName.toUpperCase(), {
-      x: margin,
-      y: yPosition,
-      size: 14,
-      font: boldFont,
-      color: rgb(0, 0, 0),
+// Generate PDF from parsed resume data using Puppeteer and Jake's template
+export async function generatePDF(
+  parsedResume: ParsedResume,
+  summary?: string
+): Promise<Buffer> {
+  try {
+    // Generate PDF using Puppeteer and Jake's Resume template
+    const pdfBuffer = await generateResumePDF(parsedResume, summary, {
+      format: "letter",
+      printBackground: true,
     })
-    
-    yPosition -= 20
-    
-    // Section content
-    for (const line of content) {
-      if (yPosition < margin) {
-        // Add new page if needed
-        const newPage = pdfDoc.addPage([612, 792])
-        yPosition = 750
-      }
-      
-      // Wrap long lines
-      const words = line.split(" ")
-      let currentLine = ""
-      
-      for (const word of words) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word
-        const textWidth = font.widthOfTextAtSize(testLine, fontSize)
-        
-        if (textWidth > 500 && currentLine) {
-          page.drawText(currentLine, {
-            x: margin,
-            y: yPosition,
-            size: fontSize,
-            font: font,
-            color: rgb(0, 0, 0),
-          })
-          yPosition -= lineHeight
-          currentLine = word
-          
-          if (yPosition < margin) {
-            const newPage = pdfDoc.addPage([612, 792])
-            yPosition = 750
-          }
-        } else {
-          currentLine = testLine
-        }
-      }
-      
-      if (currentLine) {
-        page.drawText(currentLine, {
-          x: margin,
-          y: yPosition,
-          size: fontSize,
-          font: font,
-          color: rgb(0, 0, 0),
-        })
-        yPosition -= lineHeight
-      }
-      
-      yPosition -= 5 // Spacing between lines
-    }
-    
-    yPosition -= 15 // Spacing between sections
+
+    return pdfBuffer
+  } catch (error) {
+    console.error("Error generating PDF:", error)
+    throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
-  
-  // Footer
-  const footerPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1)
-  footerPage.drawText(`Generated from: ${originalFilename}`, {
-    x: margin,
-    y: 30,
-    size: 10,
-    font: font,
-    color: rgb(0.5, 0.5, 0.5),
-  })
-  
-  return Buffer.from(await pdfDoc.save())
 }
 
 // Process resume file (main processing pipeline)
@@ -254,18 +201,26 @@ export async function* processResume(
     
     const rawText = await parseResume(filePath, fileType)
     yield { stage: "parsing", progress: 35, message: "Extracting sections and formatting..." }
-    
-    // Stage 2: Extract sections
+
+    // Stage 2: Extract sections (basic and enhanced)
     const resumeData = extractSections(rawText)
+    const parsedResume = parseResumeEnhanced(rawText)
     yield { stage: "enhancing", progress: 45, message: "Enhancing content with AI..." }
-    
-    // Stage 3: AI Enhancement (placeholder)
-    const enhancedData = await enhanceWithAI(resumeData)
+
+    // Stage 3: AI Enhancement with Gemini
+    const enhancedData = await enhanceWithAI(resumeData, parsedResume)
+
+    // Generate summary if AI is configured
+    let summary: string | undefined
+    if (isGeminiConfigured()) {
+      summary = await generateSummary(resumeData.text)
+    }
+
     yield { stage: "enhancing", progress: 65, message: "Optimizing bullet points for ATS..." }
-    
-    // Stage 4: Generate PDF
+
+    // Stage 4: Generate PDF using Puppeteer and Jake's template
     yield { stage: "generating", progress: 75, message: "Generating optimized document..." }
-    const pdfBuffer = await generatePDF(enhancedData, originalFilename)
+    const pdfBuffer = await generatePDF(parsedResume, summary)
     
     // Save generated PDF
     await saveGeneratedPDF(fileId, pdfBuffer)

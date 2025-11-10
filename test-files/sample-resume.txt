@@ -1,0 +1,46 @@
+JOHN DOE
+john.doe@email.com | (555) 123-4567
+linkedin.com/in/johndoe | github.com/johndoe
+San Francisco, CA
+
+EXPERIENCE
+
+Senior Software Engineer | Google
+January 2020 - Present | Mountain View, CA
+• Developed and maintained scalable microservices handling 1M+ requests per day
+• Led a team of 5 engineers in architecting a new payment processing system
+• Improved API response time by 40% through optimization and caching strategies
+• Implemented CI/CD pipelines reducing deployment time by 60%
+
+Software Engineer | Facebook
+June 2018 - December 2019 | Menlo Park, CA
+• Built React components for user dashboard serving 10M+ daily active users
+• Collaborated with product managers to design and implement new features
+• Wrote comprehensive unit tests achieving 90%+ code coverage
+• Mentored 3 junior developers and conducted code reviews
+
+EDUCATION
+
+Stanford University
+Bachelor of Science in Computer Science
+September 2014 - June 2018 | Stanford, CA
+GPA: 3.8/4.0
+
+PROJECTS
+
+Personal Portfolio Website
+• Designed and developed a responsive portfolio website using Next.js and TypeScript
+• Implemented server-side rendering for optimal SEO performance
+• Deployed on Vercel with automatic CI/CD integration
+
+Open Source Contributions
+• Contributed to React library with 5+ merged pull requests
+• Fixed critical bugs in popular npm packages with 100K+ weekly downloads
+• Active maintainer of a TypeScript utility library
+
+SKILLS
+
+Languages: JavaScript, TypeScript, Python, Java, SQL
+Frameworks: React, Next.js, Node.js, Express, Django
+Tools: Git, Docker, Kubernetes, AWS, Jenkins, Jest
+Databases: PostgreSQL, MongoDB, Redis
