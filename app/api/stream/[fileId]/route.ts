@@ -43,33 +43,23 @@ export async function GET(
         }
 
         // Process resume and stream progress updates
-        let lastProgress: ProcessingProgress | null = null
         for await (const progress of processResume(fileId, metadata.type, metadata.filename)) {
-          lastProgress = progress
-          send(progress)
-
-          // Check if this is the completion stage (from generator return)
-          if (progress.stage === "complete") {
-            controller.close()
-            return
+          // Don't send the "complete" stage from processor yet
+          if (progress.stage !== "complete") {
+            send(progress)
           }
         }
 
-        // If generator completed without explicit complete stage, send completion with download URL
-        if (!lastProgress || lastProgress.stage !== "complete") {
-          send({
-            stage: "complete",
-            progress: 100,
-            message: "Resume optimization complete!",
-            download_url: `/api/download/${fileId}`,
-          })
-        } else if (lastProgress.stage === "complete") {
-          // Ensure download_url is included in completion message
-          send({
-            ...lastProgress,
-            download_url: `/api/download/${fileId}`,
-          })
-        }
+        // Always send final completion message with download URL
+        send({
+          stage: "complete",
+          progress: 100,
+          message: "Resume optimization complete!",
+          download_url: `/api/download/${fileId}`,
+        })
+
+        // Small delay to ensure message is sent before closing
+        await new Promise(resolve => setTimeout(resolve, 100))
         controller.close()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error"

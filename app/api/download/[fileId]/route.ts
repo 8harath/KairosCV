@@ -6,6 +6,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
   const { fileId } = await params
 
   try {
+    // Check if this is a preview request (inline) or download request
+    const url = new URL(request.url)
+    const isPreview = url.searchParams.get('preview') === 'true'
+
     // Get file metadata
     const metadata = getFileMetadata(fileId)
     if (!metadata) {
@@ -14,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
 
     // Check if generated PDF exists
     const pdfPath = getGeneratedFilePath(fileId)
-    
+
     if (!(await fileExists(pdfPath))) {
       return NextResponse.json(
         { error: "Generated PDF not found. The file may still be processing." },
@@ -25,11 +29,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     // Read and return the PDF
     const pdfBuffer = await readFile(pdfPath)
 
+    // Set Content-Disposition based on preview mode
+    const disposition = isPreview
+      ? 'inline'
+      : `attachment; filename="optimized_resume_${fileId}.pdf"`
+
     return new NextResponse(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="optimized_resume_${fileId}.pdf"`,
+        "Content-Disposition": disposition,
         "Content-Length": pdfBuffer.length.toString(),
+        "Cache-Control": "public, max-age=3600",
       },
     })
   } catch (error) {

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{NAME}} - Resume</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Latin Modern Roman', 'Computer Modern', 'Times New Roman', serif;
+      font-size: 11pt;
+      line-height: 1.15;
+      color: #000;
+      background: #fff;
+      padding: 0.5in 0.5in;
+      max-width: 8.5in;
+      margin: 0 auto;
+    }
+
+    /* Header Section - Centered, no border */
+    .header {
+      text-align: center;
+      margin-bottom: 8pt;
+    }
+
+    .header h1 {
+      font-size: 24pt;
+      font-weight: bold;
+      margin-bottom: 4pt;
+      letter-spacing: 0.3pt;
+    }
+
+    .contact-info {
+      font-size: 10pt;
+      line-height: 1.2;
+    }
+
+    .contact-info a {
+      color: #0000EE;
+      text-decoration: underline;
+    }
+
+    .separator {
+      margin: 0 6pt;
+    }
+
+    /* Section Headers - Small caps with underline */
+    .section {
+      margin-top: 8pt;
+      margin-bottom: 4pt;
+    }
+
+    .section-title {
+      font-size: 12pt;
+      font-weight: bold;
+      font-variant: small-caps;
+      letter-spacing: 0.8pt;
+      border-bottom: 1pt solid #000;
+      padding-bottom: 1pt;
+      margin-bottom: 6pt;
+    }
+
+    /* Experience/Education/Projects */
+    .entry {
+      margin-bottom: 8pt;
+    }
+
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1pt;
+    }
+
+    .entry-title {
+      font-weight: bold;
+      font-size: 11pt;
+    }
+
+    .entry-date {
+      font-size: 10pt;
+      font-style: italic;
+    }
+
+    .entry-subtitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10pt;
+      margin-bottom: 3pt;
+    }
+
+    .entry-company {
+      font-style: italic;
+    }
+
+    .entry-location {
+      font-size: 10pt;
+      font-style: italic;
+    }
+
+    /* Bullet Points - Tighter spacing */
+    .bullets {
+      margin-left: 0.2in;
+      margin-top: 2pt;
+    }
+
+    .bullet {
+      margin-bottom: 2pt;
+      text-align: justify;
+      font-size: 10pt;
+      line-height: 1.2;
+    }
+
+    .bullet::before {
+      content: "•";
+      display: inline-block;
+      width: 0.15in;
+      margin-left: -0.15in;
+    }
+
+    /* Skills Section - Inline format */
+    .skills-section {
+      font-size: 10pt;
+      line-height: 1.4;
+    }
+
+    .skill-line {
+      margin-bottom: 3pt;
+    }
+
+    .skill-category {
+      font-weight: bold;
+      display: inline;
+    }
+
+    .skill-items {
+      display: inline;
+    }
+
+    /* Summary Section */
+    .summary {
+      font-size: 10pt;
+      text-align: justify;
+      line-height: 1.3;
+      margin-bottom: 6pt;
+    }
+
+    /* Print Optimization */
+    @media print {
+      body {
+        padding: 0.5in 0.5in;
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+    }
+
+    @page {
+      size: letter;
+      margin: 0.5in;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>{{NAME}}</h1>
+    <div class="contact-info">
+      {{#if PHONE}}<span>{{PHONE}}</span>{{#if EMAIL}}<span class="separator">$</span>{{/if}}{{/if}}
+      {{#if EMAIL}}<a href="mailto:{{EMAIL}}">{{EMAIL}}</a>{{/if}}
+      {{#if LINKEDIN}}{{#if EMAIL}}<span class="separator">$</span>{{/if}}<a href="https://{{LINKEDIN}}">LinkedIn</a>{{/if}}
+      {{#if GITHUB}}{{#if LINKEDIN}}<span class="separator">$</span>{{/if}}<a href="https://{{GITHUB}}">GitHub</a>{{/if}}
+    </div>
+  </div>
+
+  <!-- Education (comes first in Jake's template) -->
+  {{#if EDUCATION_ITEMS}}
+  <div class="section">
+    <div class="section-title">Education</div>
+    {{EDUCATION_ITEMS}}
+  </div>
+  {{/if}}
+
+  <!-- Experience -->
+  {{#if EXPERIENCE_ITEMS}}
+  <div class="section">
+    <div class="section-title">Experience</div>
+    {{EXPERIENCE_ITEMS}}
+  </div>
+  {{/if}}
+
+  <!-- Projects -->
+  {{#if PROJECT_ITEMS}}
+  <div class="section">
+    <div class="section-title">Projects</div>
+    {{PROJECT_ITEMS}}
+  </div>
+  {{/if}}
+
+  <!-- Technical Skills -->
+  {{#if HAS_SKILLS}}
+  <div class="section">
+    <div class="section-title">Technical Skills</div>
+    <div class="skills-section">
+      {{#if LANGUAGES}}
+      <div class="skill-line">
+        <span class="skill-category">Languages:</span> <span class="skill-items">{{LANGUAGES}}</span>
+      </div>
+      {{/if}}
+      {{#if FRAMEWORKS}}
+      <div class="skill-line">
+        <span class="skill-category">Frameworks:</span> <span class="skill-items">{{FRAMEWORKS}}</span>
+      </div>
+      {{/if}}
+      {{#if TOOLS}}
+      <div class="skill-line">
+        <span class="skill-category">Developer Tools:</span> <span class="skill-items">{{TOOLS}}</span>
+      </div>
+      {{/if}}
+      {{#if DATABASES}}
+      <div class="skill-line">
+        <span class="skill-category">Libraries:</span> <span class="skill-items">{{DATABASES}}</span>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+</body>
+</html>

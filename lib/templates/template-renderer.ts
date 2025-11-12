@@ -120,8 +120,8 @@ function escapeHtml(text: string): string {
  * Render Jake's Resume template with parsed data
  */
 export function renderJakesResume(parsedResume: ParsedResume, summary?: string): string {
-  // Use process.cwd() to get the project root, then navigate to the template
-  const templatePath = path.join(process.cwd(), "lib", "templates", "jakes-resume.html")
+  // Use process.cwd() to get the project root, then navigate to the improved template
+  const templatePath = path.join(process.cwd(), "lib", "templates", "jakes-resume-improved.html")
   const renderer = new TemplateRenderer(templatePath)
 
   // Generate experience items
