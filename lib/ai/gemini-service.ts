@@ -1,35 +1,54 @@
+/**
+ * Gemini AI Service
+ *
+ * This module provides AI-powered resume enhancement using Google's Gemini API.
+ * It handles bullet point enhancement, skills extraction, summary generation,
+ * and complete resume data extraction.
+ *
+ * @module lib/ai/gemini-service
+ */
+
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { config } from "../config"
+import { AI_MAX_RETRIES, AI_RETRY_INITIAL_DELAY } from "../constants"
+import type { SkillsCategories, EnhancedBulletPoint } from "../types"
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const genAI = new GoogleGenerativeAI(config.gemini.apiKey)
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: config.gemini.model,
   generationConfig: {
-    temperature: 0.3,
-    maxOutputTokens: 2048,
+    temperature: config.gemini.temperature,
+    maxOutputTokens: config.gemini.maxOutputTokens,
   },
 })
 
-export interface SkillsCategories {
-  languages: string[]
-  frameworks: string[]
-  tools: string[]
-  databases: string[]
-}
-
-export interface EnhancedBulletPoint {
-  original: string
-  enhanced: string
-}
-
 /**
  * Retry logic with exponential backoff
+ *
+ * Automatically retries failed AI API calls with exponentially increasing delays.
+ * This helps handle rate limits and temporary service issues gracefully.
+ *
+ * @param fn - Async function to retry
+ * @param maxRetries - Maximum number of retry attempts
+ * @param initialDelay - Initial delay in milliseconds
+ * @returns Promise resolving to function result
+ * @throws Error if all retries are exhausted
+ *
+ * @example
+ * ```typescript
+ * const result = await retryWithBackoff(
+ *   () => model.generateContent(prompt),
+ *   3,
+ *   1000
+ * )
+ * ```
  */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries = 3,
-  initialDelay = 1000
+  maxRetries = AI_MAX_RETRIES,
+  initialDelay = AI_RETRY_INITIAL_DELAY
 ): Promise<T> {
   let lastError: Error | undefined
 
@@ -52,13 +71,31 @@ async function retryWithBackoff<T>(
 
 /**
  * Enhance a single bullet point using Gemini AI
+ *
+ * Transforms a basic resume bullet point into an ATS-optimized, achievement-focused
+ * statement with specific metrics and impact-oriented language.
+ *
+ * @param bulletPoint - Original bullet point text
+ * @param jobTitle - Job title for context
+ * @param company - Company name for context
+ * @returns Enhanced bullet point optimized for ATS
+ *
+ * @example
+ * ```typescript
+ * const enhanced = await enhanceBulletPoint(
+ *   "Worked on API development",
+ *   "Software Engineer",
+ *   "Tech Corp"
+ * )
+ * // Returns: "Architected RESTful API serving 10K+ requests/day..."
+ * ```
  */
 export async function enhanceBulletPoint(
   bulletPoint: string,
   jobTitle: string,
   company: string
 ): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!config.gemini.isConfigured) {
     console.warn("GEMINI_API_KEY not set. Returning original bullet point.")
     return bulletPoint
   }
@@ -93,6 +130,14 @@ Return ONLY the rewritten bullet point, no explanations.`
 
 /**
  * Enhance multiple bullet points for a job
+ *
+ * Processes an array of bullet points, enhancing each one sequentially.
+ * Returns both original and enhanced versions for comparison.
+ *
+ * @param bullets - Array of original bullet points
+ * @param jobTitle - Job title for context
+ * @param company - Company name for context
+ * @returns Array of objects containing original and enhanced bullet points
  */
 export async function enhanceBulletPoints(
   bullets: string[],
@@ -114,9 +159,16 @@ export async function enhanceBulletPoints(
 
 /**
  * Extract and categorize skills from resume text using Gemini AI
+ *
+ * Uses AI to identify all technical skills mentioned in a resume and
+ * automatically categorizes them into languages, frameworks, tools, and databases.
+ * Also infers related skills (e.g., if Redux is mentioned, includes React).
+ *
+ * @param resumeText - Complete resume text
+ * @returns Categorized skills object
  */
 export async function extractSkills(resumeText: string): Promise<SkillsCategories> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!config.gemini.isConfigured) {
     console.warn("GEMINI_API_KEY not set. Returning empty skills.")
     return {
       languages: [],
@@ -171,12 +223,19 @@ Output format (JSON only, no markdown):
 
 /**
  * Enhance an entire resume section with AI
+ *
+ * Improves a complete section (experience, education, or projects) for
+ * ATS optimization while maintaining the original structure.
+ *
+ * @param sectionContent - Array of section content lines
+ * @param sectionType - Type of section being enhanced
+ * @returns Enhanced section content
  */
 export async function enhanceSection(
   sectionContent: string[],
   sectionType: "experience" | "education" | "projects"
 ): Promise<string[]> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!config.gemini.isConfigured) {
     console.warn("GEMINI_API_KEY not set. Returning original content.")
     return sectionContent
   }
@@ -211,9 +270,15 @@ Return ONLY the enhanced content, one item per line.`
 
 /**
  * Generate professional summary from resume data
+ *
+ * Creates a compelling 2-3 sentence professional summary that highlights
+ * key strengths, experience, and technical skills.
+ *
+ * @param resumeText - Complete resume text
+ * @returns Professional summary optimized for ATS
  */
 export async function generateSummary(resumeText: string): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!config.gemini.isConfigured) {
     console.warn("GEMINI_API_KEY not set. Returning default summary.")
     return "Experienced professional with a proven track record of success."
   }
@@ -244,10 +309,22 @@ Return ONLY the professional summary, no additional text.`
 
 /**
  * Extract complete structured resume data using Gemini AI
+ *
  * This is the primary extraction method - Gemini does all the heavy lifting
+ * of parsing and structuring resume data from raw text. It intelligently
+ * identifies and extracts:
+ * - Contact information
+ * - Work experience with dates and locations
+ * - Education history
+ * - Technical skills (categorized)
+ * - Projects
+ * - Certifications
+ *
+ * @param resumeText - Complete raw resume text
+ * @returns Structured resume data object, or null if extraction fails
  */
 export async function extractCompleteResumeData(resumeText: string): Promise<any> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!config.gemini.isConfigured) {
     console.warn("GEMINI_API_KEY not set. Cannot extract resume data.")
     return null
   }
@@ -360,9 +437,17 @@ Return ONLY valid JSON, no markdown code blocks, no explanations.`
 
 /**
  * Enhance extracted resume data with AI improvements
+ *
+ * Takes structured resume data and enhances it by:
+ * - Improving all experience bullet points for ATS optimization
+ * - Generating a professional summary
+ * - Maintaining all original structure and data
+ *
+ * @param extractedData - Structured resume data from extraction
+ * @returns Enhanced resume data with improved content
  */
 export async function enhanceExtractedData(extractedData: any): Promise<any> {
-  if (!process.env.GEMINI_API_KEY || !extractedData) {
+  if (!config.gemini.isConfigured || !extractedData) {
     return extractedData
   }
 
@@ -393,7 +478,9 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
 
 /**
  * Check if Gemini API is configured
+ *
+ * @returns True if Gemini API key is set and valid
  */
 export function isGeminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== ""
+  return config.gemini.isConfigured
 }

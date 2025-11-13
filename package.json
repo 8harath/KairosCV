@@ -1,7 +1,15 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "kairos-cv",
+  "version": "1.0.0",
   "private": true,
+  "description": "AI-powered resume optimization platform that converts any resume format into ATS-optimized PDFs",
+  "author": "KairosCV Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/KairosCV"
+  },
+  "keywords": ["resume", "cv", "ats", "optimization", "ai", "gemini", "pdf"],
   "engines": {
     "node": ">=18.17.0",
     "pnpm": ">=8.0.0"
