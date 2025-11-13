@@ -4,7 +4,7 @@ import fs from "fs-extra"
 import path from "path"
 import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
 import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
-import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured } from "./ai/gemini-service"
+import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData } from "./ai/gemini-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
 
 export interface ResumeData {
@@ -108,21 +108,21 @@ export function extractSections(text: string): ResumeData {
 }
 
 // Enhance resume with AI using Gemini
-export async function enhanceWithAI(resumeData: ResumeData, parsedResume?: ParsedResume): Promise<ResumeData> {
+export async function enhanceWithAI(
+  resumeData: ResumeData,
+  parsedResume?: ParsedResume
+): Promise<{ enhancedData: ResumeData; enhancedSkills: SkillsCategories | null; summary: string | null }> {
   if (!isGeminiConfigured()) {
     console.warn("Gemini API not configured. Skipping AI enhancement.")
-    return resumeData
+    return { enhancedData: resumeData, enhancedSkills: null, summary: null }
   }
 
   try {
     // Extract and categorize skills using AI
     const enhancedSkills = await extractSkills(resumeData.text)
 
-    // Generate professional summary if parsed resume is available
-    let summary = ""
-    if (parsedResume) {
-      summary = await generateSummary(resumeData.text)
-    }
+    // Generate professional summary
+    const summary = await generateSummary(resumeData.text)
 
     // Enhance experience bullets if we have parsed experience data
     if (parsedResume && parsedResume.experience.length > 0) {
@@ -136,17 +136,21 @@ export async function enhanceWithAI(resumeData: ResumeData, parsedResume?: Parse
     }
 
     return {
-      ...resumeData,
-      skills: [
-        ...enhancedSkills.languages,
-        ...enhancedSkills.frameworks,
-        ...enhancedSkills.tools,
-        ...enhancedSkills.databases,
-      ],
+      enhancedData: {
+        ...resumeData,
+        skills: [
+          ...enhancedSkills.languages,
+          ...enhancedSkills.frameworks,
+          ...enhancedSkills.tools,
+          ...enhancedSkills.databases,
+        ],
+      },
+      enhancedSkills,
+      summary,
     }
   } catch (error) {
     console.error("Error in AI enhancement:", error)
-    return resumeData // Return original on error
+    return { enhancedData: resumeData, enhancedSkills: null, summary: null }
   }
 }
 
@@ -183,57 +187,89 @@ export async function generatePDF(
   }
 }
 
-// Process resume file (main processing pipeline)
+// Process resume file (main processing pipeline using Gemini for extraction)
 export async function* processResume(
   fileId: string,
   fileType: string,
   originalFilename: string
 ): AsyncGenerator<ProcessingProgress, ResumeData, unknown> {
   try {
-    // Stage 1: Parse file
-    yield { stage: "parsing", progress: 15, message: "Parsing resume content..." }
-    
+    // Stage 1: Parse file to extract raw text
+    yield { stage: "parsing", progress: 10, message: "Reading resume file..." }
+
     const filePath = getUploadFilePath(fileId, path.extname(originalFilename) || ".txt")
-    
+
     if (!(await fileExists(filePath))) {
       throw new Error("Uploaded file not found")
     }
-    
+
     const rawText = await parseResume(filePath, fileType)
-    yield { stage: "parsing", progress: 35, message: "Extracting sections and formatting..." }
+    yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
 
-    // Stage 2: Extract sections (basic and enhanced)
-    const resumeData = extractSections(rawText)
-    const parsedResume = parseResumeEnhanced(rawText)
-    yield { stage: "enhancing", progress: 45, message: "Enhancing content with AI..." }
+    // Stage 2: Use Gemini to extract ALL structured data from the resume
+    yield { stage: "enhancing", progress: 30, message: "Analyzing resume with AI..." }
 
-    // Stage 3: AI Enhancement with Gemini
-    const enhancedData = await enhanceWithAI(resumeData, parsedResume)
+    const extractedData = await extractCompleteResumeData(rawText)
 
-    // Generate summary if AI is configured
-    let summary: string | undefined
-    if (isGeminiConfigured()) {
-      summary = await generateSummary(resumeData.text)
+    if (!extractedData) {
+      throw new Error("Failed to extract resume data. Please check your resume format.")
     }
 
-    yield { stage: "enhancing", progress: 65, message: "Optimizing bullet points for ATS..." }
+    yield { stage: "enhancing", progress: 50, message: "Enhancing content for ATS optimization..." }
 
-    // Stage 4: Generate PDF using Puppeteer and Jake's template
-    yield { stage: "generating", progress: 75, message: "Generating optimized document..." }
-    const pdfBuffer = await generatePDF(parsedResume, summary)
-    
+    // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
+    const enhancedData = await enhanceExtractedData(extractedData)
+
+    yield { stage: "enhancing", progress: 70, message: "Optimizing bullet points..." }
+
+    // Stage 4: Convert to ParsedResume format for PDF generation
+    const parsedResume: ParsedResume = {
+      contact: {
+        name: enhancedData.contact?.name || "Your Name",
+        email: enhancedData.contact?.email || "",
+        phone: enhancedData.contact?.phone || "",
+        linkedin: enhancedData.contact?.linkedin || "",
+        github: enhancedData.contact?.github || "",
+        location: enhancedData.contact?.location || "",
+      },
+      experience: enhancedData.experience || [],
+      education: enhancedData.education || [],
+      skills: enhancedData.skills || {
+        languages: [],
+        frameworks: [],
+        tools: [],
+        databases: [],
+      },
+      projects: enhancedData.projects || [],
+      certifications: enhancedData.certifications || [],
+    }
+
+    yield { stage: "generating", progress: 80, message: "Generating optimized PDF..." }
+
+    // Stage 5: Generate PDF using Puppeteer and Jake's template
+    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary)
+
     // Save generated PDF
     await saveGeneratedPDF(fileId, pdfBuffer)
     yield { stage: "compiling", progress: 95, message: "Finalizing..." }
-    
+
     // Final completion message
     yield {
       stage: "complete",
       progress: 100,
       message: "Resume optimization complete!",
     }
-    
-    return enhancedData
+
+    // Return basic resume data for compatibility
+    const resumeData: ResumeData = {
+      text: rawText,
+      sections: {},
+      skills: parsedResume.skills.languages.concat(parsedResume.skills.frameworks),
+      experience: parsedResume.experience.map(exp => exp.title),
+      education: parsedResume.education.map(edu => edu.institution),
+    }
+
+    return resumeData
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
     throw new Error(`Processing failed: ${errorMessage}`)

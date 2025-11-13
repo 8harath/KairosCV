@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
   generationConfig: {
     temperature: 0.3,
     maxOutputTokens: 2048,
@@ -239,6 +239,155 @@ Return ONLY the professional summary, no additional text.`
   } catch (error) {
     console.error("Error generating summary:", error)
     return "Experienced professional with a proven track record of success."
+  }
+}
+
+/**
+ * Extract complete structured resume data using Gemini AI
+ * This is the primary extraction method - Gemini does all the heavy lifting
+ */
+export async function extractCompleteResumeData(resumeText: string): Promise<any> {
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn("GEMINI_API_KEY not set. Cannot extract resume data.")
+    return null
+  }
+
+  const prompt = `You are an expert resume parser. Extract ALL information from this resume into structured JSON.
+
+CRITICAL INSTRUCTIONS:
+1. Extract the person's full name (usually at the top)
+2. Extract ALL contact information (email, phone, LinkedIn, GitHub, location)
+3. Extract ALL work experience entries with:
+   - Job title
+   - Company name
+   - Start date and end date (format as "Month Year" or "Present")
+   - Location (city, state/country)
+   - Bullet points describing responsibilities and achievements
+4. Extract ALL education entries with:
+   - Institution name
+   - Degree and field of study
+   - Start date and end date
+   - GPA (if mentioned)
+   - Location
+5. Extract ALL technical skills and categorize them into:
+   - Programming Languages (Python, JavaScript, Java, etc.)
+   - Frameworks/Libraries (React, Django, Node.js, etc.)
+   - Tools/Platforms (Docker, AWS, Git, etc.)
+   - Databases (PostgreSQL, MongoDB, etc.)
+6. Extract ALL projects with:
+   - Project name
+   - Description
+   - Technologies used
+   - Bullet points describing what was built
+7. Extract certifications (if any)
+
+OUTPUT FORMAT (JSON only, no markdown):
+{
+  "contact": {
+    "name": "Full Name",
+    "email": "email@example.com",
+    "phone": "+1234567890",
+    "linkedin": "linkedin.com/in/username",
+    "github": "github.com/username",
+    "location": "City, State"
+  },
+  "experience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "startDate": "Jan 2020",
+      "endDate": "Dec 2022",
+      "location": "City, State",
+      "bullets": [
+        "Achievement or responsibility 1",
+        "Achievement or responsibility 2"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University Name",
+      "degree": "Bachelor of Science",
+      "field": "Computer Science",
+      "startDate": "Aug 2016",
+      "endDate": "May 2020",
+      "gpa": "3.8",
+      "location": "City, State"
+    }
+  ],
+  "skills": {
+    "languages": ["Python", "JavaScript"],
+    "frameworks": ["React", "Django"],
+    "tools": ["Docker", "Git"],
+    "databases": ["PostgreSQL"]
+  },
+  "projects": [
+    {
+      "name": "Project Name",
+      "description": "Brief description",
+      "technologies": ["React", "Node.js"],
+      "bullets": [
+        "What was built",
+        "Key features"
+      ]
+    }
+  ],
+  "certifications": ["Certification 1", "Certification 2"]
+}
+
+RESUME TEXT:
+${resumeText}
+
+Return ONLY valid JSON, no markdown code blocks, no explanations.`
+
+  try {
+    const result = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt)
+      const text = response.response.text().trim()
+
+      // Remove markdown code blocks if present
+      const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+
+      return JSON.parse(cleanText)
+    })
+
+    return result
+  } catch (error) {
+    console.error("Error extracting complete resume data:", error)
+    return null
+  }
+}
+
+/**
+ * Enhance extracted resume data with AI improvements
+ */
+export async function enhanceExtractedData(extractedData: any): Promise<any> {
+  if (!process.env.GEMINI_API_KEY || !extractedData) {
+    return extractedData
+  }
+
+  try {
+    // Enhance all experience bullet points
+    if (extractedData.experience && Array.isArray(extractedData.experience)) {
+      for (const exp of extractedData.experience) {
+        if (exp.bullets && exp.bullets.length > 0) {
+          const enhanced = await enhanceBulletPoints(exp.bullets, exp.title, exp.company)
+          exp.bullets = enhanced.map(e => e.enhanced)
+        }
+      }
+    }
+
+    // Generate professional summary
+    const summaryText = JSON.stringify(extractedData)
+    const summary = await generateSummary(summaryText)
+
+    return {
+      ...extractedData,
+      summary
+    }
+  } catch (error) {
+    console.error("Error enhancing extracted data:", error)
+    return extractedData
   }
 }
 
