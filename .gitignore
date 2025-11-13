@@ -30,3 +30,7 @@ next-env.d.ts
 /uploads
 /uploads/*
 !/uploads/.gitkeep
+
+# test outputs
+test-output.pdf
+test-*.pdf
