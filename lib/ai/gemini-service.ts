@@ -39,6 +39,16 @@ async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
 
+      // Check if it's a 503 Service Unavailable error
+      const errorMessage = lastError.message || ""
+      const is503Error = errorMessage.includes("503") || errorMessage.includes("overloaded")
+
+      // For 503 errors, only retry once to fail fast
+      if (is503Error && i >= 1) {
+        console.warn("Gemini API is overloaded, falling back to basic parser...")
+        throw lastError
+      }
+
       if (i < maxRetries - 1) {
         const delay = initialDelay * Math.pow(2, i)
         console.log(`Retry ${i + 1}/${maxRetries} after ${delay}ms...`)

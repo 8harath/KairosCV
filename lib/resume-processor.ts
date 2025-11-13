@@ -209,10 +209,25 @@ export async function* processResume(
     // Stage 2: Use Gemini to extract ALL structured data from the resume
     yield { stage: "enhancing", progress: 30, message: "Analyzing resume with AI..." }
 
-    const extractedData = await extractCompleteResumeData(rawText)
+    let extractedData = await extractCompleteResumeData(rawText)
 
+    // Fallback to basic parsing if AI extraction fails (e.g., API unavailable)
     if (!extractedData) {
-      throw new Error("Failed to extract resume data. Please check your resume format.")
+      console.warn("AI extraction failed, falling back to basic parsing...")
+      yield { stage: "enhancing", progress: 40, message: "Using fallback parser (AI service unavailable)..." }
+
+      // Use the enhanced parser as fallback
+      const parsedFallback = parseResumeEnhanced(rawText)
+
+      // Convert to expected format
+      extractedData = {
+        contact: parsedFallback.contact,
+        experience: parsedFallback.experience,
+        education: parsedFallback.education,
+        skills: parsedFallback.skills,
+        projects: parsedFallback.projects,
+        certifications: parsedFallback.certifications,
+      }
     }
 
     yield { stage: "enhancing", progress: 50, message: "Enhancing content for ATS optimization..." }
