@@ -80,7 +80,12 @@ export class TemplateRenderer {
  * Generate experience entry HTML
  */
 function generateExperienceHTML(entry: ExperienceEntry): string {
+  if (!entry || !entry.bullets) {
+    return ''
+  }
+
   const bullets = entry.bullets
+    .filter(b => b && typeof b === 'string')
     .map((bullet) => `    <div class="bullet">${escapeHtml(bullet)}</div>`)
     .join("\n")
 
@@ -118,7 +123,12 @@ function generatePublicationHTML(pub: {title: string; authors?: string[]; venue?
  * Generate volunteer entry HTML (similar to experience)
  */
 function generateVolunteerHTML(vol: {organization: string; role: string; location?: string; startDate?: string; endDate?: string; bullets: string[]}): string {
+  if (!vol || !vol.bullets) {
+    return ''
+  }
+
   const bullets = vol.bullets
+    .filter(b => b && typeof b === 'string')
     .map((bullet) => `    <div class="bullet">${escapeHtml(bullet)}</div>`)
     .join("\n")
 
@@ -141,9 +151,18 @@ ${bullets}
  * Generate custom section HTML
  */
 function generateCustomSectionHTML(section: {heading: string; content: string[]}): string {
+  if (!section || !section.content || !Array.isArray(section.content)) {
+    return ''
+  }
+
   const content = section.content
+    .filter(line => line && typeof line === 'string')
     .map((line) => `  <div class="bullet">${escapeHtml(line)}</div>`)
     .join("\n")
+
+  if (!content) {
+    return ''
+  }
 
   return `<div class="section">
   <div class="section-title">${escapeHtml(section.heading)}</div>
@@ -155,6 +174,10 @@ ${content}
  * Generate education entry HTML
  */
 function generateEducationHTML(entry: EducationEntry): string {
+  if (!entry) {
+    return ''
+  }
+
   const degree = entry.degree && entry.field
     ? `${entry.degree} in ${entry.field}`
     : entry.degree || entry.field || "Degree"
@@ -176,12 +199,17 @@ function generateEducationHTML(entry: EducationEntry): string {
  * Generate project entry HTML
  */
 function generateProjectHTML(entry: ProjectEntry): string {
+  if (!entry || !entry.bullets) {
+    return ''
+  }
+
   const bullets = entry.bullets
+    .filter(b => b && typeof b === 'string')
     .map((bullet) => `    <div class="bullet">${escapeHtml(bullet)}</div>`)
     .join("\n")
 
-  const techStack = entry.technologies.length > 0
-    ? `<div class="bullet"><strong>Technologies:</strong> ${entry.technologies.map(escapeHtml).join(", ")}</div>`
+  const techStack = entry.technologies && entry.technologies.length > 0
+    ? `<div class="bullet"><strong>Technologies:</strong> ${entry.technologies.filter(t => t).map(escapeHtml).join(", ")}</div>`
     : ""
 
   return `  <div class="entry">
@@ -199,7 +227,10 @@ ${techStack ? "    " + techStack : ""}
 /**
  * Escape HTML special characters
  */
-function escapeHtml(text: string): string {
+function escapeHtml(text: string | undefined | null): string {
+  if (!text || typeof text !== 'string') {
+    return ''
+  }
   const map: Record<string, string> = {
     "&": "&amp;",
     "<": "&lt;",
@@ -231,34 +262,49 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
   const renderer = new TemplateRenderer(templatePath)
 
   // Generate experience items
-  const experienceHTML = parsedResume.experience.map(generateExperienceHTML).join("\n")
+  const experienceHTML = (parsedResume.experience || [])
+    .filter(exp => exp && exp.company && exp.title)
+    .map(generateExperienceHTML)
+    .filter(html => html.length > 0)
+    .join("\n")
 
   // Generate education items
-  const educationHTML = parsedResume.education.map(generateEducationHTML).join("\n")
+  const educationHTML = (parsedResume.education || [])
+    .filter(edu => edu && edu.institution)
+    .map(generateEducationHTML)
+    .filter(html => html.length > 0)
+    .join("\n")
 
   // Generate project items
-  const projectHTML = parsedResume.projects.map(generateProjectHTML).join("\n")
+  const projectHTML = (parsedResume.projects || [])
+    .filter(proj => proj && proj.name)
+    .map(generateProjectHTML)
+    .filter(html => html.length > 0)
+    .join("\n")
 
-  // Prepare skills
+  // Prepare skills - safe access
+  const skills = parsedResume.skills || { languages: [], frameworks: [], tools: [], databases: [] }
   const hasSkills =
-    parsedResume.skills.languages.length > 0 ||
-    parsedResume.skills.frameworks.length > 0 ||
-    parsedResume.skills.tools.length > 0 ||
-    parsedResume.skills.databases.length > 0
+    (skills.languages || []).length > 0 ||
+    (skills.frameworks || []).length > 0 ||
+    (skills.tools || []).length > 0 ||
+    (skills.databases || []).length > 0
 
   // Build contact line (avoid nested conditionals in template)
+  const contact = parsedResume.contact || {}
   const contactParts: string[] = []
-  if (parsedResume.contact.phone) contactParts.push(parsedResume.contact.phone)
-  if (parsedResume.contact.email) contactParts.push(`<a href="mailto:${parsedResume.contact.email}">${parsedResume.contact.email}</a>`)
-  if (parsedResume.contact.linkedin) contactParts.push(`<a href="https://${parsedResume.contact.linkedin}">LinkedIn</a>`)
-  if (parsedResume.contact.github) contactParts.push(`<a href="https://${parsedResume.contact.github}">GitHub</a>`)
-  if (parsedResume.contact.location) contactParts.push(parsedResume.contact.location)
+  if (contact.phone) contactParts.push(contact.phone)
+  if (contact.email) contactParts.push(`<a href="mailto:${contact.email}">${contact.email}</a>`)
+  if (contact.linkedin) contactParts.push(`<a href="https://${contact.linkedin}">LinkedIn</a>`)
+  if (contact.github) contactParts.push(`<a href="https://${contact.github}">GitHub</a>`)
+  if (contact.location) contactParts.push(contact.location)
 
   const contactLine = contactParts.join(' <span class="separator">|</span> ')
 
   // Format certifications as bullet points
-  const certificationsHTML = parsedResume.certifications.length > 0
-    ? parsedResume.certifications.map(cert => `<div class="bullet">${escapeHtml(cert)}</div>`).join('\n')
+  const certifications = parsedResume.certifications || []
+  const certificationsHTML = certifications.length > 0
+    ? certifications.filter(cert => cert && typeof cert === 'string').map(cert => `<div class="bullet">${escapeHtml(cert)}</div>`).join('\n')
     : ""
 
   // Generate new section HTMLs

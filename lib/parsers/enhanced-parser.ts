@@ -472,6 +472,96 @@ export function extractSkillsFromText(text: string): string[] {
 }
 
 /**
+ * Extract summary/objective from text
+ */
+export function extractSummary(text: string): string {
+  const lines = text.split("\n")
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    const lowerLine = line.toLowerCase()
+
+    // Detect summary section
+    if (lowerLine.includes("summary") ||
+        lowerLine.includes("objective") ||
+        lowerLine.includes("profile") ||
+        lowerLine.includes("about")) {
+
+      // Get next few lines as summary
+      const summaryLines: string[] = []
+      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+        const summaryLine = lines[j].trim()
+        const summaryLower = summaryLine.toLowerCase()
+
+        // Stop at next section
+        if (summaryLower.includes("experience") ||
+            summaryLower.includes("education") ||
+            summaryLower.includes("skills") ||
+            summaryLower.includes("projects")) {
+          break
+        }
+
+        if (summaryLine.length > 0) {
+          summaryLines.push(summaryLine)
+        }
+      }
+
+      if (summaryLines.length > 0) {
+        return summaryLines.join(" ")
+      }
+    }
+  }
+
+  return ""
+}
+
+/**
+ * Extract certifications from text
+ */
+export function extractCertifications(text: string): string[] {
+  const certifications: string[] = []
+  const lines = text.split("\n")
+
+  let inCertSection = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    const lowerLine = line.toLowerCase()
+
+    // Detect certifications section
+    if (lowerLine.includes("certification") ||
+        lowerLine.includes("licenses") ||
+        lowerLine.includes("credentials")) {
+      inCertSection = true
+      continue
+    }
+
+    // Stop at next section
+    if (inCertSection &&
+        (lowerLine.includes("experience") ||
+         lowerLine.includes("education") ||
+         lowerLine.includes("skills") ||
+         lowerLine.includes("projects") ||
+         lowerLine.includes("awards"))) {
+      break
+    }
+
+    if (!inCertSection || !line) continue
+
+    // Add non-empty lines as certifications
+    if (line.length > 3 && !line.match(/^[A-Z\s]+$/)) {
+      // Remove bullet symbols
+      const cert = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      if (cert.length > 0) {
+        certifications.push(cert)
+      }
+    }
+  }
+
+  return certifications
+}
+
+/**
  * Extract projects from text
  */
 export function extractProjects(text: string): ProjectEntry[] {
@@ -592,6 +682,7 @@ export function extractProjects(text: string): ProjectEntry[] {
 export function parseResumeEnhanced(text: string): ParsedResume {
   const parsed: ParsedResume = {
     contact: extractContactInfo(text),
+    summary: extractSummary(text),
     experience: extractExperience(text),
     education: extractEducation(text),
     skills: {
@@ -601,7 +692,7 @@ export function parseResumeEnhanced(text: string): ParsedResume {
       databases: [],
     },
     projects: extractProjects(text),
-    certifications: [],
+    certifications: extractCertifications(text),
   }
 
   // Validate structure with Zod (helps catch parser issues)

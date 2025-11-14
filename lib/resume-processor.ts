@@ -262,6 +262,7 @@ export async function* processResume(
       // Convert to expected format
       extractedData = {
         contact: parsedFallback.contact,
+        summary: parsedFallback.summary,
         experience: parsedFallback.experience,
         education: parsedFallback.education,
         skills: parsedFallback.skills,
