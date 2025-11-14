@@ -309,31 +309,31 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
 
   // Generate new section HTMLs
   const awardsHTML = parsedResume.awards && parsedResume.awards.length > 0
-    ? parsedResume.awards.map(generateAwardHTML).join('\n')
+    ? parsedResume.awards.filter(a => a && a.name).map(generateAwardHTML).join('\n')
     : ""
 
   const publicationsHTML = parsedResume.publications && parsedResume.publications.length > 0
-    ? parsedResume.publications.map(generatePublicationHTML).join('\n')
+    ? parsedResume.publications.filter(p => p && p.title).map(generatePublicationHTML).join('\n')
     : ""
 
   const languageProficiencyHTML = parsedResume.languageProficiency && parsedResume.languageProficiency.length > 0
-    ? parsedResume.languageProficiency.map(lang =>
+    ? parsedResume.languageProficiency.filter(lang => lang && lang.language).map(lang =>
         `<div class="bullet">${escapeHtml(lang.language)}${lang.proficiency ? ` - ${escapeHtml(lang.proficiency)}` : ""}${lang.certification ? ` (${escapeHtml(lang.certification)})` : ""}</div>`
       ).join('\n')
     : ""
 
   const volunteerHTML = parsedResume.volunteer && parsedResume.volunteer.length > 0
-    ? parsedResume.volunteer.map(generateVolunteerHTML).join('\n')
+    ? parsedResume.volunteer.filter(v => v && v.organization && v.role).map(generateVolunteerHTML).filter(html => html.length > 0).join('\n')
     : ""
 
   const hobbiesHTML = parsedResume.hobbies && parsedResume.hobbies.length > 0
-    ? parsedResume.hobbies.map(hobby =>
+    ? parsedResume.hobbies.filter(h => h && h.name).map(hobby =>
         `<div class="bullet">${escapeHtml(hobby.name)}${hobby.description ? ` - ${escapeHtml(hobby.description)}` : ""}</div>`
       ).join('\n')
     : ""
 
   const referencesHTML = parsedResume.references && parsedResume.references.length > 0
-    ? parsedResume.references.map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
+    ? parsedResume.references.filter(ref => ref && typeof ref === 'string').map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
     : ""
 
   const customSectionsHTML = parsedResume.customSections && parsedResume.customSections.length > 0
@@ -341,22 +341,22 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
     : ""
 
   const data = {
-    NAME: parsedResume.contact.name || "Your Name",
+    NAME: parsedResume.contact?.name || "Your Name",
     CONTACT_LINE: contactLine,
-    EMAIL: parsedResume.contact.email || "",
-    PHONE: parsedResume.contact.phone || "",
-    LINKEDIN: parsedResume.contact.linkedin || "",
-    GITHUB: parsedResume.contact.github || "",
-    LOCATION: parsedResume.contact.location || "",
+    EMAIL: parsedResume.contact?.email || "",
+    PHONE: parsedResume.contact?.phone || "",
+    LINKEDIN: parsedResume.contact?.linkedin || "",
+    GITHUB: parsedResume.contact?.github || "",
+    LOCATION: parsedResume.contact?.location || "",
     SUMMARY: summary || "",
     EXPERIENCE_ITEMS: experienceHTML || "",
     EDUCATION_ITEMS: educationHTML || "",
     PROJECT_ITEMS: projectHTML || "",
     HAS_SKILLS: hasSkills,
-    LANGUAGES: parsedResume.skills.languages.join(", "),
-    FRAMEWORKS: parsedResume.skills.frameworks.join(", "),
-    TOOLS: parsedResume.skills.tools.join(", "),
-    DATABASES: parsedResume.skills.databases.join(", "),
+    LANGUAGES: (skills.languages || []).join(", "),
+    FRAMEWORKS: (skills.frameworks || []).join(", "),
+    TOOLS: (skills.tools || []).join(", "),
+    DATABASES: (skills.databases || []).join(", "),
     CERTIFICATIONS: certificationsHTML,
     // New comprehensive sections
     AWARDS: awardsHTML,
