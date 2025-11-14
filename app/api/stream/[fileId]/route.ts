@@ -13,7 +13,7 @@ export async function GET(
   const { fileId } = await params
 
   // Get file metadata
-  const metadata = getFileMetadata(fileId)
+  const metadata = await getFileMetadata(fileId)
   if (!metadata) {
     return new Response(
       JSON.stringify({ error: "File not found" }),

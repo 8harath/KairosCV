@@ -13,22 +13,64 @@ export class TemplateRenderer {
   }
 
   /**
-   * Render template with data
+   * Render template with data (handles nested conditionals)
    */
   render(data: Record<string, any>): string {
     let result = this.template
 
-    // Replace all variables {{VAR}}
+    // Process conditionals using a stack-based approach to handle nesting
+    result = this.processConditionals(result, data)
+
+    // Replace all variables {{VAR}} (after conditionals are processed)
     result = result.replace(/\{\{([^#/}]+)\}\}/g, (match, key) => {
       const trimmedKey = key.trim()
-      return data[trimmedKey] !== undefined ? String(data[trimmedKey]) : ""
+      const value = data[trimmedKey]
+
+      // Check if value is truthy (not undefined, null, empty string, or false)
+      if (value !== undefined && value !== null && value !== "") {
+        return String(value)
+      }
+      return ""
     })
 
-    // Handle {{#if CONDITION}}...{{/if}} blocks
-    result = result.replace(/\{\{#if ([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, condition, content) => {
-      const trimmedCondition = condition.trim()
-      return data[trimmedCondition] ? content : ""
-    })
+    return result
+  }
+
+  /**
+   * Process conditional blocks recursively (innermost first)
+   */
+  private processConditionals(template: string, data: Record<string, any>): string {
+    let result = template
+    let changed = true
+    let iterations = 0
+    const maxIterations = 20 // Prevent infinite loops
+
+    while (changed && iterations < maxIterations) {
+      changed = false
+      iterations++
+
+      // Find innermost {{#if}}...{{/if}} blocks (those without nested {{#if}})
+      const regex = /\{\{#if\s+([^}]+)\}\}((?:(?!\{\{#if)[^])*?)\{\{\/if\}\}/g
+
+      result = result.replace(regex, (match, condition, content) => {
+        changed = true
+        const trimmedCondition = condition.trim()
+        const value = data[trimmedCondition]
+
+        // Check if condition is truthy
+        // For strings, check if not empty
+        // For booleans, check if true
+        // For numbers, check if not 0
+        // For arrays/objects, check if exists
+        const shouldRender = value !== undefined &&
+                            value !== null &&
+                            value !== false &&
+                            value !== "" &&
+                            value !== 0
+
+        return shouldRender ? content : ""
+      })
+    }
 
     return result
   }
@@ -140,23 +182,39 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
     parsedResume.skills.tools.length > 0 ||
     parsedResume.skills.databases.length > 0
 
+  // Build contact line (avoid nested conditionals in template)
+  const contactParts: string[] = []
+  if (parsedResume.contact.phone) contactParts.push(parsedResume.contact.phone)
+  if (parsedResume.contact.email) contactParts.push(`<a href="mailto:${parsedResume.contact.email}">${parsedResume.contact.email}</a>`)
+  if (parsedResume.contact.linkedin) contactParts.push(`<a href="https://${parsedResume.contact.linkedin}">LinkedIn</a>`)
+  if (parsedResume.contact.github) contactParts.push(`<a href="https://${parsedResume.contact.github}">GitHub</a>`)
+  if (parsedResume.contact.location) contactParts.push(parsedResume.contact.location)
+
+  const contactLine = contactParts.join(' <span class="separator">|</span> ')
+
+  // Format certifications as bullet points
+  const certificationsHTML = parsedResume.certifications.length > 0
+    ? parsedResume.certifications.map(cert => `<div class="bullet">${escapeHtml(cert)}</div>`).join('\n')
+    : ""
+
   const data = {
     NAME: parsedResume.contact.name || "Your Name",
-    EMAIL: parsedResume.contact.email,
-    PHONE: parsedResume.contact.phone,
-    LINKEDIN: parsedResume.contact.linkedin,
-    GITHUB: parsedResume.contact.github,
-    LOCATION: parsedResume.contact.location,
+    CONTACT_LINE: contactLine,
+    EMAIL: parsedResume.contact.email || "",
+    PHONE: parsedResume.contact.phone || "",
+    LINKEDIN: parsedResume.contact.linkedin || "",
+    GITHUB: parsedResume.contact.github || "",
+    LOCATION: parsedResume.contact.location || "",
     SUMMARY: summary || "",
-    EXPERIENCE_ITEMS: experienceHTML,
-    EDUCATION_ITEMS: educationHTML,
-    PROJECT_ITEMS: projectHTML,
+    EXPERIENCE_ITEMS: experienceHTML || "",
+    EDUCATION_ITEMS: educationHTML || "",
+    PROJECT_ITEMS: projectHTML || "",
     HAS_SKILLS: hasSkills,
     LANGUAGES: parsedResume.skills.languages.join(", "),
     FRAMEWORKS: parsedResume.skills.frameworks.join(", "),
     TOOLS: parsedResume.skills.tools.join(", "),
     DATABASES: parsedResume.skills.databases.join(", "),
-    CERTIFICATIONS: parsedResume.certifications.join("\n"),
+    CERTIFICATIONS: certificationsHTML,
   }
 
   return renderer.render(data)

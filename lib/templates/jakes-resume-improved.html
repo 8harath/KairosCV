@@ -51,8 +51,8 @@
 
     /* Section Headers - Small caps with underline */
     .section {
-      margin-top: 8pt;
-      margin-bottom: 4pt;
+      margin-top: 10pt;
+      margin-bottom: 6pt;
     }
 
     .section-title {
@@ -62,7 +62,7 @@
       letter-spacing: 0.8pt;
       border-bottom: 1pt solid #000;
       padding-bottom: 1pt;
-      margin-bottom: 6pt;
+      margin-bottom: 8pt;
     }
 
     /* Experience/Education/Projects */
@@ -173,12 +173,17 @@
   <div class="header">
     <h1>{{NAME}}</h1>
     <div class="contact-info">
-      {{#if PHONE}}<span>{{PHONE}}</span>{{#if EMAIL}}<span class="separator">$</span>{{/if}}{{/if}}
-      {{#if EMAIL}}<a href="mailto:{{EMAIL}}">{{EMAIL}}</a>{{/if}}
-      {{#if LINKEDIN}}{{#if EMAIL}}<span class="separator">$</span>{{/if}}<a href="https://{{LINKEDIN}}">LinkedIn</a>{{/if}}
-      {{#if GITHUB}}{{#if LINKEDIN}}<span class="separator">$</span>{{/if}}<a href="https://{{GITHUB}}">GitHub</a>{{/if}}
+      {{CONTACT_LINE}}
     </div>
   </div>
+
+  <!-- Summary (if provided) -->
+  {{#if SUMMARY}}
+  <div class="section">
+    <div class="section-title">Professional Summary</div>
+    <div class="summary">{{SUMMARY}}</div>
+  </div>
+  {{/if}}
 
   <!-- Education (comes first in Jake's template) -->
   {{#if EDUCATION_ITEMS}}
@@ -216,19 +221,29 @@
       {{/if}}
       {{#if FRAMEWORKS}}
       <div class="skill-line">
-        <span class="skill-category">Frameworks:</span> <span class="skill-items">{{FRAMEWORKS}}</span>
+        <span class="skill-category">Frameworks & Libraries:</span> <span class="skill-items">{{FRAMEWORKS}}</span>
       </div>
       {{/if}}
       {{#if TOOLS}}
       <div class="skill-line">
-        <span class="skill-category">Developer Tools:</span> <span class="skill-items">{{TOOLS}}</span>
+        <span class="skill-category">Tools & Technologies:</span> <span class="skill-items">{{TOOLS}}</span>
       </div>
       {{/if}}
       {{#if DATABASES}}
       <div class="skill-line">
-        <span class="skill-category">Libraries:</span> <span class="skill-items">{{DATABASES}}</span>
+        <span class="skill-category">Databases:</span> <span class="skill-items">{{DATABASES}}</span>
       </div>
       {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Certifications -->
+  {{#if CERTIFICATIONS}}
+  <div class="section">
+    <div class="section-title">Certifications</div>
+    <div class="bullets">
+      {{CERTIFICATIONS}}
     </div>
   </div>
   {{/if}}

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     await saveUploadedFile(fileId, file)
 
     // Save file metadata
-    saveFileMetadata({
+    await saveFileMetadata({
       fileId,
       filename: file.name,
       size: file.size,

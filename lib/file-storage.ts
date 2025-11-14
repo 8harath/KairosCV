@@ -69,13 +69,33 @@ export interface FileMetadata {
   uploadedAt: Date
 }
 
-const metadataStore = new Map<string, FileMetadata>()
-
-export function saveFileMetadata(metadata: FileMetadata) {
-  metadataStore.set(metadata.fileId, metadata)
+// Get metadata file path
+function getMetadataFilePath(fileId: string): string {
+  return path.join(UPLOADS_DIR, `${fileId}.meta.json`)
 }
 
-export function getFileMetadata(fileId: string): FileMetadata | undefined {
-  return metadataStore.get(fileId)
+// Save file metadata to disk
+export async function saveFileMetadata(metadata: FileMetadata): Promise<void> {
+  await ensureUploadDirectories()
+  const metadataPath = getMetadataFilePath(metadata.fileId)
+  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
+}
+
+// Get file metadata from disk
+export async function getFileMetadata(fileId: string): Promise<FileMetadata | null> {
+  try {
+    const metadataPath = getMetadataFilePath(fileId)
+    if (!(await fileExists(metadataPath))) {
+      return null
+    }
+    const data = await fs.readFile(metadataPath, 'utf-8')
+    const metadata = JSON.parse(data)
+    // Convert uploadedAt back to Date object
+    metadata.uploadedAt = new Date(metadata.uploadedAt)
+    return metadata
+  } catch (error) {
+    console.error('Error reading metadata:', error)
+    return null
+  }
 }
 

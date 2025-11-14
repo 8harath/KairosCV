@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     const isPreview = url.searchParams.get('preview') === 'true'
 
     // Get file metadata
-    const metadata = getFileMetadata(fileId)
+    const metadata = await getFileMetadata(fileId)
     if (!metadata) {
       return NextResponse.json({ error: "File not found" }, { status: 404 })
     }
