@@ -15,7 +15,9 @@
       "WebSearch",
       "Bash(pnpm add:*)",
       "Bash(pnpm test:run:*)",
-      "Bash(pnpm vitest run:*)"
+      "Bash(pnpm vitest run:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

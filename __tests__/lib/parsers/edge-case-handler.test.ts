@@ -119,13 +119,13 @@ describe("Edge Case Handler", () => {
     })
 
     it("should remove smart quotes", () => {
-      expect(cleanBulletPoint(""Smart quotes"")).toBe("\"Smart quotes\"")
-      expect(cleanBulletPoint("'Single quotes'")).toBe("'Single quotes'")
+      expect(cleanBulletPoint("\u201CSmart quotes\u201D")).toBe("\"Smart quotes\"")
+      expect(cleanBulletPoint("\u2018Single quotes\u2019")).toBe("'Single quotes'")
     })
 
     it("should remove em-dashes and en-dashes", () => {
-      expect(cleanBulletPoint("Full-stack — React")).toBe("Full-stack - React")
-      expect(cleanBulletPoint("Web – Mobile")).toBe("Web - Mobile")
+      expect(cleanBulletPoint("Full-stack \u2014 React")).toBe("Full-stack - React")
+      expect(cleanBulletPoint("Web \u2013 Mobile")).toBe("Web - Mobile")
     })
 
     it("should collapse extra whitespace", () => {
