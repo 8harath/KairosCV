@@ -54,6 +54,14 @@ export interface ParsedResume {
   }
   projects: ProjectEntry[]
   certifications: string[]
+  // New comprehensive sections
+  awards?: Array<{name: string; issuer?: string; date?: string; description?: string}>
+  publications?: Array<{title: string; authors?: string[]; venue?: string; date?: string; url?: string}>
+  languageProficiency?: Array<{language: string; proficiency?: string; certification?: string}>
+  volunteer?: Array<{organization: string; role: string; location?: string; startDate?: string; endDate?: string; bullets: string[]}>
+  hobbies?: Array<{name: string; description?: string}>
+  references?: string[]
+  customSections?: Array<{heading: string; content: string[]}>
 }
 
 /**

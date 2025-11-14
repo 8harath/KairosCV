@@ -327,6 +327,7 @@ export async function* processResume(
         github: enhancedData.contact?.github || "",
         location: enhancedData.contact?.location || "",
       },
+      summary: enhancedData.summary,
       experience: enhancedData.experience || [],
       education: enhancedData.education || [],
       skills: enhancedData.skills || {
@@ -337,6 +338,14 @@ export async function* processResume(
       },
       projects: enhancedData.projects || [],
       certifications: enhancedData.certifications || [],
+      // New comprehensive sections
+      awards: enhancedData.awards,
+      publications: enhancedData.publications,
+      languageProficiency: enhancedData.languageProficiency,
+      volunteer: enhancedData.volunteer,
+      hobbies: enhancedData.hobbies,
+      references: enhancedData.references,
+      customSections: enhancedData.customSections,
     }
 
     yield { stage: "generating", progress: 80, message: "Generating optimized PDF..." }

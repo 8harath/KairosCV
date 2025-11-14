@@ -100,6 +100,58 @@ ${bullets}
 }
 
 /**
+ * Generate award entry HTML
+ */
+function generateAwardHTML(award: {name: string; issuer?: string; date?: string; description?: string}): string {
+  return `  <div class="bullet">${escapeHtml(award.name)}${award.issuer ? ` - ${escapeHtml(award.issuer)}` : ""}${award.date ? ` (${escapeHtml(award.date)})` : ""}${award.description ? ` - ${escapeHtml(award.description)}` : ""}</div>`
+}
+
+/**
+ * Generate publication entry HTML
+ */
+function generatePublicationHTML(pub: {title: string; authors?: string[]; venue?: string; date?: string; url?: string}): string {
+  const authors = pub.authors && pub.authors.length > 0 ? pub.authors.join(", ") : ""
+  return `  <div class="bullet">${escapeHtml(pub.title)}${authors ? ` - ${escapeHtml(authors)}` : ""}${pub.venue ? ` - ${escapeHtml(pub.venue)}` : ""}${pub.date ? ` (${escapeHtml(pub.date)})` : ""}</div>`
+}
+
+/**
+ * Generate volunteer entry HTML (similar to experience)
+ */
+function generateVolunteerHTML(vol: {organization: string; role: string; location?: string; startDate?: string; endDate?: string; bullets: string[]}): string {
+  const bullets = vol.bullets
+    .map((bullet) => `    <div class="bullet">${escapeHtml(bullet)}</div>`)
+    .join("\n")
+
+  return `  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">${escapeHtml(vol.role)}</span>
+      ${vol.startDate && vol.endDate ? `<span class="entry-date">${escapeHtml(vol.startDate)} – ${escapeHtml(vol.endDate)}</span>` : ""}
+    </div>
+    <div class="entry-subtitle">
+      <span class="entry-company">${escapeHtml(vol.organization)}</span>
+      ${vol.location ? `<span class="entry-location">${escapeHtml(vol.location)}</span>` : ""}
+    </div>
+    <div class="bullets">
+${bullets}
+    </div>
+  </div>`
+}
+
+/**
+ * Generate custom section HTML
+ */
+function generateCustomSectionHTML(section: {heading: string; content: string[]}): string {
+  const content = section.content
+    .map((line) => `  <div class="bullet">${escapeHtml(line)}</div>`)
+    .join("\n")
+
+  return `<div class="section">
+  <div class="section-title">${escapeHtml(section.heading)}</div>
+${content}
+</div>`
+}
+
+/**
  * Generate education entry HTML
  */
 function generateEducationHTML(entry: EducationEntry): string {
@@ -209,6 +261,39 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
     ? parsedResume.certifications.map(cert => `<div class="bullet">${escapeHtml(cert)}</div>`).join('\n')
     : ""
 
+  // Generate new section HTMLs
+  const awardsHTML = parsedResume.awards && parsedResume.awards.length > 0
+    ? parsedResume.awards.map(generateAwardHTML).join('\n')
+    : ""
+
+  const publicationsHTML = parsedResume.publications && parsedResume.publications.length > 0
+    ? parsedResume.publications.map(generatePublicationHTML).join('\n')
+    : ""
+
+  const languageProficiencyHTML = parsedResume.languageProficiency && parsedResume.languageProficiency.length > 0
+    ? parsedResume.languageProficiency.map(lang =>
+        `<div class="bullet">${escapeHtml(lang.language)}${lang.proficiency ? ` - ${escapeHtml(lang.proficiency)}` : ""}${lang.certification ? ` (${escapeHtml(lang.certification)})` : ""}</div>`
+      ).join('\n')
+    : ""
+
+  const volunteerHTML = parsedResume.volunteer && parsedResume.volunteer.length > 0
+    ? parsedResume.volunteer.map(generateVolunteerHTML).join('\n')
+    : ""
+
+  const hobbiesHTML = parsedResume.hobbies && parsedResume.hobbies.length > 0
+    ? parsedResume.hobbies.map(hobby =>
+        `<div class="bullet">${escapeHtml(hobby.name)}${hobby.description ? ` - ${escapeHtml(hobby.description)}` : ""}</div>`
+      ).join('\n')
+    : ""
+
+  const referencesHTML = parsedResume.references && parsedResume.references.length > 0
+    ? parsedResume.references.map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
+    : ""
+
+  const customSectionsHTML = parsedResume.customSections && parsedResume.customSections.length > 0
+    ? parsedResume.customSections.map(generateCustomSectionHTML).join('\n')
+    : ""
+
   const data = {
     NAME: parsedResume.contact.name || "Your Name",
     CONTACT_LINE: contactLine,
@@ -227,6 +312,14 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string):
     TOOLS: parsedResume.skills.tools.join(", "),
     DATABASES: parsedResume.skills.databases.join(", "),
     CERTIFICATIONS: certificationsHTML,
+    // New comprehensive sections
+    AWARDS: awardsHTML,
+    PUBLICATIONS: publicationsHTML,
+    LANGUAGE_PROFICIENCY: languageProficiencyHTML,
+    VOLUNTEER: volunteerHTML,
+    HOBBIES: hobbiesHTML,
+    REFERENCES: referencesHTML,
+    CUSTOM_SECTIONS: customSectionsHTML,
   }
 
   return renderer.render(data)
