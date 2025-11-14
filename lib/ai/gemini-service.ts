@@ -262,36 +262,68 @@ export async function extractCompleteResumeData(resumeText: string): Promise<any
     return null
   }
 
-  const prompt = `You are an expert resume parser. Extract ALL information from this resume into structured JSON.
+  const prompt = `You are an expert resume parser. Extract EVERY piece of information from this resume into structured JSON.
 
-CRITICAL INSTRUCTIONS:
-1. Extract the person's full name (usually at the top)
-2. Extract ALL contact information (email, phone, LinkedIn, GitHub, location)
-3. Extract ALL work experience entries with:
-   - Job title
-   - Company name
-   - Start date and end date (format as "Month Year" or "Present")
-   - Location (city, state/country)
-   - Bullet points describing responsibilities and achievements
-4. Extract ALL education entries with:
-   - Institution name
-   - Degree and field of study
-   - Start date and end date
-   - GPA (if mentioned)
-   - Location
-5. Extract ALL technical skills and categorize them into:
-   - Programming Languages (Python, JavaScript, Java, etc.)
-   - Frameworks/Libraries (React, Django, Node.js, etc.)
-   - Tools/Platforms (Docker, AWS, Git, etc.)
-   - Databases (PostgreSQL, MongoDB, etc.)
-6. Extract ALL projects with:
-   - Project name
-   - Description
-   - Technologies used
-   - Bullet points describing what was built
-7. Extract certifications (if any)
+🚨 ZERO DATA LOSS RULE: Do NOT skip ANY content. If you see a section you don't recognize, add it to "customSections".
 
-OUTPUT FORMAT (JSON only, no markdown):
+EXTRACTION REQUIREMENTS:
+
+1. CONTACT INFORMATION (always required):
+   - Full name (usually at the top)
+   - Email, phone, LinkedIn, GitHub, website, location
+
+2. WORK EXPERIENCE (extract if present):
+   - Job title, company name, location
+   - Start/end dates (format: "Month Year" or "Present")
+   - ALL bullet points describing responsibilities/achievements
+
+3. EDUCATION (extract if present):
+   - Institution, degree, field of study
+   - Start/end dates, GPA, location
+   - Honors (Dean's List, Cum Laude, etc.)
+   - Relevant coursework (if listed)
+
+4. TECHNICAL SKILLS (categorize properly):
+   - languages: Programming languages (Python, JavaScript, Java, C++, etc.)
+   - frameworks: Libraries/Frameworks (React, Django, TensorFlow, etc.)
+   - tools: Tools/Platforms (Docker, AWS, Git, Kubernetes, etc.)
+   - databases: Databases (PostgreSQL, MongoDB, Redis, etc.)
+
+5. PROJECTS (extract if present):
+   - Name, description, technologies used
+   - Bullet points, GitHub links, live demo links
+
+6. CERTIFICATIONS (extract if present):
+   - Name, issuer, date, expiration, credential ID/URL
+
+7. AWARDS & HONORS (extract if present):
+   - Award name, issuing organization, date, description
+   - Examples: "Dean's List", "Employee of the Month", "Hackathon Winner"
+
+8. PUBLICATIONS (extract if present):
+   - Title, authors, venue (conference/journal), date, URL
+   - Examples: Research papers, blog posts, articles
+
+9. LANGUAGES (spoken languages, NOT programming):
+   - Language name, proficiency level (Native, Fluent, Professional, Basic)
+   - Certifications (TOEFL, IELTS, etc.)
+
+10. VOLUNTEER WORK (extract if present):
+    - Organization, role, location, dates
+    - Bullet points describing contributions
+
+11. HOBBIES/INTERESTS (extract if present):
+    - List of hobbies, interests, extracurricular activities
+
+12. REFERENCES (extract if present):
+    - Usually just "References available upon request"
+    - Or specific referee names/contacts
+
+13. CUSTOM SECTIONS (catch-all for unrecognized content):
+    - If you see ANY section not listed above (e.g., "Leadership", "Research", "Patents", "Speaking Engagements"),
+      add it to customSections with the exact heading and all content
+
+OUTPUT FORMAT (JSON only):
 {
   "contact": {
     "name": "Full Name",
@@ -299,19 +331,18 @@ OUTPUT FORMAT (JSON only, no markdown):
     "phone": "+1234567890",
     "linkedin": "linkedin.com/in/username",
     "github": "github.com/username",
+    "website": "https://example.com",
     "location": "City, State"
   },
+  "summary": "Professional summary or objective (if present)",
   "experience": [
     {
-      "title": "Job Title",
+      "title": "Software Engineer",
       "company": "Company Name",
+      "location": "City, State",
       "startDate": "Jan 2020",
       "endDate": "Dec 2022",
-      "location": "City, State",
-      "bullets": [
-        "Achievement or responsibility 1",
-        "Achievement or responsibility 2"
-      ]
+      "bullets": ["Achievement 1", "Achievement 2"]
     }
   ],
   "education": [
@@ -319,10 +350,12 @@ OUTPUT FORMAT (JSON only, no markdown):
       "institution": "University Name",
       "degree": "Bachelor of Science",
       "field": "Computer Science",
+      "location": "City, State",
       "startDate": "Aug 2016",
       "endDate": "May 2020",
       "gpa": "3.8",
-      "location": "City, State"
+      "honors": ["Dean's List"],
+      "relevantCoursework": ["Data Structures", "Algorithms"]
     }
   ],
   "skills": {
@@ -336,19 +369,73 @@ OUTPUT FORMAT (JSON only, no markdown):
       "name": "Project Name",
       "description": "Brief description",
       "technologies": ["React", "Node.js"],
-      "bullets": [
-        "What was built",
-        "Key features"
-      ]
+      "bullets": ["Built X", "Implemented Y"],
+      "github": "https://github.com/user/repo"
     }
   ],
-  "certifications": ["Certification 1", "Certification 2"]
+  "certifications": [
+    {
+      "name": "AWS Certified Developer",
+      "issuer": "Amazon",
+      "date": "Jan 2023",
+      "credentialId": "ABC123"
+    }
+  ],
+  "awards": [
+    {
+      "name": "Dean's List",
+      "issuer": "University Name",
+      "date": "Spring 2019",
+      "description": "Awarded for academic excellence"
+    }
+  ],
+  "publications": [
+    {
+      "title": "Paper Title",
+      "authors": ["Author 1", "Author 2"],
+      "venue": "Conference Name",
+      "date": "Jun 2022",
+      "url": "https://example.com/paper"
+    }
+  ],
+  "languageProficiency": [
+    {
+      "language": "Spanish",
+      "proficiency": "Fluent",
+      "certification": "DELE C1"
+    }
+  ],
+  "volunteer": [
+    {
+      "organization": "Nonprofit Name",
+      "role": "Volunteer Role",
+      "location": "City, State",
+      "startDate": "Jan 2021",
+      "endDate": "Dec 2021",
+      "bullets": ["Helped with X", "Organized Y"]
+    }
+  ],
+  "hobbies": [
+    {
+      "name": "Photography"
+    },
+    {
+      "name": "Hiking"
+    }
+  ],
+  "references": ["Available upon request"],
+  "customSections": [
+    {
+      "heading": "Leadership Experience",
+      "content": ["Led team of 5", "Organized events"]
+    }
+  ]
 }
 
 RESUME TEXT:
 ${resumeText}
 
-Return ONLY valid JSON, no markdown code blocks, no explanations.`
+CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. Extract EVERYTHING you see.`
 
   try {
     const result = await retryWithBackoff(async () => {
