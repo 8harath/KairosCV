@@ -6,6 +6,7 @@ import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured
 import { generateResumePDF } from "./pdf/pdf-generator"
 import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
+import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-handler"
 import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
 import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
 
