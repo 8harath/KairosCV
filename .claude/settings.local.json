@@ -11,7 +11,9 @@
       "Bash(npx tsx test-template-render.ts)",
       "Bash(lsof:*)",
       "Bash(pkill:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "WebSearch",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []
