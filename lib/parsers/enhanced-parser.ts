@@ -128,6 +128,7 @@ export function extractExperience(text: string): ExperienceEntry[] {
   let inExperienceSection = false
   let currentEntry: Partial<ExperienceEntry> | null = null
   let bullets: string[] = []
+  let expectingJobTitle = false
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
@@ -149,13 +150,14 @@ export function extractExperience(text: string): ExperienceEntry[] {
       (lowerLine.includes("education") ||
         lowerLine.includes("skills") ||
         lowerLine.includes("projects") ||
-        lowerLine.includes("certifications"))
+        lowerLine.includes("certifications") ||
+        lowerLine.includes("activities"))
     ) {
       // Save last entry
       if (currentEntry && currentEntry.company) {
         experiences.push({
           company: currentEntry.company,
-          title: currentEntry.title || "",
+          title: currentEntry.title || "Position",
           location: currentEntry.location || "",
           startDate: currentEntry.startDate || "",
           endDate: currentEntry.endDate || "",
@@ -167,18 +169,22 @@ export function extractExperience(text: string): ExperienceEntry[] {
 
     if (!inExperienceSection || !line) continue
 
-    // Detect job title and company (various formats)
-    // Format 1: "Software Engineer | Google"
-    // Format 2: "Software Engineer, Google"
-    // Format 3: "Company Name" on one line, "Job Title" on next
-    const jobCompanyMatch = line.match(/^(.+?)\s*[|,–-]\s*(.+?)(\s*[|,–-]\s*.+)?$/)
+    // Format detection:
+    // 1. "CompanyName    Location" or "CompanyName, Location"
+    // 2. Next line: dates
+    // 3. Next line: job title (optional)
+    // 4. Then bullets
 
-    if (jobCompanyMatch && !line.match(/^[•\-*]/)) {
+    // Check if it's a company/location line (not a bullet, not a date)
+    const companyLocationMatch = line.match(/^([A-Za-z0-9\s&.'-]+)\s{2,}([A-Za-z\s,]+)$/) ||
+                                 line.match(/^([A-Za-z0-9\s&.'-]+?),?\s+([A-Z][A-Za-z]+,?\s*[A-Z]{2,3}|[A-Z][A-Za-z]+)$/i)
+
+    if (companyLocationMatch && !line.match(/^[•●\-*]/) && i > 0) {
       // Save previous entry
       if (currentEntry && currentEntry.company) {
         experiences.push({
           company: currentEntry.company,
-          title: currentEntry.title || "",
+          title: currentEntry.title || "Position",
           location: currentEntry.location || "",
           startDate: currentEntry.startDate || "",
           endDate: currentEntry.endDate || "",
@@ -188,55 +194,49 @@ export function extractExperience(text: string): ExperienceEntry[] {
 
       // Start new entry
       currentEntry = {
-        title: jobCompanyMatch[1].trim(),
-        company: jobCompanyMatch[2].trim(),
-        location: "",
+        company: companyLocationMatch[1].trim(),
+        location: companyLocationMatch[2].trim(),
+        title: "",
         startDate: "",
         endDate: "",
       }
       bullets = []
-
-      // Check next line for dates
-      const nextLine = lines[i + 1]?.trim() || ""
-      const dateMatch = nextLine.match(
-        /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December|\d{1,2}\/\d{4}|\d{4})/i
-      )
-      if (dateMatch) {
-        const dates = extractDates(nextLine)
-        currentEntry.startDate = dates.start
-        currentEntry.endDate = dates.end
-        i++ // Skip next line
-      }
+      expectingJobTitle = false
     }
-    // Detect dates on separate line
-    else if (line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{1,2}\/\d{4})/i)) {
-      if (currentEntry) {
-        const dates = extractDates(line)
-        currentEntry.startDate = dates.start
-        currentEntry.endDate = dates.end
-      }
+    // Detect dates
+    else if (currentEntry && line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4}|Present|Current)/i)) {
+      const dates = extractDates(line)
+      currentEntry.startDate = dates.start
+      currentEntry.endDate = dates.end
+      expectingJobTitle = true // Job title might come after dates
     }
-    // Detect bullet points - more flexible matching
-    else if (line.match(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]/)) {
-      const bullet = line.replace(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
-      if (bullet && bullet.length > 3) bullets.push(bullet)
+    // If we have a company but no title yet, and this isn't a bullet or date, it might be the title
+    else if (
+      expectingJobTitle &&
+      currentEntry &&
+      !currentEntry.title &&
+      !line.match(/^[•●\-*]/) &&
+      line.length < 80 &&
+      !line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+    ) {
+      currentEntry.title = line
+      expectingJobTitle = false
+    }
+    // Detect bullet points with ● (or other bullet chars)
+    else if (line.match(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]/)) {
+      const bullet = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      if (bullet && bullet.length > 3) {
+        bullets.push(bullet)
+        expectingJobTitle = false
+      }
     }
     // Lines starting with action verbs (common in resumes)
     else if (
       currentEntry &&
-      line.match(/^(Developed|Built|Created|Implemented|Designed|Led|Managed|Improved|Increased|Decreased|Reduced|Achieved|Delivered|Launched|Established|Coordinated|Analyzed|Optimized|Automated|Integrated|Collaborated|Spearheaded|Executed|Enhanced|Architected|Engineered|Configured|Maintained|Deployed|Tested|Debugged|Troubleshot|Resolved|Streamlined|Facilitated|Conducted|Presented|Trained|Mentored|Directed|Oversaw|Supervised|Pioneered|Initiated|Organized|Planned|Strategized|Evaluated|Assessed|Monitored|Tracked|Documented|Researched|Investigated|Identified|Proposed|Recommended|Advised|Consulted|Supported|Assisted|Provided|Ensured|Verified|Validated|Certified|Approved|Authorized|Negotiated|Contracted|Procured|Purchased|Acquired|Generated|Produced|Published|Wrote|Edited|Reviewed|Translated|Interpreted)/i)
+      line.match(/^(Developed|Built|Created|Implemented|Designed|Led|Managed|Improved|Increased|Decreased|Reduced|Achieved|Delivered|Launched|Established|Coordinated|Analyzed|Optimized|Automated|Integrated|Collaborated|Spearheaded|Executed|Enhanced|Architected|Engineered|Configured|Maintained|Deployed|Tested|Debugged|Troubleshot|Resolved|Streamlined|Facilitated|Conducted|Presented|Trained|Mentored|Directed|Oversaw|Supervised|Pioneered|Initiated|Organized|Planned|Strategized|Evaluated|Assessed|Monitored|Tracked|Documented|Researched|Investigated|Identified|Proposed|Recommended|Advised|Consulted|Supported|Assisted|Provided|Ensured|Verified|Validated|Certified|Approved|Authorized|Negotiated|Contracted|Procured|Purchased|Acquired|Generated|Produced|Published|Wrote|Edited|Reviewed|Translated|Interpreted|Collected|Used|Utilized|Leveraged)/i)
     ) {
       bullets.push(line)
-    }
-    // Regular line that might be a bullet (indented or descriptive text)
-    else if (
-      currentEntry &&
-      line.length > 20 &&
-      !line.match(/^[A-Z][a-z]+\s+\d{4}/) && // Not a date line
-      !line.match(/^[A-Z][a-z]+,\s*[A-Z]/) && // Not a location line
-      line.split(' ').length > 3 // More than 3 words (likely a description)
-    ) {
-      bullets.push(line)
+      expectingJobTitle = false
     }
   }
 
@@ -244,7 +244,7 @@ export function extractExperience(text: string): ExperienceEntry[] {
   if (currentEntry && currentEntry.company) {
     experiences.push({
       company: currentEntry.company,
-      title: currentEntry.title || "",
+      title: currentEntry.title || "Position",
       location: currentEntry.location || "",
       startDate: currentEntry.startDate || "",
       endDate: currentEntry.endDate || "",
@@ -264,6 +264,7 @@ export function extractEducation(text: string): EducationEntry[] {
 
   let inEducationSection = false
   let currentEntry: Partial<EducationEntry> | null = null
+  let linesSinceEntry = 0
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
@@ -281,7 +282,8 @@ export function extractEducation(text: string): EducationEntry[] {
       (lowerLine.includes("experience") ||
         lowerLine.includes("skills") ||
         lowerLine.includes("projects") ||
-        lowerLine.includes("certifications"))
+        lowerLine.includes("certifications") ||
+        lowerLine.includes("activities"))
     ) {
       // Save last entry
       if (currentEntry && currentEntry.institution) {
@@ -292,51 +294,84 @@ export function extractEducation(text: string): EducationEntry[] {
 
     if (!inEducationSection || !line) continue
 
-    // Detect university/institution
-    if (
-      line.match(/university|college|institute|school/i) ||
-      (line.length > 5 && line.length < 100 && !line.match(/^[•\-*]/))
-    ) {
+    // Detect institution (has location or keywords)
+    const institutionMatch = line.match(/^([A-Za-z\s()'-]+?)\s+([A-Z][a-z]+,?\s*[A-Z]{2,3})$/i) ||
+                             (line.match(/university|college|institute|school|deemed/i) && line.length < 100)
+
+    if (institutionMatch) {
       // Save previous entry
-      if (currentEntry && currentEntry.institution) {
+      if (currentEntry && currentEntry.institution && linesSinceEntry > 0) {
         education.push(currentEntry as EducationEntry)
       }
 
-      currentEntry = {
-        institution: line,
-        degree: "",
-        field: "",
-        location: "",
-        startDate: "",
-        endDate: "",
+      if (Array.isArray(institutionMatch)) {
+        currentEntry = {
+          institution: institutionMatch[1].trim(),
+          location: institutionMatch[2].trim(),
+          degree: "",
+          field: "",
+          startDate: "",
+          endDate: "",
+        }
+      } else {
+        currentEntry = {
+          institution: line,
+          degree: "",
+          field: "",
+          location: "",
+          startDate: "",
+          endDate: "",
+        }
       }
+      linesSinceEntry = 0
     }
     // Detect degree
     else if (
       currentEntry &&
-      line.match(/bachelor|master|phd|b\.s\.|m\.s\.|b\.a\.|m\.a\.|associate/i)
+      line.match(/bachelor|master|degree|phd|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma/i)
     ) {
-      const degreeMatch = line.match(/(bachelor|master|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|associate)[\w\s.]*/i)
+      const degreeMatch = line.match(/(bachelor|master|degree|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma)[\w\s.]*/i)
       currentEntry.degree = degreeMatch ? degreeMatch[0].trim() : line
 
+      // Try to extract expected graduation
+      const expectedMatch = line.match(/Expected\s+([A-Za-z]+\s+\d{4})/i)
+      if (expectedMatch) {
+        currentEntry.endDate = expectedMatch[1]
+      }
+
       // Try to extract field
-      const fieldMatch = line.match(/in\s+([A-Z][a-z\s]+)/i)
+      const fieldMatch = line.match(/(?:in|of)\s+([A-Z][a-z][a-zA-Z\s]+?)(?:;|$|Expected)/i)
       if (fieldMatch) {
         currentEntry.field = fieldMatch[1].trim()
       }
+      linesSinceEntry++
+    }
+    // Detect major/minor
+    else if (currentEntry && line.match(/major|minor/i)) {
+      const fieldMatch = line.match(/(?:Major|Minor)\s+in\s+([A-Za-z\s]+)/i)
+      if (fieldMatch && !currentEntry.field) {
+        currentEntry.field = fieldMatch[1].trim()
+      }
+      linesSinceEntry++
     }
     // Detect GPA
-    else if (currentEntry && line.match(/gpa|grade/i)) {
-      const gpaMatch = line.match(/(\d\.\d+)/i)
-      if (gpaMatch) {
+    else if (currentEntry && line.match(/gpa|grade|cumulative/i)) {
+      const gpaMatch = line.match(/(\d+\.?\d*)/i)
+      if (gpaMatch && !currentEntry.gpa) {
         currentEntry.gpa = gpaMatch[1]
       }
+      linesSinceEntry++
     }
     // Detect dates
-    else if (currentEntry && line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4})/i)) {
+    else if (currentEntry && line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4}|Expected)/i)) {
       const dates = extractDates(line)
-      currentEntry.startDate = dates.start
-      currentEntry.endDate = dates.end
+      if (!currentEntry.startDate) {
+        currentEntry.startDate = dates.start
+        currentEntry.endDate = dates.end
+      }
+      linesSinceEntry++
+    } else if (currentEntry) {
+      linesSinceEntry++
     }
   }
 
@@ -439,11 +474,12 @@ export function extractProjects(text: string): ProjectEntry[] {
   let currentProject: Partial<ProjectEntry> | null = null
   let bullets: string[] = []
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
     const lowerLine = line.toLowerCase()
 
     // Detect projects section
-    if (lowerLine.includes("projects") || lowerLine.includes("portfolio")) {
+    if (lowerLine.includes("projects") || lowerLine.includes("portfolio") || lowerLine.includes("activities")) {
       inProjectsSection = true
       continue
     }
@@ -469,10 +505,24 @@ export function extractProjects(text: string): ProjectEntry[] {
       break
     }
 
-    if (!inProjectsSection || !line.trim()) continue
+    if (!inProjectsSection || !line) continue
 
-    // Detect project name (bold or capitalized line)
-    if (!line.match(/^[•\-*]/) && line.length < 100) {
+    // Detect project name (not a bullet, reasonable length, might have date at end)
+    // Format: "Project Name    Date" or just "Project Name"
+    if (!line.match(/^[•●\-*]/) && line.length > 5 && line.length < 150) {
+      // Check if this looks like a project title (not a description/bullet)
+      const hasDate = line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4})$/i)
+      const startsWithAction = line.match(/^(Developed|Built|Created|Implemented|Designed|Fine-tuned|Used|Integrated|Collected)/i)
+
+      // If it starts with an action verb, it's probably a bullet, not a title
+      if (startsWithAction) {
+        if (currentProject) {
+          bullets.push(line)
+        }
+        continue
+      }
+
+      // This is likely a project title
       // Save previous project
       if (currentProject && currentProject.name) {
         projects.push({
@@ -484,31 +534,31 @@ export function extractProjects(text: string): ProjectEntry[] {
         })
       }
 
+      // Extract project name and date if present
+      let projectName = line
+      if (hasDate) {
+        projectName = line.replace(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4})$/i, "").trim()
+      }
+
       currentProject = {
-        name: line.trim(),
+        name: projectName,
         description: "",
         technologies: [],
         bullets: [],
       }
       bullets = []
     }
-    // Detect bullet points - flexible matching (same as experience)
-    else if (line.match(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]/)) {
-      const bullet = line.replace(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
-      if (bullet && bullet.length > 3) bullets.push(bullet)
+    // Detect bullet points
+    else if (line.match(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]/)) {
+      const bullet = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      if (bullet && bullet.length > 3) {
+        bullets.push(bullet)
+      }
     }
-    // Lines starting with action verbs
+    // Lines starting with action verbs (even without bullets)
     else if (
       currentProject &&
-      line.match(/^(Developed|Built|Created|Implemented|Designed|Integrated|Deployed|Launched|Published|Wrote|Enhanced|Optimized|Configured|Added|Removed|Fixed|Updated|Refactored|Tested|Documented|Researched|Analyzed|Utilized|Leveraged)/i)
-    ) {
-      bullets.push(line)
-    }
-    // Regular descriptive lines
-    else if (
-      currentProject &&
-      line.length > 15 &&
-      line.split(' ').length > 2
+      line.match(/^(Developed|Built|Created|Implemented|Designed|Integrated|Deployed|Launched|Published|Wrote|Enhanced|Optimized|Configured|Added|Removed|Fixed|Updated|Refactored|Tested|Documented|Researched|Analyzed|Utilized|Leveraged|Fine-tuned|Used|Collected|Generated)/i)
     ) {
       bullets.push(line)
     }
