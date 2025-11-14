@@ -1,5 +1,3 @@
-import pdfParse from "pdf-parse"
-import mammoth from "mammoth"
 import fs from "fs-extra"
 import path from "path"
 import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
@@ -8,6 +6,8 @@ import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured
 import { generateResumePDF } from "./pdf/pdf-generator"
 import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
+import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
+import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
 
 export interface ResumeData {
   text: string
@@ -26,18 +26,39 @@ export interface ProcessingProgress {
   confidence?: ResumeConfidence // Optional confidence score
 }
 
-// Parse PDF file
-export async function parsePDF(filePath: string): Promise<string> {
-  const buffer = await fs.readFile(filePath)
-  const data = await pdfParse(buffer)
-  return data.text
+// Parse PDF file using enhanced multi-strategy extraction
+export async function parsePDF(filePath: string): Promise<{ text: string; extractionInfo?: string }> {
+  const result = await extractPDFEnhanced(filePath)
+
+  console.log('📄 PDF Extraction Result:', {
+    method: result.method,
+    confidence: result.confidence,
+    metadata: result.metadata
+  })
+
+  const features = []
+  if (result.metadata.hasMultiColumn) features.push('multi-column')
+  if (result.metadata.hasTables) features.push('tables')
+
+  return {
+    text: result.text,
+    extractionInfo: `Method: ${result.method} | Confidence: ${result.confidence}% | Features: ${features.length > 0 ? features.join(', ') : 'standard'}`
+  }
 }
 
-// Parse DOCX file
-export async function parseDOCX(filePath: string): Promise<string> {
-  const buffer = await fs.readFile(filePath)
-  const result = await mammoth.extractRawText({ buffer })
-  return result.value
+// Parse DOCX file using enhanced HTML-based extraction
+export async function parseDOCX(filePath: string): Promise<{ text: string; extractionInfo?: string }> {
+  const result = await extractDOCXEnhanced(filePath)
+
+  console.log('📄 DOCX Extraction Result:', {
+    confidence: result.confidence,
+    structure: result.structure
+  })
+
+  return {
+    text: result.text,
+    extractionInfo: `Confidence: ${result.confidence}% | Bullets: ${result.structure.bulletPoints} | Tables: ${result.structure.tables}`
+  }
 }
 
 // Parse TXT file
@@ -46,15 +67,19 @@ export async function parseTXT(filePath: string): Promise<string> {
 }
 
 // Parse resume based on file extension
-export async function parseResume(filePath: string, fileType: string): Promise<string> {
+export async function parseResume(
+  filePath: string,
+  fileType: string
+): Promise<{ text: string; extractionInfo?: string }> {
   const ext = path.extname(filePath).toLowerCase()
-  
+
   if (ext === ".pdf" || fileType.includes("pdf")) {
     return await parsePDF(filePath)
   } else if (ext === ".docx" || fileType.includes("word")) {
     return await parseDOCX(filePath)
   } else if (ext === ".txt" || fileType.includes("text")) {
-    return await parseTXT(filePath)
+    const text = await parseTXT(filePath)
+    return { text, extractionInfo: "Plain text file" }
   } else {
     throw new Error(`Unsupported file type: ${ext}`)
   }
@@ -206,8 +231,19 @@ export async function* processResume(
       throw new Error("Uploaded file not found")
     }
 
-    const rawText = await parseResume(filePath, fileType)
-    yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
+    const parseResult = await parseResume(filePath, fileType)
+    const rawText = parseResult.text
+
+    // Show extraction details in progress
+    if (parseResult.extractionInfo) {
+      yield {
+        stage: "parsing",
+        progress: 20,
+        message: `Text extraction complete | ${parseResult.extractionInfo}`
+      }
+    } else {
+      yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
+    }
 
     // Stage 2: Use Gemini to extract ALL structured data from the resume
     yield { stage: "enhancing", progress: 30, message: "Analyzing resume with AI..." }

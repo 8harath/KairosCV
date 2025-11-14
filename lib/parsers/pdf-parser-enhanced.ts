@@ -12,7 +12,6 @@
 import fs from 'fs-extra'
 import { getDocumentProxy } from 'unpdf'
 import { createWorker } from 'tesseract.js'
-import { pdfToPng } from 'pdf-to-png-converter'
 import {
   assessTextQuality,
   cleanExtractedText,
@@ -273,6 +272,9 @@ async function extractWithPdfreader(filePath: string, fileSize: number): Promise
  */
 async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFExtractionResult> {
   console.log('  📸 Converting PDF to images for OCR...')
+
+  // Dynamically import pdf-to-png-converter only when OCR is needed
+  const { pdfToPng } = await import('pdf-to-png-converter')
 
   // Convert PDF pages to PNG images
   const pngPages = await pdfToPng(filePath, {

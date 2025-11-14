@@ -105,6 +105,83 @@ export const CertificationSchema = z.object({
 export type Certification = z.infer<typeof CertificationSchema>
 
 // ============================================================================
+// Award/Honor Schema
+// ============================================================================
+
+export const AwardSchema = z.object({
+  name: z.string().min(1, "Award name is required"),
+  issuer: z.string().optional(), // Organization that gave the award
+  date: z.string().optional(), // "May 2023"
+  description: z.string().optional(),
+})
+
+export type Award = z.infer<typeof AwardSchema>
+
+// ============================================================================
+// Publication Schema
+// ============================================================================
+
+export const PublicationSchema = z.object({
+  title: z.string().min(1, "Publication title is required"),
+  authors: z.array(z.string()).optional(), // Co-authors
+  venue: z.string().optional(), // Conference/Journal name
+  date: z.string().optional(),
+  url: z.string().optional(), // Removed .url() validation for flexibility
+  description: z.string().optional(),
+})
+
+export type Publication = z.infer<typeof PublicationSchema>
+
+// ============================================================================
+// Language Proficiency Schema (Spoken Languages)
+// ============================================================================
+
+export const LanguageProficiencySchema = z.object({
+  language: z.string().min(1, "Language name is required"),
+  proficiency: z.string().optional(), // "Native", "Fluent", "Professional", "Limited"
+  certification: z.string().optional(), // e.g., "TOEFL 110/120"
+})
+
+export type LanguageProficiency = z.infer<typeof LanguageProficiencySchema>
+
+// ============================================================================
+// Volunteer Work Schema
+// ============================================================================
+
+export const VolunteerSchema = z.object({
+  organization: z.string().min(1, "Organization is required"),
+  role: z.string().min(1, "Role is required"),
+  location: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  bullets: z.array(z.string()).min(1, "At least one bullet point required"),
+})
+
+export type Volunteer = z.infer<typeof VolunteerSchema>
+
+// ============================================================================
+// Hobby/Interest Schema
+// ============================================================================
+
+export const HobbySchema = z.object({
+  name: z.string().min(1, "Hobby name is required"),
+  description: z.string().optional(),
+})
+
+export type Hobby = z.infer<typeof HobbySchema>
+
+// ============================================================================
+// Custom Section Schema (Catch-all for unrecognized sections)
+// ============================================================================
+
+export const CustomSectionSchema = z.object({
+  heading: z.string().min(1, "Section heading is required"),
+  content: z.array(z.string()).min(1, "Section content is required"),
+})
+
+export type CustomSection = z.infer<typeof CustomSectionSchema>
+
+// ============================================================================
 // Complete Resume Schema
 // ============================================================================
 
@@ -121,10 +198,21 @@ export const ResumeDataSchema = z.object({
     tools: [],
   }),
 
-  // Optional sections
+  // Optional standard sections
   summary: z.string().optional(),
   projects: z.array(ProjectSchema).optional(),
   certifications: z.array(CertificationSchema).optional(),
+
+  // Optional additional sections (comprehensive coverage)
+  awards: z.array(AwardSchema).optional(),
+  publications: z.array(PublicationSchema).optional(),
+  languageProficiency: z.array(LanguageProficiencySchema).optional(), // Spoken languages
+  volunteer: z.array(VolunteerSchema).optional(),
+  hobbies: z.array(HobbySchema).optional(),
+  references: z.array(z.string()).optional(), // Simple string array like "Available upon request"
+
+  // Catch-all for unrecognized sections (ZERO DATA LOSS)
+  customSections: z.array(CustomSectionSchema).optional(),
 
   // Metadata (for tracking)
   rawText: z.string().optional(), // Original parsed text
@@ -151,6 +239,13 @@ export const PartialResumeDataSchema = z.object({
   summary: z.string().optional(),
   projects: z.array(ProjectSchema.partial()).optional(),
   certifications: z.array(CertificationSchema.partial()).optional(),
+  awards: z.array(AwardSchema.partial()).optional(),
+  publications: z.array(PublicationSchema.partial()).optional(),
+  languageProficiency: z.array(LanguageProficiencySchema.partial()).optional(),
+  volunteer: z.array(VolunteerSchema.partial()).optional(),
+  hobbies: z.array(HobbySchema.partial()).optional(),
+  references: z.array(z.string()).optional(),
+  customSections: z.array(CustomSectionSchema.partial()).optional(),
   rawText: z.string().optional(),
   parseSource: z.enum(['pdf', 'docx', 'txt']).optional(),
 })
@@ -271,6 +366,43 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       expirationDate: cert.expirationDate,
       credentialId: cert.credentialId,
       credentialUrl: cert.credentialUrl,
+    })),
+    // New sections
+    awards: partial.awards?.map(award => ({
+      name: award.name || 'Unknown Award',
+      issuer: award.issuer,
+      date: award.date,
+      description: award.description,
+    })),
+    publications: partial.publications?.map(pub => ({
+      title: pub.title || 'Unknown Publication',
+      authors: pub.authors,
+      venue: pub.venue,
+      date: pub.date,
+      url: pub.url,
+      description: pub.description,
+    })),
+    languageProficiency: partial.languageProficiency?.map(lang => ({
+      language: lang.language || 'Unknown Language',
+      proficiency: lang.proficiency,
+      certification: lang.certification,
+    })),
+    volunteer: partial.volunteer?.map(vol => ({
+      organization: vol.organization || 'Unknown Organization',
+      role: vol.role || 'Unknown Role',
+      location: vol.location,
+      startDate: vol.startDate,
+      endDate: vol.endDate,
+      bullets: vol.bullets || [],
+    })),
+    hobbies: partial.hobbies?.map(hobby => ({
+      name: hobby.name || 'Unknown Hobby',
+      description: hobby.description,
+    })),
+    references: partial.references,
+    customSections: partial.customSections?.map(section => ({
+      heading: section.heading || 'Untitled Section',
+      content: section.content || [],
     })),
     rawText: partial.rawText,
     parseSource: partial.parseSource,
