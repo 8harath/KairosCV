@@ -42,20 +42,29 @@ export async function GET(
           return
         }
 
+        // Capture confidence score from progress updates
+        let confidenceScore: ProcessingProgress["confidence"] = undefined
+
         // Process resume and stream progress updates
         for await (const progress of processResume(fileId, metadata.type, metadata.filename)) {
+          // Capture confidence score when available
+          if (progress.confidence) {
+            confidenceScore = progress.confidence
+          }
+
           // Don't send the "complete" stage from processor yet
           if (progress.stage !== "complete") {
             send(progress)
           }
         }
 
-        // Always send final completion message with download URL
+        // Always send final completion message with download URL and confidence
         send({
           stage: "complete",
           progress: 100,
           message: "Resume optimization complete!",
           download_url: `/api/download/${fileId}`,
+          confidence: confidenceScore, // Include confidence score in final message
         })
 
         // Small delay to ensure message is sent before closing

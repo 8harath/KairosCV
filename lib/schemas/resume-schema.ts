@@ -16,9 +16,9 @@ export const ContactSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email format").optional(),
   phone: z.string().optional(),
-  linkedin: z.string().url("Invalid LinkedIn URL").optional(),
-  github: z.string().url("Invalid GitHub URL").optional(),
-  website: z.string().url("Invalid website URL").optional(),
+  linkedin: z.string().optional(), // Can be URL or path like "linkedin.com/in/username"
+  github: z.string().optional(), // Can be URL or path like "github.com/username"
+  website: z.string().optional(), // Can be URL
   location: z.string().optional(),
 })
 
@@ -49,7 +49,8 @@ export const EducationSchema = z.object({
   degree: z.string().min(1, "Degree is required"),
   field: z.string().optional(), // e.g., "Computer Science"
   location: z.string().optional(),
-  graduationDate: z.string(), // "May 2024" or "Expected May 2024"
+  startDate: z.string().optional(), // "Aug 2020"
+  endDate: z.string().optional(), // "May 2024" or "Expected May 2024"
   gpa: z.string().optional(), // "3.8/4.0" or "3.8"
   honors: z.array(z.string()).optional(), // Dean's List, Cum Laude, etc.
   relevantCoursework: z.array(z.string()).optional(),
@@ -82,7 +83,7 @@ export const SkillsSchema = z.object({
   languages: z.array(z.string()).default([]),
   frameworks: z.array(z.string()).default([]),
   tools: z.array(z.string()).default([]),
-  databases: z.array(z.string()).optional(),
+  databases: z.array(z.string()).default([]), // Made required with default empty array
   other: z.array(z.string()).optional(),
 })
 
@@ -239,7 +240,8 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       degree: edu.degree || 'Unknown Degree',
       field: edu.field,
       location: edu.location,
-      graduationDate: edu.graduationDate || 'Unknown',
+      startDate: edu.startDate,
+      endDate: edu.endDate,
       gpa: edu.gpa,
       honors: edu.honors,
       relevantCoursework: edu.relevantCoursework,
@@ -248,7 +250,7 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       languages: partial.skills?.languages || [],
       frameworks: partial.skills?.frameworks || [],
       tools: partial.skills?.tools || [],
-      databases: partial.skills?.databases,
+      databases: partial.skills?.databases || [],
       other: partial.skills?.other,
     },
     summary: partial.summary,

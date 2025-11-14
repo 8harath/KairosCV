@@ -582,7 +582,7 @@ export function extractProjects(text: string): ProjectEntry[] {
  * Main parsing function
  */
 export function parseResumeEnhanced(text: string): ParsedResume {
-  return {
+  const parsed: ParsedResume = {
     contact: extractContactInfo(text),
     experience: extractExperience(text),
     education: extractEducation(text),
@@ -595,4 +595,20 @@ export function parseResumeEnhanced(text: string): ParsedResume {
     projects: extractProjects(text),
     certifications: [],
   }
+
+  // Validate structure with Zod (helps catch parser issues)
+  try {
+    const { validatePartialResumeData } = require('../schemas/resume-schema')
+    const validation = validatePartialResumeData(parsed)
+
+    if (!validation.success) {
+      console.warn('Fallback parser validation warnings:', validation.errors)
+      // Continue with parsed data even if validation fails
+    }
+  } catch (error) {
+    // If validation fails, just log and continue
+    console.warn('Could not validate fallback parser output:', error)
+  }
+
+  return parsed
 }

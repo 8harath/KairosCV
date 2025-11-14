@@ -358,7 +358,18 @@ Return ONLY valid JSON, no markdown code blocks, no explanations.`
       // Remove markdown code blocks if present
       const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
 
-      return JSON.parse(cleanText)
+      const parsed = JSON.parse(cleanText)
+
+      // Validate with Zod (dynamic import to avoid circular dependencies)
+      const { validatePartialResumeData } = await import('../schemas/resume-schema')
+      const validation = validatePartialResumeData(parsed)
+
+      if (!validation.success) {
+        console.warn('Gemini extraction validation warnings:', validation.errors)
+        // Log but continue - AI might have extracted valid data in non-standard format
+      }
+
+      return validation.data || parsed
     })
 
     return result

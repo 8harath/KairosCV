@@ -162,6 +162,18 @@ function escapeHtml(text: string): string {
  * Render Jake's Resume template with parsed data
  */
 export function renderJakesResume(parsedResume: ParsedResume, summary?: string): string {
+  // Fail-safe validation (last line of defense before rendering)
+  try {
+    const { isValidResumeData } = require('../schemas/resume-schema')
+    if (!isValidResumeData(parsedResume)) {
+      console.warn('⚠️  Invalid resume data passed to template renderer - continuing anyway')
+      // Don't throw - we want to render what we can
+    }
+  } catch (error) {
+    // If validation import fails, just log and continue
+    console.warn('Could not validate resume data in renderer:', error)
+  }
+
   // Use process.cwd() to get the project root, then navigate to the improved template
   const templatePath = path.join(process.cwd(), "lib", "templates", "jakes-resume-improved.html")
   const renderer = new TemplateRenderer(templatePath)

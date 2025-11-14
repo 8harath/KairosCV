@@ -6,6 +6,8 @@ import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists }
 import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
 import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData } from "./ai/gemini-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
+import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
+import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
 
 export interface ResumeData {
   text: string
@@ -21,6 +23,7 @@ export interface ProcessingProgress {
   stage: string
   progress: number
   message: string
+  confidence?: ResumeConfidence // Optional confidence score
 }
 
 // Parse PDF file
@@ -233,9 +236,50 @@ export async function* processResume(
     yield { stage: "enhancing", progress: 50, message: "Enhancing content for ATS optimization..." }
 
     // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
-    const enhancedData = await enhanceExtractedData(extractedData)
+    let enhancedData = await enhanceExtractedData(extractedData)
 
     yield { stage: "enhancing", progress: 70, message: "Optimizing bullet points..." }
+
+    // Stage 3.5: Validate and score resume data quality
+    yield { stage: "validating", progress: 72, message: "Validating resume data..." }
+
+    const validation = safeValidateResumeData(enhancedData)
+
+    if (!validation.success) {
+      console.warn('Resume data validation failed:', validation.errors)
+      // Fill defaults for missing required fields
+      enhancedData = fillDefaults(enhancedData as any)
+      yield {
+        stage: "validating",
+        progress: 75,
+        message: "Auto-fixing missing fields..."
+      }
+    } else {
+      yield { stage: "validating", progress: 75, message: "Validation passed!" }
+    }
+
+    // Calculate confidence score
+    yield { stage: "scoring", progress: 77, message: "Calculating quality score..." }
+    const confidenceScore = scoreResume(enhancedData)
+
+    // Log confidence for debugging
+    console.log('📊 Resume Confidence Score:', {
+      overall: confidenceScore.overall,
+      level: confidenceScore.level,
+      contact: confidenceScore.sections.contact.score,
+      experience: confidenceScore.sections.experience.score,
+      education: confidenceScore.sections.education.score,
+      skills: confidenceScore.sections.skills.score,
+      projects: confidenceScore.sections.projects.score,
+    })
+
+    // Yield progress with confidence score
+    yield {
+      stage: "scoring",
+      progress: 79,
+      message: `Resume quality: ${confidenceScore.overall}% (${confidenceScore.level})`,
+      confidence: confidenceScore
+    }
 
     // Stage 4: Convert to ParsedResume format for PDF generation
     const parsedResume: ParsedResume = {
