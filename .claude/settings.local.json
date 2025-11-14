@@ -13,7 +13,9 @@
       "Bash(pkill:*)",
       "Bash(npx tsx:*)",
       "WebSearch",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(pnpm test:run:*)",
+      "Bash(pnpm vitest run:*)"
     ],
     "deny": [],
     "ask": []
