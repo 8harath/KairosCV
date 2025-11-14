@@ -85,9 +85,21 @@ export function extractContactInfo(text: string): ContactInfo {
     ? websiteMatch[0]
     : ""
 
-  // Extract name (usually the first line if it's short and capitalized)
+  // Extract name (usually the first line if it's short and looks like a name)
   const firstLine = lines[0]?.trim() || ""
-  const name = firstLine.length < 50 && firstLine.match(/^[A-Z][a-z]+\s+[A-Z][a-z]+/)
+
+  // More flexible name matching:
+  // - Allow all caps (JOHN SMITH)
+  // - Allow initials (John S., J. Smith, BHARATH K)
+  // - Allow multiple capitals (McDonald, O'Brien)
+  // - Require at least 2 words
+  // - Must be under 50 characters
+  const namePattern = /^[A-Z][A-Za-z'.-]*(?:\s+[A-Z][A-Za-z'.-]*)+$/
+  const name = firstLine.length > 0 &&
+               firstLine.length < 50 &&
+               !firstLine.includes('@') && // Not an email
+               !firstLine.match(/^\d/) && // Doesn't start with number
+               namePattern.test(firstLine)
     ? firstLine
     : ""
 
