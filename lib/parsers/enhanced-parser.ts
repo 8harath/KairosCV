@@ -216,16 +216,25 @@ export function extractExperience(text: string): ExperienceEntry[] {
         currentEntry.endDate = dates.end
       }
     }
-    // Detect bullet points
-    else if (line.match(/^[•\-*▪︎◦]/)) {
-      const bullet = line.replace(/^[•\-*▪︎◦]\s*/, "").trim()
-      if (bullet) bullets.push(bullet)
+    // Detect bullet points - more flexible matching
+    else if (line.match(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]/)) {
+      const bullet = line.replace(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      if (bullet && bullet.length > 3) bullets.push(bullet)
     }
-    // Regular line that might be a bullet (indented or starts with action verb)
+    // Lines starting with action verbs (common in resumes)
+    else if (
+      currentEntry &&
+      line.match(/^(Developed|Built|Created|Implemented|Designed|Led|Managed|Improved|Increased|Decreased|Reduced|Achieved|Delivered|Launched|Established|Coordinated|Analyzed|Optimized|Automated|Integrated|Collaborated|Spearheaded|Executed|Enhanced|Architected|Engineered|Configured|Maintained|Deployed|Tested|Debugged|Troubleshot|Resolved|Streamlined|Facilitated|Conducted|Presented|Trained|Mentored|Directed|Oversaw|Supervised|Pioneered|Initiated|Organized|Planned|Strategized|Evaluated|Assessed|Monitored|Tracked|Documented|Researched|Investigated|Identified|Proposed|Recommended|Advised|Consulted|Supported|Assisted|Provided|Ensured|Verified|Validated|Certified|Approved|Authorized|Negotiated|Contracted|Procured|Purchased|Acquired|Generated|Produced|Published|Wrote|Edited|Reviewed|Translated|Interpreted)/i)
+    ) {
+      bullets.push(line)
+    }
+    // Regular line that might be a bullet (indented or descriptive text)
     else if (
       currentEntry &&
       line.length > 20 &&
-      !line.match(/^[A-Z][a-z]+\s+\d{4}/)
+      !line.match(/^[A-Z][a-z]+\s+\d{4}/) && // Not a date line
+      !line.match(/^[A-Z][a-z]+,\s*[A-Z]/) && // Not a location line
+      line.split(' ').length > 3 // More than 3 words (likely a description)
     ) {
       bullets.push(line)
     }
@@ -483,10 +492,25 @@ export function extractProjects(text: string): ProjectEntry[] {
       }
       bullets = []
     }
-    // Detect bullet points
-    else if (line.match(/^[•\-*]/)) {
-      const bullet = line.replace(/^[•\-*]\s*/, "").trim()
-      if (bullet) bullets.push(bullet)
+    // Detect bullet points - flexible matching (same as experience)
+    else if (line.match(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]/)) {
+      const bullet = line.replace(/^[•\-*▪︎◦●○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      if (bullet && bullet.length > 3) bullets.push(bullet)
+    }
+    // Lines starting with action verbs
+    else if (
+      currentProject &&
+      line.match(/^(Developed|Built|Created|Implemented|Designed|Integrated|Deployed|Launched|Published|Wrote|Enhanced|Optimized|Configured|Added|Removed|Fixed|Updated|Refactored|Tested|Documented|Researched|Analyzed|Utilized|Leveraged)/i)
+    ) {
+      bullets.push(line)
+    }
+    // Regular descriptive lines
+    else if (
+      currentProject &&
+      line.length > 15 &&
+      line.split(' ').length > 2
+    ) {
+      bullets.push(line)
     }
   }
 

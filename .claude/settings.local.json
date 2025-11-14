@@ -10,7 +10,8 @@
       "Bash(pnpm build:*)",
       "Bash(npx tsx test-template-render.ts)",
       "Bash(lsof:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []
