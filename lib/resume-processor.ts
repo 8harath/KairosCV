@@ -277,6 +277,19 @@ export async function* processResume(
 
     yield { stage: "enhancing", progress: 70, message: "Optimizing bullet points..." }
 
+    // Stage 3.4: Handle ALL edge cases (deduplication, normalization, cleanup)
+    yield { stage: "cleaning", progress: 71, message: "Removing duplicates and normalizing data..." }
+    enhancedData = handleAllEdgeCases(enhancedData, rawText)
+
+    // Validate processed data
+    const processedValidation = validateProcessedData(enhancedData as any)
+    if (processedValidation.warnings.length > 0) {
+      console.warn('⚠️  Data quality warnings:', processedValidation.warnings)
+    }
+    if (processedValidation.issues.length > 0) {
+      console.error('❌ Data quality issues:', processedValidation.issues)
+    }
+
     // Stage 3.5: Validate and score resume data quality
     yield { stage: "validating", progress: 72, message: "Validating resume data..." }
 
