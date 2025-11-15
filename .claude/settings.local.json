@@ -18,7 +18,8 @@
       "Bash(pnpm vitest run:*)",
       "Bash(test:*)",
       "Bash(cat:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
