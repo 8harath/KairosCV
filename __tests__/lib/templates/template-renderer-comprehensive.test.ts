@@ -12,6 +12,7 @@ describe("Template Renderer - Type Safety", () => {
       phone: "+15551234567",
       linkedin: "linkedin.com/in/johndoe",
       github: "github.com/johndoe",
+      website: "johndoe.com",
       location: "San Francisco, CA"
     },
     summary: "Experienced software engineer with 5 years of expertise",
@@ -62,8 +63,12 @@ describe("Template Renderer - Type Safety", () => {
       const resume: ParsedResume = {
         contact: {
           name: "John Doe",
-          email: "john@example.com"
-          // Missing phone, linkedin, github, location
+          email: "john@example.com",
+          phone: "",
+          linkedin: "",
+          github: "",
+          website: "",
+          location: ""
         },
         experience: [],
         education: [],
