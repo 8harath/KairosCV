@@ -34,3 +34,13 @@ next-env.d.ts
 # test outputs
 test-output.pdf
 test-*.pdf
+test-results.txt
+
+# documentation status files (should not be committed)
+IMPLEMENTATION_COMPLETE.md
+TEST_IMPLEMENTATION_SUMMARY.md
+VISION_EXTRACTION.md
+IMPLEMENTATION_SUMMARY.md
+
+# temp files
+test-puppeteer.js

@@ -1,10 +1,9 @@
 /**
  * Enhanced PDF Text Extraction with Multi-Strategy Approach
  *
- * Implements a three-tier extraction pipeline:
+ * Implements a two-tier extraction pipeline:
  * 1. unpdf (fastest, best for standard PDFs)
- * 2. pdfreader (better for multi-column/tables)
- * 3. tesseract.js OCR (fallback for scanned PDFs)
+ * 2. tesseract.js OCR (fallback for scanned PDFs)
  *
  * Automatically selects the best extraction based on confidence scores.
  */
@@ -17,26 +16,13 @@ import {
   cleanExtractedText,
   detectMultiColumn,
   detectTables,
-  chooseBetterExtraction,
   type ExtractionQuality,
 } from './extraction-utils'
-
-// Type definition for pdfreader (no @types available)
-declare module 'pdfreader' {
-  export class PdfReader {
-    parseFileItems(
-      filePath: string,
-      callback: (err: Error | null, item?: any) => void
-    ): void
-  }
-}
-
-const PdfReader = require('pdfreader').PdfReader
 
 export interface PDFExtractionResult {
   text: string
   confidence: number // 0-100
-  method: 'unpdf' | 'pdfreader' | 'ocr' | 'failed'
+  method: 'unpdf' | 'ocr' | 'failed'
   quality: ExtractionQuality
   metadata: {
     pageCount: number
@@ -62,71 +48,42 @@ export async function extractPDFEnhanced(filePath: string): Promise<PDFExtractio
     console.log('  Trying unpdf extraction...')
     const unpdfResult = await extractWithUnpdf(filePath, fileSize)
 
-    if (unpdfResult.confidence >= 85) {
+    if (unpdfResult.confidence >= 80) {
       unpdfResult.duration = Date.now() - startTime
       console.log(`  ✓ unpdf succeeded with ${unpdfResult.confidence}% confidence`)
       return unpdfResult
     }
 
-    console.log(`  ⚠ unpdf confidence low (${unpdfResult.confidence}%), trying fallback...`)
+    console.log(`  ⚠ unpdf confidence low (${unpdfResult.confidence}%), trying OCR fallback...`)
 
-    // STRATEGY 2: pdfreader (better for complex layouts)
+    // STRATEGY 2: OCR (for scanned PDFs or low-quality text extraction)
     try {
-      console.log('  Trying pdfreader extraction...')
-      const pdfreaderResult = await extractWithPdfreader(filePath, fileSize)
+      console.log('  Trying OCR extraction...')
+      const ocrResult = await extractWithOCR(filePath, fileSize)
+      ocrResult.duration = Date.now() - startTime
+      console.log(`  ✓ OCR completed with ${ocrResult.confidence}% confidence`)
 
-      // Choose better result between unpdf and pdfreader
-      const better = chooseBetterExtraction(
-        unpdfResult.text,
-        unpdfResult.confidence,
-        pdfreaderResult.text,
-        pdfreaderResult.confidence
-      )
-
-      if (better.confidence >= 80) {
-        const finalResult = better.text === unpdfResult.text ? unpdfResult : pdfreaderResult
-        finalResult.duration = Date.now() - startTime
-        console.log(`  ✓ ${finalResult.method} won with ${finalResult.confidence}% confidence`)
-        return finalResult
-      }
-
-      console.log(`  ⚠ Both methods have low confidence, trying OCR as last resort...`)
-
-      // STRATEGY 3: OCR (slowest, for scanned PDFs)
-      try {
-        console.log('  Trying OCR extraction...')
-        const ocrResult = await extractWithOCR(filePath, fileSize)
-        ocrResult.duration = Date.now() - startTime
-        console.log(`  ✓ OCR completed with ${ocrResult.confidence}% confidence`)
+      // Return OCR if it's better than unpdf
+      if (ocrResult.confidence > unpdfResult.confidence) {
         return ocrResult
-      } catch (ocrError) {
-        console.error('  ✗ OCR failed:', ocrError)
-        // Return best of unpdf/pdfreader even if low confidence
-        const finalResult = better.text === unpdfResult.text ? unpdfResult : pdfreaderResult
-        finalResult.duration = Date.now() - startTime
-        return finalResult
       }
-    } catch (pdfreaderError) {
-      console.warn('  ✗ pdfreader failed:', pdfreaderError)
+
+      // Otherwise return unpdf result even if confidence is low
+      unpdfResult.duration = Date.now() - startTime
+      return unpdfResult
+    } catch (ocrError) {
+      console.error('  ✗ OCR failed:', ocrError)
+      // Return unpdf result even if low confidence
       unpdfResult.duration = Date.now() - startTime
       return unpdfResult
     }
   } catch (unpdfError) {
     console.warn('  ✗ unpdf failed:', unpdfError)
 
-    // If unpdf completely fails, try pdfreader directly
+    // If unpdf completely fails, try OCR directly
     try {
-      console.log('  Trying pdfreader extraction (unpdf failed)...')
-      const pdfreaderResult = await extractWithPdfreader(filePath, fileSize)
-      pdfreaderResult.duration = Date.now() - startTime
-      return pdfreaderResult
-    } catch (pdfreaderError) {
-      console.error('  ✗ pdfreader failed:', pdfreaderError)
-
-      // Last resort: OCR
-      try {
-        console.log('  Trying OCR extraction (all text methods failed)...')
-        const ocrResult = await extractWithOCR(filePath, fileSize)
+      console.log('  Trying OCR extraction (unpdf failed)...')
+      const ocrResult = await extractWithOCR(filePath, fileSize)
         ocrResult.duration = Date.now() - startTime
         return ocrResult
       } catch (ocrError) {
@@ -205,70 +162,7 @@ async function extractWithUnpdf(filePath: string, fileSize: number): Promise<PDF
 }
 
 /**
- * Strategy 2: Extract with pdfreader (better for tables/multi-column)
- */
-async function extractWithPdfreader(filePath: string, fileSize: number): Promise<PDFExtractionResult> {
-  return new Promise((resolve, reject) => {
-    const rows: Record<number, string[]> = {}
-    let pageCount = 0
-    let currentPage = 0
-
-    const reader = new PdfReader()
-
-    reader.parseFileItems(filePath, (err: Error | null, item?: any) => {
-      if (err) {
-        reject(err)
-      } else if (!item) {
-        // End of file - compile results
-        try {
-          // Sort rows by y position and join text
-          const fullText = Object.keys(rows)
-            .map(Number)
-            .sort((a, b) => a - b)
-            .map(y => {
-              const rowText = rows[y].join(' ')
-              return rowText.trim()
-            })
-            .filter(line => line.length > 0)
-            .join('\n')
-
-          const cleanedText = cleanExtractedText(fullText)
-          const quality = assessTextQuality(cleanedText)
-
-          resolve({
-            text: cleanedText,
-            confidence: quality.confidence,
-            method: 'pdfreader',
-            quality,
-            metadata: {
-              pageCount,
-              hasMultiColumn: detectMultiColumn(cleanedText),
-              hasTables: detectTables(cleanedText),
-              fileSize,
-            },
-            duration: 0,
-          })
-        } catch (error) {
-          reject(error)
-        }
-      } else if (item.page) {
-        // New page
-        currentPage = item.page
-        pageCount = Math.max(pageCount, currentPage)
-      } else if (item.text) {
-        // Text item with position
-        const y = Math.floor(item.y * 100) // Scale for grouping
-        if (!rows[y]) {
-          rows[y] = []
-        }
-        rows[y].push(item.text)
-      }
-    })
-  })
-}
-
-/**
- * Strategy 3: Extract with OCR (tesseract.js) for scanned PDFs
+ * Strategy 2: Extract with OCR (tesseract.js) for scanned PDFs
  */
 async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFExtractionResult> {
   console.log('  📸 Converting PDF to images for OCR...')
