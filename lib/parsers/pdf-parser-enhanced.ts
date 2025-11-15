@@ -84,12 +84,11 @@ export async function extractPDFEnhanced(filePath: string): Promise<PDFExtractio
     try {
       console.log('  Trying OCR extraction (unpdf failed)...')
       const ocrResult = await extractWithOCR(filePath, fileSize)
-        ocrResult.duration = Date.now() - startTime
-        return ocrResult
-      } catch (ocrError) {
-        console.error('  ✗ All extraction methods failed!')
-        throw new Error('Failed to extract text from PDF using any method')
-      }
+      ocrResult.duration = Date.now() - startTime
+      return ocrResult
+    } catch (ocrError) {
+      console.error('  ✗ All extraction methods failed!')
+      throw new Error('Failed to extract text from PDF using any method')
     }
   }
 }
