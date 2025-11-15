@@ -2,7 +2,7 @@ import fs from "fs-extra"
 import path from "path"
 import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
 import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
-import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData } from "./ai/gemini-service"
+import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
 import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
@@ -79,12 +79,12 @@ export async function parseDOCX(filePath: string): Promise<{ text: string; extra
 
   console.log('📄 DOCX Extraction Result:', {
     confidence: result.confidence,
-    structure: result.structure
+    metadata: result.metadata
   })
 
   return {
     text: result.text,
-    extractionInfo: `Confidence: ${result.confidence}% | Bullets: ${result.structure.bulletPoints} | Tables: ${result.structure.tables}`
+    extractionInfo: `Confidence: ${result.confidence}% | Bullets: ${result.metadata.hasBullets} | Tables: ${result.metadata.hasTables}`
   }
 }
 
@@ -366,6 +366,7 @@ export async function* processResume(
         phone: enhancedData.contact?.phone || "",
         linkedin: enhancedData.contact?.linkedin || "",
         github: enhancedData.contact?.github || "",
+        website: enhancedData.contact?.website || "",
         location: enhancedData.contact?.location || "",
       },
       summary: enhancedData.summary,
