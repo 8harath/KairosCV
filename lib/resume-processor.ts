@@ -409,14 +409,14 @@ export async function* processResume(
       customSections: enhancedData.customSections,
     }
 
-    yield { stage: "generating", progress: 80, message: "Generating optimized PDF..." }
+    yield { stage: "generating", progress: 96, message: "Generating optimized PDF..." }
 
     // Stage 5: Generate PDF using Puppeteer and Jake's template
     const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary)
 
     // Save generated PDF
     await saveGeneratedPDF(fileId, pdfBuffer)
-    yield { stage: "compiling", progress: 95, message: "Finalizing..." }
+    yield { stage: "compiling", progress: 98, message: "Finalizing..." }
 
     // Final completion message
     yield {
