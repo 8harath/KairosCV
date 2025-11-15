@@ -21,7 +21,8 @@
       "Bash(tee:*)",
       "Bash(rm:*)",
       "Bash(pnpm remove:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
