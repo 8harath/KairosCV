@@ -19,7 +19,8 @@
       "Bash(test:*)",
       "Bash(cat:*)",
       "Bash(tee:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []
