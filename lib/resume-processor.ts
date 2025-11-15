@@ -277,40 +277,54 @@ export async function* processResume(
       yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
     }
 
-    // Stage 2: Use Gemini to extract ALL structured data from the resume
-    yield { stage: "enhancing", progress: 30, message: "Analyzing resume with AI..." }
+    // Stage 2: Multi-layer extraction with verification (NEW APPROACH)
+    yield { stage: "extraction", progress: 25, message: "Starting multi-layer extraction..." }
 
-    let extractedData = await extractCompleteResumeData(rawText)
+    const { extractWithVerification } = await import('./extraction/multi-layer-extractor')
 
-    // Fallback to basic parsing if AI extraction fails (e.g., API unavailable)
-    if (!extractedData) {
-      console.warn("AI extraction failed, falling back to basic parsing...")
-      yield { stage: "enhancing", progress: 40, message: "Using fallback parser (AI service unavailable)..." }
+    const extractionResult = await extractWithVerification(
+      rawText,
+      fileId,
+      (stage, progress, message) => {
+        // Forward progress updates from extractor
+        // Map progress from 25-75
+        const mappedProgress = 25 + (progress / 100) * 50
+        // Don't yield here to avoid async generator issues
+      }
+    )
 
-      // Use the enhanced parser as fallback
-      const parsedFallback = parseResumeEnhanced(rawText)
+    const extractedData = extractionResult.data
 
-      // Convert to expected format
-      extractedData = {
-        contact: parsedFallback.contact,
-        summary: parsedFallback.summary,
-        experience: parsedFallback.experience,
-        education: parsedFallback.education,
-        skills: parsedFallback.skills,
-        projects: parsedFallback.projects,
-        certifications: parsedFallback.certifications,
+    // Show verification results
+    if (!extractionResult.verification.complete) {
+      const missingCount = extractionResult.verification.missingContent.length
+      yield {
+        stage: "extraction",
+        progress: 75,
+        message: `Extraction complete with ${missingCount} potential gaps (confidence: ${(extractionResult.verification.confidence * 100).toFixed(0)}%)`
+      }
+
+      console.warn("⚠️  Extraction verification warnings:")
+      extractionResult.verification.missingContent.forEach((item, i) => {
+        console.warn(`   ${i + 1}. ${item}`)
+      })
+    } else {
+      yield {
+        stage: "extraction",
+        progress: 75,
+        message: `All data extracted successfully (${(extractionResult.verification.confidence * 100).toFixed(0)}% confidence)`
       }
     }
 
-    yield { stage: "enhancing", progress: 50, message: "Enhancing content for ATS optimization..." }
+    yield { stage: "enhancing", progress: 78, message: "Enhancing content for ATS optimization..." }
 
     // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
     let enhancedData = await enhanceExtractedData(extractedData)
 
-    yield { stage: "enhancing", progress: 70, message: "Optimizing bullet points..." }
+    yield { stage: "enhancing", progress: 85, message: "Optimizing bullet points..." }
 
     // Stage 3.4: Handle ALL edge cases (deduplication, normalization, cleanup)
-    yield { stage: "cleaning", progress: 71, message: "Removing duplicates and normalizing data..." }
+    yield { stage: "cleaning", progress: 87, message: "Removing duplicates and normalizing data..." }
     enhancedData = handleAllEdgeCases(enhancedData, rawText)
 
     // Validate processed data
@@ -323,7 +337,7 @@ export async function* processResume(
     }
 
     // Stage 3.5: Validate and score resume data quality
-    yield { stage: "validating", progress: 72, message: "Validating resume data..." }
+    yield { stage: "validating", progress: 89, message: "Validating resume data..." }
 
     const validation = safeValidateResumeData(enhancedData)
 
@@ -333,15 +347,15 @@ export async function* processResume(
       enhancedData = fillDefaults(enhancedData as any)
       yield {
         stage: "validating",
-        progress: 75,
+        progress: 91,
         message: "Auto-fixing missing fields..."
       }
     } else {
-      yield { stage: "validating", progress: 75, message: "Validation passed!" }
+      yield { stage: "validating", progress: 91, message: "Validation passed!" }
     }
 
     // Calculate confidence score
-    yield { stage: "scoring", progress: 77, message: "Calculating quality score..." }
+    yield { stage: "scoring", progress: 93, message: "Calculating quality score..." }
     const confidenceScore = scoreResume(enhancedData)
 
     // Log confidence for debugging
@@ -358,7 +372,7 @@ export async function* processResume(
     // Yield progress with confidence score
     yield {
       stage: "scoring",
-      progress: 79,
+      progress: 95,
       message: `Resume quality: ${confidenceScore.overall}% (${confidenceScore.level})`,
       confidence: confidenceScore
     }
