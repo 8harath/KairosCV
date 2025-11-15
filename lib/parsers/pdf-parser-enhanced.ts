@@ -194,6 +194,9 @@ async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFEx
       fullText += data.text + '\n\n'
       totalConfidence += data.confidence
     }
+  } finally {
+    // Ensure cleanup happens even if error occurs during processing
+    await worker.terminate()
 
     // Clean up temp images
     for (const page of pngPages) {
@@ -210,8 +213,6 @@ async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFEx
     } catch (error) {
       // Directory might not be empty or might not exist - ignore
     }
-  } finally {
-    await worker.terminate()
   }
 
   const avgOCRConfidence = totalConfidence / pageCount

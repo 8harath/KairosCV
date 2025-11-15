@@ -62,8 +62,13 @@ export async function parsePDF(filePath: string): Promise<{ text: string; extrac
     console.log(`✅ Vision cross-verification complete: ${crossVerification.recommendation}`)
 
   } catch (error) {
-    console.log('⚠️  Vision extraction failed, using text-only extraction')
-    console.error(error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.log(`⚠️  Vision extraction failed: ${errorMsg}`)
+    console.log('⚠️  Falling back to text-only extraction')
+    visionInfo = ' | Vision: unavailable'
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Vision extraction error details:', error)
+    }
     // Continue with text-only extraction
   }
 
