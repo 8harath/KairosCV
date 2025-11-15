@@ -247,5 +247,68 @@
     </div>
   </div>
   {{/if}}
+
+  <!-- Awards & Honors -->
+  {{#if AWARDS}}
+  <div class="section">
+    <div class="section-title">Awards & Honors</div>
+    <div class="bullets">
+      {{AWARDS}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Publications -->
+  {{#if PUBLICATIONS}}
+  <div class="section">
+    <div class="section-title">Publications</div>
+    <div class="bullets">
+      {{PUBLICATIONS}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Languages -->
+  {{#if LANGUAGE_PROFICIENCY}}
+  <div class="section">
+    <div class="section-title">Languages</div>
+    <div class="bullets">
+      {{LANGUAGE_PROFICIENCY}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Volunteer Experience -->
+  {{#if VOLUNTEER}}
+  <div class="section">
+    <div class="section-title">Volunteer Experience</div>
+    {{VOLUNTEER}}
+  </div>
+  {{/if}}
+
+  <!-- Hobbies & Interests -->
+  {{#if HOBBIES}}
+  <div class="section">
+    <div class="section-title">Interests</div>
+    <div class="bullets">
+      {{HOBBIES}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- References -->
+  {{#if REFERENCES}}
+  <div class="section">
+    <div class="section-title">References</div>
+    <div class="bullets">
+      {{REFERENCES}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Custom Sections -->
+  {{#if CUSTOM_SECTIONS}}
+  {{CUSTOM_SECTIONS}}
+  {{/if}}
 </body>
 </html>

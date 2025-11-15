@@ -9,6 +9,7 @@ import { scoreResume, type ResumeConfidence } from "./validation/confidence-scor
 import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-handler"
 import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
 import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
+import { extractWithVisionAndVerify } from "./parsers/vision-extractor"
 
 export interface ResumeData {
   text: string
@@ -27,8 +28,9 @@ export interface ProcessingProgress {
   confidence?: ResumeConfidence // Optional confidence score
 }
 
-// Parse PDF file using enhanced multi-strategy extraction
+// Parse PDF file using enhanced multi-strategy extraction + vision cross-verification
 export async function parsePDF(filePath: string): Promise<{ text: string; extractionInfo?: string }> {
+  // Step 1: Text-based extraction
   const result = await extractPDFEnhanced(filePath)
 
   console.log('📄 PDF Extraction Result:', {
@@ -38,12 +40,36 @@ export async function parsePDF(filePath: string): Promise<{ text: string; extrac
   })
 
   const features = []
-  if (result.metadata.hasMultiColumn) features.push('multi-column')
-  if (result.metadata.hasTables) features.push('tables')
+  if (result.metadata?.hasMultiColumn) features.push('multi-column')
+  if (result.metadata?.hasTables) features.push('tables')
+
+  // Step 2: Vision-based extraction and cross-verification
+  let finalText = result.text
+  let extractionMethod = result.method
+  let visionInfo = ''
+
+  try {
+    console.log('🔍 Running vision-based cross-verification...')
+
+    const { visionResult, crossVerification, bestText } = await extractWithVisionAndVerify(
+      filePath,
+      result.text
+    )
+
+    finalText = bestText // Use merged/best text
+    visionInfo = ` | Vision: ${visionResult.metadata.ocrConfidence.toFixed(0)}% | Match: ${crossVerification.matchPercentage}% | Using: ${crossVerification.recommendation}`
+
+    console.log(`✅ Vision cross-verification complete: ${crossVerification.recommendation}`)
+
+  } catch (error) {
+    console.log('⚠️  Vision extraction failed, using text-only extraction')
+    console.error(error)
+    // Continue with text-only extraction
+  }
 
   return {
-    text: result.text,
-    extractionInfo: `Method: ${result.method} | Confidence: ${result.confidence}% | Features: ${features.length > 0 ? features.join(', ') : 'standard'}`
+    text: finalText,
+    extractionInfo: `Method: ${extractionMethod} | Confidence: ${result.confidence}%${visionInfo} | Features: ${features.length > 0 ? features.join(', ') : 'standard'}`
   }
 }
 

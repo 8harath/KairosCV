@@ -1,0 +1,266 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.8 [39m[90m/workspaces/KairosCV[39m
+
+[90mstderr[2m | __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22m[2mEnhanced Parser[2m > [22m[2mparseResumeEnhanced[2m > [22m[2mshould parse a complete resume with all sections
+[22m[39mCould not validate fallback parser output: Error: Cannot find module '../schemas/resume-schema'
+Require stack:
+- /workspaces/KairosCV/lib/parsers/enhanced-parser.ts
+[90m    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)[39m
+[90m    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)[39m
+[90m    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1211:37)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1487:12)[39m
+[90m    at require (node:internal/modules/helpers:135:16)[39m
+    at parseResumeEnhanced [90m(/workspaces/KairosCV/[39mlib/parsers/enhanced-parser.ts:700:43[90m)[39m
+    at [90m/workspaces/KairosCV/[39m__tests__/lib/parsers/enhanced-parser.test.ts:319:22 {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [ [32m'/workspaces/KairosCV/lib/parsers/enhanced-parser.ts'[39m ]
+}
+
+[90mstderr[2m | __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22m[2mEnhanced Parser[2m > [22m[2mparseResumeEnhanced[2m > [22m[2mshould handle resume with minimal information
+[22m[39mCould not validate fallback parser output: Error: Cannot find module '../schemas/resume-schema'
+Require stack:
+- /workspaces/KairosCV/lib/parsers/enhanced-parser.ts
+[90m    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)[39m
+[90m    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)[39m
+[90m    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1211:37)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1487:12)[39m
+[90m    at require (node:internal/modules/helpers:135:16)[39m
+    at parseResumeEnhanced [90m(/workspaces/KairosCV/[39mlib/parsers/enhanced-parser.ts:700:43[90m)[39m
+    at [90m/workspaces/KairosCV/[39m__tests__/lib/parsers/enhanced-parser.test.ts:349:22 {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [ [32m'/workspaces/KairosCV/lib/parsers/enhanced-parser.ts'[39m ]
+}
+
+[90mstderr[2m | __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22m[2mEnhanced Parser[2m > [22m[2mparseResumeEnhanced[2m > [22m[2mshould extract all sections independently
+[22m[39mCould not validate fallback parser output: Error: Cannot find module '../schemas/resume-schema'
+Require stack:
+- /workspaces/KairosCV/lib/parsers/enhanced-parser.ts
+[90m    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)[39m
+[90m    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)[39m
+[90m    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1211:37)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1487:12)[39m
+[90m    at require (node:internal/modules/helpers:135:16)[39m
+    at parseResumeEnhanced [90m(/workspaces/KairosCV/[39mlib/parsers/enhanced-parser.ts:700:43[90m)[39m
+    at [90m/workspaces/KairosCV/[39m__tests__/lib/parsers/enhanced-parser.test.ts:377:22 {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [ [32m'/workspaces/KairosCV/lib/parsers/enhanced-parser.ts'[39m ]
+}
+
+ [31m❯[39m __tests__/lib/parsers/enhanced-parser.test.ts [2m([22m[2m27 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[32m 73[2mms[22m[39m
+       [32m✓[39m should extract email from text[32m 3[2mms[22m[39m
+       [32m✓[39m should extract phone number[32m 1[2mms[22m[39m
+       [32m✓[39m should extract LinkedIn profile[32m 0[2mms[22m[39m
+       [32m✓[39m should extract GitHub profile[32m 0[2mms[22m[39m
+       [32m✓[39m should extract name from first line[32m 0[2mms[22m[39m
+[31m       [31m×[31m should extract experience entries[39m[32m 18[2mms[22m[39m
+       [32m✓[39m should extract bullet points[32m 0[2mms[22m[39m
+[31m       [31m×[31m should extract education entries[39m[32m 3[2mms[22m[39m
+       [32m✓[39m should extract degree information[32m 1[2mms[22m[39m
+       [32m✓[39m should extract certifications from dedicated section[32m 1[2mms[22m[39m
+       [32m✓[39m should handle 'Licenses & Certifications' heading[32m 0[2mms[22m[39m
+[31m       [31m×[31m should extract certifications with various bullet symbols[39m[32m 3[2mms[22m[39m
+       [32m✓[39m should stop at next major section[32m 0[2mms[22m[39m
+       [32m✓[39m should handle no certifications section[32m 0[2mms[22m[39m
+       [32m✓[39m should remove bullet symbols from certification text[32m 0[2mms[22m[39m
+[31m       [31m×[31m should extract summary section[39m[32m 1[2mms[22m[39m
+       [32m✓[39m should handle 'Professional Summary' heading[32m 0[2mms[22m[39m
+       [32m✓[39m should handle 'Objective' heading[32m 0[2mms[22m[39m
+       [32m✓[39m should handle 'Profile' heading[32m 0[2mms[22m[39m
+[31m       [31m×[31m should handle 'About' heading[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should stop at next major section[39m[32m 5[2mms[22m[39m
+[31m       [31m×[31m should handle multi-line summaries[39m[32m 3[2mms[22m[39m
+       [32m✓[39m should return empty string if no summary found[32m 0[2mms[22m[39m
+       [32m✓[39m should join multi-line summary into single paragraph[32m 0[2mms[22m[39m
+[31m       [31m×[31m should parse a complete resume with all sections[39m[32m 9[2mms[22m[39m
+[31m       [31m×[31m should handle resume with minimal information[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m should extract all sections independently[39m[32m 3[2mms[22m[39m
+ [32m✓[39m __tests__/lib/templates/template-renderer.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractExperience[2m > [22mshould extract experience entries
+[31m[1mAssertionError[22m: expected 'Position' to contain 'Software Engineer'[39m
+
+Expected: [32m"Software Engineer"[39m
+Received: [31m"Position"[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m63:35[22m[39m
+    [90m 61| [39m      [35mconst[39m experience [33m=[39m [34mextractExperience[39m(text)
+    [90m 62| [39m      [34mexpect[39m(experience[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m 63| [39m      [34mexpect[39m(experience[[34m0[39m][33m.[39mtitle)[33m.[39m[34mtoContain[39m([32m"Software Engineer"[39m)
+    [90m   | [39m                                  [31m^[39m
+    [90m 64| [39m      [34mexpect[39m(experience[[34m0[39m][33m.[39mcompany)[33m.[39m[34mtoContain[39m([32m"Google"[39m)
+    [90m 65| [39m    })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractEducation[2m > [22mshould extract education entries
+[31m[1mAssertionError[22m: expected 'Bachelor of Science in Computer' to contain 'Stanford'[39m
+
+Expected: [32m"Stanford"[39m
+Received: [31m"Bachelor of Science in Computer"[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m91:40[22m[39m
+    [90m 89| [39m      [35mconst[39m education [33m=[39m [34mextractEducation[39m(text)
+    [90m 90| [39m      [34mexpect[39m(education[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m 91| [39m      [34mexpect[39m(education[[34m0[39m][33m.[39minstitution)[33m.[39m[34mtoContain[39m([32m"Stanford"[39m)
+    [90m   | [39m                                       [31m^[39m
+    [90m 92| [39m    })
+    [90m 93| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractCertifications[2m > [22mshould extract certifications with various bullet symbols
+[31m[1mAssertionError[22m: expected 3 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 3[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m143:28[22m[39m
+    [90m141| [39m      `[39m
+    [90m142| [39m      [35mconst[39m certs [33m=[39m [34mextractCertifications[39m(text)
+    [90m143| [39m      [34mexpect[39m(certs[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m4[39m)
+    [90m   | [39m                           [31m^[39m
+    [90m144| [39m    })
+    [90m145| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractSummary[2m > [22mshould extract summary section
+[31m[1mAssertionError[22m: expected '' to contain 'software engineer'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- software engineer[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m194:23[22m[39m
+    [90m192| [39m      `[39m
+    [90m193| [39m      [35mconst[39m summary [33m=[39m [34mextractSummary[39m(text)
+    [90m194| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"software engineer"[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m195| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"5+ years"[39m)
+    [90m196| [39m    })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractSummary[2m > [22mshould handle 'About' heading
+[31m[1mAssertionError[22m: expected '' to contain 'Passionate developer'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Passionate developer[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m231:23[22m[39m
+    [90m229| [39m      `[39m
+    [90m230| [39m      [35mconst[39m summary [33m=[39m [34mextractSummary[39m(text)
+    [90m231| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"Passionate developer"[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m232| [39m    })
+    [90m233| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractSummary[2m > [22mshould stop at next major section
+[31m[1mAssertionError[22m: expected '' to contain 'Great engineer'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Great engineer[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m243:23[22m[39m
+    [90m241| [39m      `[39m
+    [90m242| [39m      [35mconst[39m summary [33m=[39m [34mextractSummary[39m(text)
+    [90m243| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"Great engineer"[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m244| [39m      [34mexpect[39m(summary)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Software Engineer"[39m)
+    [90m245| [39m    })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mextractSummary[2m > [22mshould handle multi-line summaries
+[31m[1mAssertionError[22m: expected '' to contain 'Experienced developer'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Experienced developer[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m256:23[22m[39m
+    [90m254| [39m      `[39m
+    [90m255| [39m      [35mconst[39m summary [33m=[39m [34mextractSummary[39m(text)
+    [90m256| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"Experienced developer"[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m257| [39m      [34mexpect[39m(summary)[33m.[39m[34mtoContain[39m([32m"Full-stack"[39m)
+    [90m258| [39m    })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mparseResumeEnhanced[2m > [22mshould parse a complete resume with all sections
+[31m[1mAssertionError[22m: expected '' to be 'John Doe' // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- John Doe[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m323:35[22m[39m
+    [90m321| [39m      [90m// Contact info[39m
+    [90m322| [39m      [34mexpect[39m(parsed[33m.[39mcontact[33m.[39memail)[33m.[39m[34mtoBe[39m([32m"john.doe@example.com"[39m)
+    [90m323| [39m      [34mexpect[39m(parsed[33m.[39mcontact[33m.[39mname)[33m.[39m[34mtoBe[39m([32m"John Doe"[39m)
+    [90m   | [39m                                  [31m^[39m
+    [90m324| [39m
+    [90m325| [39m      [90m// Summary[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mparseResumeEnhanced[2m > [22mshould handle resume with minimal information
+[31m[1mAssertionError[22m: expected '' to be 'John Doe' // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- John Doe[39m
+
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m350:35[22m[39m
+    [90m348| [39m      `[39m
+    [90m349| [39m      [35mconst[39m parsed [33m=[39m [34mparseResumeEnhanced[39m(text)
+    [90m350| [39m      [34mexpect[39m(parsed[33m.[39mcontact[33m.[39mname)[33m.[39m[34mtoBe[39m([32m"John Doe"[39m)
+    [90m   | [39m                                  [31m^[39m
+    [90m351| [39m      [34mexpect[39m(parsed[33m.[39mcontact[33m.[39memail)[33m.[39m[34mtoBe[39m([32m"john@example.com"[39m)
+    [90m352| [39m      [34mexpect[39m(parsed[33m.[39mexperience)[33m.[39m[34mtoEqual[39m([])
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m __tests__/lib/parsers/enhanced-parser.test.ts[2m > [22mEnhanced Parser[2m > [22mparseResumeEnhanced[2m > [22mshould extract all sections independently
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m __tests__/lib/parsers/enhanced-parser.test.ts:[2m381:40[22m[39m
+    [90m379| [39m      [34mexpect[39m(parsed[33m.[39msummary)[33m.[39m[34mtoBeTruthy[39m()
+    [90m380| [39m      [34mexpect[39m(parsed[33m.[39mcertifications[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m381| [39m      [34mexpect[39m(parsed[33m.[39mexperience[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m   | [39m                                       [31m^[39m
+    [90m382| [39m      [34mexpect[39m(parsed[33m.[39meducation[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m383| [39m    })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m21 passed[39m[22m[90m (31)[39m
+[2m   Start at [22m 14:32:33
+[2m   Duration [22m 960ms[2m (transform 252ms, setup 0ms, collect 304ms, tests 76ms, environment 0ms, prepare 52ms)[22m
+
