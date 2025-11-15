@@ -13,10 +13,10 @@ export const dynamic = "force-dynamic"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const { fileId } = params
+    const { fileId } = await params
 
     if (!fileId) {
       return NextResponse.json(

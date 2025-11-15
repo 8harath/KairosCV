@@ -177,7 +177,7 @@ export async function extractWithVerification(
 
         if (secondExtraction) {
           // Merge missing content from second extraction
-          extractedData = mergExtractions(extractedData, secondExtraction)
+          extractedData = mergeExtractions(extractedData, secondExtraction)
           console.log("✅ Second extraction pass completed")
         }
       }
