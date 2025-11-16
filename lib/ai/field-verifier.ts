@@ -259,16 +259,21 @@ export async function verifyAndResearchResumeData(
 
         // Use corrected value if provided
         if (verification.correctedValue) {
-          (verifiedData as any)[section][field] = verification.correctedValue
+          if (verifiedData && verifiedData[section as keyof typeof verifiedData]) {
+            const sectionData = verifiedData[section as keyof typeof verifiedData] as any
+            sectionData[field] = verification.correctedValue
+          }
           console.log(`✅ Corrected ${key} to: ${verification.correctedValue}`)
 
-          onProgress?.({
-            stage: "verification",
-            field: key,
-            status: "found",
-            message: `Found correct ${field}: "${verification.correctedValue}"`,
-            progress: baseProgress,
-          })
+          if (onProgress) {
+            onProgress({
+              stage: "verification",
+              field: key,
+              status: "found",
+              message: `Found correct ${field}: "${verification.correctedValue}"`,
+              progress: baseProgress,
+            })
+          }
 
           continue
         }
@@ -312,16 +317,21 @@ export async function verifyAndResearchResumeData(
           found = true
           console.log(`✅ Found ${key}: ${foundValue}`)
 
-          onProgress?.({
-            stage: "research",
-            field: key,
-            status: "found",
-            message: `Found ${field}: "${foundValue}"`,
-            progress: baseProgress,
-          })
+          if (onProgress) {
+            onProgress({
+              stage: "research",
+              field: key,
+              status: "found",
+              message: `Found ${field}: "${foundValue}"`,
+              progress: baseProgress,
+            })
+          }
 
           // Update the data
-          (verifiedData as any)[section][field] = foundValue
+          if (verifiedData && verifiedData[section as keyof typeof verifiedData]) {
+            const sectionData = verifiedData[section as keyof typeof verifiedData] as any
+            sectionData[field] = foundValue
+          }
           break
         } else {
           console.log(`❌ Attempt ${attempt} failed for ${key}: ${research.confidence}`)
