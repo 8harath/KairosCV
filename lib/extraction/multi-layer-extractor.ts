@@ -21,7 +21,6 @@ import { PartialResumeData, ResumeData, fillDefaults, safeValidateResumeData } f
 import { saveResumeJSON } from "../storage/resume-json-storage"
 import { extractCompleteResumeVisually, isVisualExtractionAvailable } from "../parsers/visual-extractor-enhanced"
 import { mergeExtractions } from "./intelligent-merger"
-import { getUploadFilePath } from "../file-storage"
 
 export interface ExtractionResult {
   data: ResumeData
@@ -47,6 +46,7 @@ export interface ExtractionResult {
 export async function extractWithVerification(
   rawText: string,
   fileId: string,
+  filePath: string,
   onProgress?: (stage: string, progress: number, message: string) => void
 ): Promise<ExtractionResult> {
   const layers = {
@@ -114,15 +114,12 @@ export async function extractWithVerification(
     // ========================================================================
     onProgress?.("extraction", 45, "🎨 Extracting visual elements (bullets, formatting)...")
 
-    // Get PDF file path from fileId
-    const pdfPath = getUploadFilePath(fileId)
-
     // Check if visual extraction is available and file is PDF
-    if (isVisualExtractionAvailable() && pdfPath.toLowerCase().endsWith('.pdf')) {
+    if (isVisualExtractionAvailable() && filePath.toLowerCase().endsWith('.pdf')) {
       try {
         console.log("🎨 Starting comprehensive visual extraction...")
 
-        const visualExtraction = await extractCompleteResumeVisually(pdfPath, rawText)
+        const visualExtraction = await extractCompleteResumeVisually(filePath, rawText)
 
         console.log(`✅ Visual extraction complete: ${visualExtraction.visualElements.bulletPoints.length} bullets found`)
 
@@ -272,7 +269,7 @@ export async function extractWithVerification(
 
           if (secondExtraction) {
             // Merge missing content from second extraction
-            extractedData = mergeExtractions(extractedData, secondExtraction)
+            extractedData = mergeSimpleExtractions(extractedData, secondExtraction)
             console.log("✅ Second extraction pass completed")
           }
         }
@@ -373,9 +370,9 @@ export async function extractWithVerification(
 }
 
 /**
- * Merge two extraction results to recover missing data
+ * Merge two extraction results to recover missing data (simple merge for text-based extractions)
  */
-function mergeExtractions(primary: any, secondary: any): any {
+function mergeSimpleExtractions(primary: any, secondary: any): any {
   return {
     contact: {
       name: primary.contact?.name || secondary.contact?.name || "",

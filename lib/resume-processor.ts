@@ -285,6 +285,7 @@ export async function* processResume(
     const extractionResult = await extractWithVerification(
       rawText,
       fileId,
+      filePath,
       (stage, progress, message) => {
         // Forward progress updates from extractor
         // Map progress from 25-75
