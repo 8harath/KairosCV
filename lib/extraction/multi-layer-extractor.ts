@@ -64,8 +64,37 @@ export async function extractWithVerification(
 
     let extractedData = await extractCompleteResumeData(rawText)
 
+    // Fallback to regex-based parser if AI extraction fails
     if (!extractedData) {
-      throw new Error("AI extraction failed - no data returned")
+      console.warn("⚠️  AI extraction failed, using fallback parser...")
+      onProgress?.("extraction", 40, "AI unavailable, using fallback parser...")
+
+      const { parseResumeEnhanced } = await import('../parsers/enhanced-parser')
+      const parsedFallback = parseResumeEnhanced(rawText)
+
+      // Convert to expected format
+      extractedData = {
+        contact: parsedFallback.contact,
+        summary: parsedFallback.summary,
+        experience: parsedFallback.experience,
+        education: parsedFallback.education,
+        skills: parsedFallback.skills,
+        projects: parsedFallback.projects,
+        certifications: parsedFallback.certifications?.map(cert => ({
+          name: cert,
+          issuer: "",
+          date: "",
+        })) || [],
+        awards: parsedFallback.awards,
+        publications: parsedFallback.publications,
+        languageProficiency: parsedFallback.languageProficiency,
+        volunteer: parsedFallback.volunteer,
+        hobbies: parsedFallback.hobbies,
+        references: parsedFallback.references,
+        customSections: parsedFallback.customSections,
+      }
+
+      console.log("✅ Fallback parser completed")
     }
 
     console.log("✅ Layer 2: Structured data extracted")
