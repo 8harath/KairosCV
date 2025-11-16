@@ -1,12 +1,15 @@
 "use client"
 
+import ExtractedDataViewer from "./extracted-data-viewer"
+
 interface ResultsPanelProps {
   pdfUrl: string | null
   downloadUrl: string | null
+  fileId: string | null
   onReset: () => void
 }
 
-export default function ResultsPanel({ pdfUrl, downloadUrl, onReset }: ResultsPanelProps) {
+export default function ResultsPanel({ pdfUrl, downloadUrl, fileId, onReset }: ResultsPanelProps) {
   // Use downloadUrl with preview parameter for iframe
   const previewUrl = downloadUrl ? `${downloadUrl}?preview=true` : pdfUrl
 

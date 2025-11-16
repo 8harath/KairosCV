@@ -156,7 +156,7 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} onReset={handleReset} />
+            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
           )}
         </section>
       </div>
