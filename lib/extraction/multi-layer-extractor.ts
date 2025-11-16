@@ -4,8 +4,10 @@
  * Implements a comprehensive extraction strategy with multiple verification layers:
  * Layer 1: Raw text extraction (PDF/DOCX/TXT)
  * Layer 2: Structured data extraction (Gemini AI)
+ * Layer 2.5: Visual extraction and intelligent merging (Gemini Vision 2.0)
  * Layer 3: Field classification and validation
  * Layer 4: Completeness verification
+ * Layer 4.5: Field verification and research
  * Layer 5: Data normalization and cleanup
  */
 
@@ -17,6 +19,9 @@ import {
 } from "../ai/field-classifier"
 import { PartialResumeData, ResumeData, fillDefaults, safeValidateResumeData } from "../schemas/resume-schema"
 import { saveResumeJSON } from "../storage/resume-json-storage"
+import { extractCompleteResumeVisually, isVisualExtractionAvailable } from "../parsers/visual-extractor-enhanced"
+import { mergeExtractions } from "./intelligent-merger"
+import { getUploadFilePath } from "../file-storage"
 
 export interface ExtractionResult {
   data: ResumeData
@@ -28,8 +33,10 @@ export interface ExtractionResult {
   layers: {
     layer1_extraction: boolean
     layer2_structuring: boolean
+    layer2_5_visual: boolean
     layer3_classification: boolean
     layer4_verification: boolean
+    layer4_5_field_research: boolean
     layer5_normalization: boolean
   }
 }
@@ -45,8 +52,10 @@ export async function extractWithVerification(
   const layers = {
     layer1_extraction: false,
     layer2_structuring: false,
+    layer2_5_visual: false,
     layer3_classification: false,
     layer4_verification: false,
+    layer4_5_field_research: false,
     layer5_normalization: false,
   }
 
@@ -99,6 +108,49 @@ export async function extractWithVerification(
 
     console.log("✅ Layer 2: Structured data extracted")
     layers.layer2_structuring = true
+
+    // ========================================================================
+    // LAYER 2.5: Visual Extraction and Intelligent Merging
+    // ========================================================================
+    onProgress?.("extraction", 45, "🎨 Extracting visual elements (bullets, formatting)...")
+
+    // Get PDF file path from fileId
+    const pdfPath = getUploadFilePath(fileId)
+
+    // Check if visual extraction is available and file is PDF
+    if (isVisualExtractionAvailable() && pdfPath.toLowerCase().endsWith('.pdf')) {
+      try {
+        console.log("🎨 Starting comprehensive visual extraction...")
+
+        const visualExtraction = await extractCompleteResumeVisually(pdfPath, rawText)
+
+        console.log(`✅ Visual extraction complete: ${visualExtraction.visualElements.bulletPoints.length} bullets found`)
+
+        // Merge text and visual extractions
+        onProgress?.("extraction", 48, "Merging text and visual extractions...")
+
+        const merged = mergeExtractions(extractedData, visualExtraction)
+
+        console.log(`✅ Merge complete: ${merged.sources.fromVision.length} items from vision`)
+        console.log(`   Completeness: ${merged.completeness}%`)
+
+        // Use merged data going forward
+        extractedData = merged.data
+
+        layers.layer2_5_visual = true
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.warn(`⚠️  Visual extraction failed: ${errorMsg}`)
+        console.log('⚠️  Continuing with text-only extraction')
+        layers.layer2_5_visual = false
+      }
+    } else {
+      const reason = !isVisualExtractionAvailable()
+        ? 'Gemini Vision API not configured'
+        : 'Not a PDF file'
+      console.log(`⏭️  Layer 2.5: Skipped (${reason})`)
+      layers.layer2_5_visual = false
+    }
 
     onProgress?.("extraction", 50, "Validating field classifications...")
 
@@ -270,9 +322,11 @@ export async function extractWithVerification(
       )
 
       console.log("✅ Field verification and research complete")
+      layers.layer4_5_field_research = true
     } else {
       console.log("⏭️  Layer 4.5: Skipped (AI unavailable)")
       onProgress?.("extraction", 85, "Skipping verification (AI unavailable)")
+      layers.layer4_5_field_research = false
     }
 
     onProgress?.("extraction", 90, "Normalizing and cleaning data...")
