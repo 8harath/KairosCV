@@ -52,6 +52,9 @@ export default function ResultsPanel({ pdfUrl, downloadUrl, fileId, onReset }: R
           </a>
         )}
       </div>
+
+      {/* Extracted Data Viewer - Developer View */}
+      <ExtractedDataViewer fileId={fileId} />
     </div>
   )
 }
