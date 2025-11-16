@@ -233,14 +233,56 @@ export async function extractWithVerification(
 
     layers.layer4_verification = true
 
-    onProgress?.("extraction", 85, "Normalizing and cleaning data...")
+    onProgress?.("extraction", 80, "Verifying and researching fields...")
+
+    // ========================================================================
+    // LAYER 4.5: Field Verification and Research (NEW)
+    // ========================================================================
+
+    const { verifyAndResearchResumeData, isVerificationAvailable } = await import('../ai/field-verifier')
+
+    let researchedData = extractedData
+
+    if (isVerificationAvailable()) {
+      console.log("🔍 Starting field verification and research...")
+
+      researchedData = await verifyAndResearchResumeData(
+        extractedData,
+        rawText,
+        (progress) => {
+          // Forward verification progress to user
+          const progressPercent = 80 + (progress.progress / 100) * 10 // Map to 80-90%
+          const statusEmoji = {
+            verifying: "🔍",
+            researching: "🔎",
+            found: "✅",
+            not_found: "❌",
+            valid: "✓",
+            invalid: "⚠️"
+          }[progress.status] || "🔍"
+
+          onProgress?.(
+            "verification",
+            Math.round(progressPercent),
+            `${statusEmoji} ${progress.message}`
+          )
+        }
+      )
+
+      console.log("✅ Field verification and research complete")
+    } else {
+      console.log("⏭️  Layer 4.5: Skipped (AI unavailable)")
+      onProgress?.("extraction", 85, "Skipping verification (AI unavailable)")
+    }
+
+    onProgress?.("extraction", 90, "Normalizing and cleaning data...")
 
     // ========================================================================
     // LAYER 5: Data Normalization and Cleanup
     // ========================================================================
 
     // Fill in defaults for missing required fields
-    const normalizedData = fillDefaults(extractedData as PartialResumeData)
+    const normalizedData = fillDefaults(researchedData as PartialResumeData)
 
     // Validate with Zod schema
     const validation = safeValidateResumeData(normalizedData)
