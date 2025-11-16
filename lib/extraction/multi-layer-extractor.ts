@@ -103,115 +103,132 @@ export async function extractWithVerification(
     onProgress?.("extraction", 50, "Validating field classifications...")
 
     // ========================================================================
-    // LAYER 3: Field Classification and Validation
+    // LAYER 3: Field Classification and Validation (Skip if AI unavailable)
     // ========================================================================
 
-    // Validate contact name
-    if (extractedData.contact?.name) {
-      const nameValidation = await validateFieldPlacement(
-        "name",
-        extractedData.contact.name,
-        "person's full name"
-      )
+    const { isGeminiConfigured } = await import('../ai/gemini-service')
 
-      if (!nameValidation.isCorrect && nameValidation.suggestedField) {
-        console.warn(
-          `⚠️  Name field might be incorrect. Suggested: ${nameValidation.suggestedField}`
+    if (isGeminiConfigured()) {
+      // Validate contact name
+      if (extractedData.contact?.name) {
+        const nameValidation = await validateFieldPlacement(
+          "name",
+          extractedData.contact.name,
+          "person's full name"
         )
-      }
-    }
 
-    // Validate and categorize skills if they exist
-    if (extractedData.skills) {
-      const allSkills = [
-        ...(extractedData.skills.languages || []),
-        ...(extractedData.skills.frameworks || []),
-        ...(extractedData.skills.tools || []),
-        ...(extractedData.skills.databases || []),
-      ]
-
-      if (allSkills.length > 0) {
-        onProgress?.("extraction", 60, "Categorizing technical skills...")
-
-        const categorized = await categorizeSkillsBatch(allSkills)
-
-        // Update skills with correct categorization
-        extractedData.skills = {
-          languages: categorized.languages,
-          frameworks: categorized.frameworks,
-          tools: categorized.tools,
-          databases: categorized.databases,
-        }
-
-        console.log("✅ Layer 3: Skills categorized correctly")
-      }
-    }
-
-    // Validate experience entries
-    if (extractedData.experience && extractedData.experience.length > 0) {
-      for (const exp of extractedData.experience) {
-        // Validate company name
-        if (exp.company) {
-          const companyValidation = await validateFieldPlacement(
-            "company",
-            exp.company,
-            "company name"
+        if (!nameValidation.isCorrect && nameValidation.suggestedField) {
+          console.warn(
+            `⚠️  Name field might be incorrect. Suggested: ${nameValidation.suggestedField}`
           )
+        }
+      }
 
-          if (!companyValidation.isCorrect) {
-            console.warn(
-              `⚠️  Company field might be incorrect: "${exp.company}"`
+      // Validate and categorize skills if they exist
+      if (extractedData.skills) {
+        const allSkills = [
+          ...(extractedData.skills.languages || []),
+          ...(extractedData.skills.frameworks || []),
+          ...(extractedData.skills.tools || []),
+          ...(extractedData.skills.databases || []),
+        ]
+
+        if (allSkills.length > 0) {
+          onProgress?.("extraction", 60, "Categorizing technical skills...")
+
+          const categorized = await categorizeSkillsBatch(allSkills)
+
+          // Update skills with correct categorization
+          extractedData.skills = {
+            languages: categorized.languages,
+            frameworks: categorized.frameworks,
+            tools: categorized.tools,
+            databases: categorized.databases,
+          }
+
+          console.log("✅ Layer 3: Skills categorized correctly")
+        }
+      }
+
+      // Validate experience entries
+      if (extractedData.experience && extractedData.experience.length > 0) {
+        for (const exp of extractedData.experience) {
+          // Validate company name
+          if (exp.company) {
+            const companyValidation = await validateFieldPlacement(
+              "company",
+              exp.company,
+              "company name"
             )
+
+            if (!companyValidation.isCorrect) {
+              console.warn(
+                `⚠️  Company field might be incorrect: "${exp.company}"`
+              )
+            }
           }
-        }
 
-        // Validate job title
-        if (exp.title) {
-          const titleValidation = await validateFieldPlacement(
-            "title",
-            exp.title,
-            "job title"
-          )
+          // Validate job title
+          if (exp.title) {
+            const titleValidation = await validateFieldPlacement(
+              "title",
+              exp.title,
+              "job title"
+            )
 
-          if (!titleValidation.isCorrect) {
-            console.warn(`⚠️  Job title might be incorrect: "${exp.title}"`)
+            if (!titleValidation.isCorrect) {
+              console.warn(`⚠️  Job title might be incorrect: "${exp.title}"`)
+            }
           }
         }
       }
+
+      console.log("✅ Layer 3: Field classification validated")
+    } else {
+      console.log("⏭️  Layer 3: Skipped (AI unavailable)")
     }
 
-    console.log("✅ Layer 3: Field classification validated")
     layers.layer3_classification = true
 
     onProgress?.("extraction", 75, "Verifying data completeness...")
 
     // ========================================================================
-    // LAYER 4: Completeness Verification
+    // LAYER 4: Completeness Verification (Skip if AI unavailable)
     // ========================================================================
 
-    const completenessCheck = await verifyDataCompleteness(rawText, extractedData)
+    let completenessCheck = {
+      complete: true,
+      missingContent: [] as string[],
+      confidence: 0.8,
+    }
 
-    if (!completenessCheck.complete) {
-      console.warn("⚠️  Data extraction might be incomplete:")
-      completenessCheck.missingContent.forEach((item, index) => {
-        console.warn(`   ${index + 1}. ${item}`)
-      })
+    if (isGeminiConfigured()) {
+      completenessCheck = await verifyDataCompleteness(rawText, extractedData)
 
-      // Re-extract if confidence is low and missing content is significant
-      if (completenessCheck.confidence < 0.7 && completenessCheck.missingContent.length > 3) {
-        console.log("🔄 Attempting second extraction pass...")
-        onProgress?.("extraction", 78, "Re-extracting missing content...")
+      if (!completenessCheck.complete) {
+        console.warn("⚠️  Data extraction might be incomplete:")
+        completenessCheck.missingContent.forEach((item, index) => {
+          console.warn(`   ${index + 1}. ${item}`)
+        })
 
-        const secondExtraction = await extractCompleteResumeData(rawText)
+        // Re-extract if confidence is low and missing content is significant
+        if (completenessCheck.confidence < 0.7 && completenessCheck.missingContent.length > 3) {
+          console.log("🔄 Attempting second extraction pass...")
+          onProgress?.("extraction", 78, "Re-extracting missing content...")
 
-        if (secondExtraction) {
-          // Merge missing content from second extraction
-          extractedData = mergeExtractions(extractedData, secondExtraction)
-          console.log("✅ Second extraction pass completed")
+          const secondExtraction = await extractCompleteResumeData(rawText)
+
+          if (secondExtraction) {
+            // Merge missing content from second extraction
+            extractedData = mergeExtractions(extractedData, secondExtraction)
+            console.log("✅ Second extraction pass completed")
+          }
         }
+      } else {
+        console.log(`✅ Layer 4: Data completeness verified (${(completenessCheck.confidence * 100).toFixed(0)}% confidence)`)
       }
     } else {
-      console.log(`✅ Layer 4: Data completeness verified (${(completenessCheck.confidence * 100).toFixed(0)}% confidence)`)
+      console.log("⏭️  Layer 4: Skipped (AI unavailable)")
     }
 
     layers.layer4_verification = true
