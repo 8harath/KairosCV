@@ -27,6 +27,11 @@
   --white-95: #fafafa;
   --white-90: #f5f5f5;
 
+  /* Accent color - Sky Blue for trust and modernity */
+  --accent-blue: #0EA5E9;
+  --accent-blue-light: #38BDF8;
+  --accent-blue-dark: #0284C7;
+
   /* Semantic colors */
   --background: var(--white-100);
   --foreground: var(--black-100);
@@ -40,7 +45,7 @@
   --secondary-foreground: var(--black-100);
   --muted: var(--gray-10);
   --muted-foreground: var(--gray-70);
-  --accent: var(--black-80);
+  --accent: var(--accent-blue);
   --accent-foreground: var(--white-100);
   --destructive: #dc2626;
   --destructive-foreground: var(--white-100);
@@ -48,7 +53,7 @@
   --success-foreground: var(--white-100);
   --border: var(--black-100);
   --input: var(--white-100);
-  --ring: var(--black-100);
+  --ring: var(--accent-blue);
 
   /* 8px spacing system */
   --space-1: 0.5rem;  /* 8px */
@@ -62,6 +67,12 @@
   --space-12: 6rem;   /* 96px */
   --space-16: 8rem;   /* 128px */
 
+  /* Border radius - Soft Brutalism */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius: 0;
 }
 
@@ -153,117 +164,149 @@
   }
 }
 
-/* Enhanced Neobrutalism component styles with visual weight hierarchy */
+/* Soft Brutalism component styles - 20% refined with subtle curves */
 
 /* Primary CTA - Heaviest visual weight */
 .btn {
-  @apply bg-primary text-primary-foreground border-4 border-primary font-bold uppercase tracking-wide cursor-pointer;
+  @apply bg-primary text-primary-foreground border-3 border-primary font-bold uppercase tracking-wide cursor-pointer;
   padding: var(--space-3) var(--space-6);
-  box-shadow: 6px 6px 0px var(--foreground);
+  border-radius: var(--radius-sm);
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.15);
   letter-spacing: 0.05em;
   min-height: 44px;
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0px var(--foreground);
+  box-shadow: 7px 7px 0px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--foreground);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .btn:focus-visible {
-  outline: 3px solid var(--foreground);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* Hero CTA - Extra emphasis */
+/* Hero CTA - Extra emphasis with accent color option */
 .btn-hero {
-  @apply bg-primary text-primary-foreground border-4 border-primary font-black uppercase tracking-wide cursor-pointer;
+  @apply bg-primary text-primary-foreground border-3 border-primary font-black uppercase tracking-wide cursor-pointer;
   padding: var(--space-4) var(--space-8);
-  box-shadow: 8px 8px 0px var(--foreground);
+  border-radius: var(--radius-md);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
   font-size: 1.125rem;
   letter-spacing: 0.05em;
   min-height: 56px;
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-hero:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 11px 11px 0px var(--foreground);
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.25);
 }
 
 .btn-hero:active {
   transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0px var(--foreground);
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.15);
+}
+
+/* Accent button variant - Sky Blue for trust/interactive elements */
+.btn-accent {
+  @apply bg-accent text-accent-foreground border-3 border-accent font-bold uppercase tracking-wide cursor-pointer;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-sm);
+  box-shadow: 5px 5px 0px rgba(14, 165, 233, 0.3);
+  letter-spacing: 0.05em;
+  min-height: 44px;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-accent:hover {
+  background: var(--accent-blue-light);
+  border-color: var(--accent-blue-light);
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px rgba(14, 165, 233, 0.4);
+}
+
+.btn-accent:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px rgba(14, 165, 233, 0.2);
 }
 
 /* Secondary button - Medium weight */
 .btn-secondary {
-  @apply bg-white text-primary border-3 border-primary font-bold uppercase tracking-wide cursor-pointer;
+  @apply bg-white text-primary border-2 border-primary font-bold uppercase tracking-wide cursor-pointer;
   padding: var(--space-3) var(--space-6);
-  box-shadow: 4px 4px 0px var(--foreground);
+  border-radius: var(--radius-sm);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.12);
   letter-spacing: 0.05em;
   min-height: 44px;
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-secondary:hover {
   @apply bg-secondary;
   transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px var(--foreground);
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--foreground);
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.08);
 }
 
 /* Ghost button - Minimal weight */
 .btn-ghost {
   @apply bg-transparent text-foreground border-2 border-transparent font-semibold;
   padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
   min-height: 44px;
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-ghost:hover {
   @apply border-foreground;
-  box-shadow: 2px 2px 0px var(--foreground);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
-/* Cards - Light weight */
+/* Cards - Light weight with subtle radius */
 .card {
   @apply bg-card border-2 border-border;
   padding: var(--space-6);
-  box-shadow: 4px 4px 0px var(--foreground);
-  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.08);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-interactive {
   @apply bg-card border-2 border-border cursor-pointer;
   padding: var(--space-6);
-  box-shadow: 4px 4px 0px var(--foreground);
-  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.08);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-interactive:hover {
   transform: translateY(-4px);
-  box-shadow: 6px 8px 0px var(--foreground);
+  box-shadow: 6px 8px 0px rgba(0, 0, 0, 0.12);
 }
 
 .card-elevated {
-  @apply bg-card border-3 border-border;
+  @apply bg-card border-2 border-border;
   padding: var(--space-8);
-  box-shadow: 8px 8px 0px var(--foreground);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.12);
 }
 
 .upload-zone {
@@ -624,6 +667,41 @@ textarea:focus-visible {
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Document Transform Animations */
+@keyframes fade-out {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 2s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
 }
 
 .animate-in {

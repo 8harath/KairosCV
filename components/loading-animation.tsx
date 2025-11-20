@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import LoadingDocumentTransform from "./LoadingDocumentTransform"
 
+/**
+ * Main loading screen animation for the application
+ * Features the document transform animation with soft brutalism styling
+ */
 export default function LoadingAnimation() {
   const [lettersVisible, setLettersVisible] = useState(0)
 
@@ -22,35 +27,22 @@ export default function LoadingAnimation() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-      <div className="relative">
-        {/* Animated geometric shapes */}
-        <div className="relative w-64 h-64">
-          {/* Outer square */}
-          <div className="absolute inset-0 border-3 border-primary bg-secondary animate-pulse-neobrutal" />
-
-          {/* Middle square */}
-          <div className="absolute inset-8 border-3 border-primary bg-primary animate-pulse-neobrutal-delay-1" />
-
-          {/* Inner square */}
-          <div className="absolute inset-16 border-3 border-primary bg-secondary animate-pulse-neobrutal-delay-2" />
-
-          {/* Animated rectangles */}
-          <div className="absolute top-2 left-2 w-12 h-4 border-2 border-primary bg-primary animate-slide-neobrutal" />
-          <div className="absolute bottom-2 right-2 w-12 h-4 border-2 border-primary bg-primary animate-slide-neobrutal-delay" />
-        </div>
+      <div className="relative text-center">
+        {/* Document Transform Animation */}
+        <LoadingDocumentTransform />
 
         {/* KAIROSCV text animation */}
-        <div className="mt-12 text-center">
+        <div className="mt-8">
           <div className="inline-block">
             {"KAIROSCV".split("").map((letter, idx) => (
               <span
                 key={idx}
-                className={`inline-block text-4xl md:text-5xl font-black text-primary tracking-widest loading-letter ${
+                className={`inline-block text-3xl md:text-4xl font-black text-primary tracking-wide loading-letter ${
                   idx < lettersVisible ? "letter-visible" : "letter-hidden"
                 }`}
                 style={{
                   fontFamily: "var(--font-display)",
-                  letterSpacing: "0.15em",
+                  letterSpacing: "0.1em",
                   animationDelay: `${idx * 0.1}s`,
                 }}
               >
@@ -58,10 +50,13 @@ export default function LoadingAnimation() {
               </span>
             ))}
           </div>
-          <div className="mt-4 w-48 h-2 border-2 border-primary bg-primary mx-auto loading-bar" />
+
+          {/* Animated progress bar */}
+          <div className="mt-6 w-64 h-2 bg-gray-10 mx-auto rounded-full overflow-hidden">
+            <div className="h-full bg-accent animate-pulse" style={{ width: '60%' }} />
+          </div>
         </div>
       </div>
     </div>
   )
 }
-

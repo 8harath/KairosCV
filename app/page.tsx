@@ -32,8 +32,12 @@ export default function HomePage() {
               Optimize Your Resume Now
               <ArrowRightIcon className="w-5 h-5" />
             </Link>
-            <Link href="/intent" className="text-sm font-semibold underline hover:no-underline transition-all">
-              See how it works →
+            <Link
+              href="/intent"
+              className="text-sm font-semibold text-accent hover:text-accent-blue-dark transition-colors flex items-center gap-1"
+            >
+              See how it works
+              <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
 
