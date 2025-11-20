@@ -26,7 +26,14 @@
       "Bash(pnpm remove:*)",
       "Bash(find:*)",
       "Bash(npx tsc:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git tag:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(sudo apt-get update:*)",
+      "Bash(sudo apt-get install:*)",
+      "Bash(pdflatex:*)"
     ],
     "deny": [],
     "ask": []
