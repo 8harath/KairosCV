@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Header from "@/components/header"
+import Footer from "@/components/Footer"
 import { useForm } from "react-hook-form"
 import emailjs from "@emailjs/browser"
 import { toast } from "@/hooks/use-toast"
@@ -86,10 +87,8 @@ export default function ContactPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto">
           {/* Page Title */}
-          <div className="mb-12">
-            <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-widest uppercase">
-              CONTACT
-            </h1>
+          <div className="mb-12 animate-in fade-in">
+            <h1 className="mb-4">Contact Us</h1>
             <div className="w-24 h-1 bg-primary"></div>
           </div>
 
@@ -97,7 +96,7 @@ export default function ContactPage() {
             {/* Contact Info */}
             <div className="space-y-6">
               <div className="card">
-                <h2 className="text-2xl font-bold mb-4 uppercase">GET IN TOUCH</h2>
+                <h3 className="mb-4">Get in Touch</h3>
                 <p className="text-base text-muted-foreground mb-6">
                   Have questions, feedback, or suggestions? We&apos;d love to hear from you.
                 </p>
@@ -275,24 +274,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t-3 border-primary py-8 mt-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © 2025 KairosCV. Built with purpose.
-            </p>
-            <div className="flex gap-4">
-              <Link href="/" className="text-sm hover:text-primary transition-colors">
-                HOME
-              </Link>
-              <Link href="/intent" className="text-sm hover:text-primary transition-colors">
-                INTENT
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   )
 }

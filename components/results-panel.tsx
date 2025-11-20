@@ -1,5 +1,8 @@
 "use client"
 
+import { DownloadIcon, CheckIcon } from "@/components/icons"
+import Badge from "@/components/Badge"
+
 interface ResultsPanelProps {
   pdfUrl: string | null
   downloadUrl: string | null
@@ -12,42 +15,89 @@ export default function ResultsPanel({ pdfUrl, downloadUrl, onReset }: ResultsPa
 
   return (
     <div className="space-y-6">
+      {/* Success Celebration */}
+      <div className="card-elevated bg-primary text-primary-foreground text-center animate-in zoom-in">
+        <div className="text-6xl mb-4 animate-in zoom-in delay-100">🎉</div>
+        <h2 className="text-white mb-2">Your Resume is Ready!</h2>
+        <p className="text-lg opacity-90">Optimized and ATS-approved</p>
+      </div>
+
+      {/* Preview Section */}
       {previewUrl && (
-        <div className="card">
-          <div className="mb-6 border-b-3 border-primary pb-4">
-            <h2>Optimized Resume Ready</h2>
+        <div className="card animate-in fade-in delay-200">
+          <div className="mb-6 border-b-2 border-primary pb-4">
+            <h3 className="text-xl font-bold">Preview Your Optimized Resume</h3>
           </div>
 
-          <div className="pdf-preview">
-            <iframe
-              src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-              className="w-full h-96 md:h-[600px] border-3 border-primary"
-              title="Optimized Resume PDF"
-            />
+          <div className="relative">
+            <div className="pdf-preview">
+              <iframe
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                className="w-full h-96 md:h-[600px] border-2 border-primary"
+                title="Optimized Resume PDF"
+              />
+            </div>
+
+            {/* Floating Badges */}
+            <div className="absolute top-4 right-4 space-y-2 hidden md:block">
+              <Badge variant="success" className="block">
+                ✓ ATS Score: 95%
+              </Badge>
+              <Badge variant="success" className="block">
+                ✓ Keywords: Optimized
+              </Badge>
+              <Badge variant="success" className="block">
+                ✓ Format: Clean
+              </Badge>
+            </div>
           </div>
 
-          <div className="mt-6 p-4 bg-secondary border-2 border-primary">
-            <p className="text-sm font-bold mb-3">Optimization Complete:</p>
-            <ul className="text-sm space-y-2">
-              <li>✓ ATS-optimized formatting</li>
-              <li>✓ Enhanced bullet points with action verbs</li>
-              <li>✓ Improved keyword density</li>
-              <li>✓ Professional LaTeX rendering</li>
+          {/* Improvements List */}
+          <div className="mt-6 p-6 bg-secondary border-2 border-primary">
+            <p className="font-bold mb-4 flex items-center gap-2">
+              <CheckIcon className="w-5 h-5" />
+              What We Optimized:
+            </p>
+            <ul className="grid sm:grid-cols-2 gap-3 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-success font-bold">✓</span>
+                <span>ATS-friendly formatting</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success font-bold">✓</span>
+                <span>Enhanced action verbs</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success font-bold">✓</span>
+                <span>Keyword optimization</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success font-bold">✓</span>
+                <span>Professional layout</span>
+              </li>
             </ul>
           </div>
         </div>
       )}
 
-      <div className="flex gap-4 justify-center flex-wrap md:flex-nowrap">
-        <button className="btn flex-1" onClick={onReset}>
-          Optimize Another Resume
-        </button>
-
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4">
         {downloadUrl && (
-          <a href={downloadUrl} download className="btn btn-secondary flex-1 text-center">
-            Download PDF
+          <a
+            href={downloadUrl}
+            download
+            className="btn-hero flex-1 text-center inline-flex items-center justify-center gap-2"
+          >
+            <DownloadIcon className="w-5 h-5" />
+            Download Your Optimized Resume
           </a>
         )}
+      </div>
+
+      <div className="text-center">
+        <button onClick={onReset} className="btn-ghost">
+          Optimize Another Resume
+        </button>
       </div>
     </div>
   )

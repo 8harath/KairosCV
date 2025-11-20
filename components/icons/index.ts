@@ -1,0 +1,6 @@
+export { default as UploadIcon } from './UploadIcon'
+export { default as CheckIcon } from './CheckIcon'
+export { default as DownloadIcon } from './DownloadIcon'
+export { default as ArrowRightIcon } from './ArrowRightIcon'
+export { default as SparklesIcon } from './SparklesIcon'
+export { default as FileIcon } from './FileIcon'
