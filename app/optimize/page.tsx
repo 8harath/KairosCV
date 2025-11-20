@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Header from "@/components/header"
+import Footer from "@/components/Footer"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
@@ -160,6 +161,8 @@ export default function Home() {
           )}
         </section>
       </div>
+
+      <Footer />
     </main>
   )
 }
