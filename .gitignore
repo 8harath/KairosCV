@@ -45,3 +45,6 @@ IMPLEMENTATION_SUMMARY.md
 # temp files
 test-puppeteer.jsBackend_Modified/__pycache__/
 *.pyc
+Backend_Modified/venv/
+Backend_Modified/generated_pdfs/
+Backend_Modified/latex_output/

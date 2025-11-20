@@ -31,36 +31,31 @@ pip list | grep fastapi
 
 ---
 
-## Step 2: Google Cloud Vertex AI Setup
+## Step 2: Groq API Setup (FREE)
 
-### 2.1 Create Service Account
+### 2.1 Get Groq API Key
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Navigate to **IAM & Admin > Service Accounts**
-3. Click **Create Service Account**
-4. Name it: `kairoscv-vertex-ai`
-5. Grant role: **Vertex AI User**
-6. Create and download JSON key
+1. Go to [Groq Console](https://console.groq.com/)
+2. Sign up/Login (completely free, no credit card required)
+3. Navigate to **API Keys**
+4. Click **Create API Key**
+5. Copy your API key
 
 ### 2.2 Configure Environment Variables
 
-Edit the `.env` file:
+Edit the `.env` file and add your Groq API key:
 
 ```bash
-# Update these values
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service-account-key.json
-VERTEX_AI_PROJECT=your-gcp-project-id
-VERTEX_AI_LOCATION=us-central1
-VERTEX_AI_MODEL=gemini-1.5-flash-001
+GROQ_API_KEY=your-groq-api-key-here
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-**Required:**
-- `GOOGLE_APPLICATION_CREDENTIALS` - Path to your service account JSON key
-- `VERTEX_AI_PROJECT` - Your Google Cloud project ID
+**Note:** Get your free API key from [Groq Console](https://console.groq.com/keys).
 
-**Optional (have defaults):**
-- `VERTEX_AI_LOCATION` - Default: `us-central1`
-- `VERTEX_AI_MODEL` - Default: `gemini-1.5-flash-001`
+**Available Models:**
+- `llama-3.3-70b-versatile` (Recommended - Best quality)
+- `llama-3.1-8b-instant` (Faster, lower quality)
+- `mixtral-8x7b-32768` (Good balance)
 
 ---
 

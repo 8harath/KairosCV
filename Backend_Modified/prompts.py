@@ -23,7 +23,7 @@ LATEX_CONVERSION_PROMPT = """You are an expert LaTeX formatter for professional 
 
 REQUIREMENTS:
 - Use the template structure provided below
-- Escape ALL special LaTeX characters: & % $ # _ { } ~ ^ \\
+- Escape ALL special LaTeX characters: & % $ # _ {{ }} ~ ^ \\
 - Format dates consistently as "Month Year" (e.g., "Jan 2022")
 - Use proper LaTeX syntax and commands
 - Ensure output compiles with pdflatex
@@ -37,7 +37,7 @@ RESUME CONTENT (JSON format):
 LATEX TEMPLATE STRUCTURE:
 {latex_template}
 
-Return ONLY the complete LaTeX code. Start with \\documentclass and end with \\end{{document}}.
+Return ONLY the complete LaTeX code. Start with \\documentclass and end with \\end{{{{document}}}}.
 Do NOT use markdown code blocks or explanations.
 """
 

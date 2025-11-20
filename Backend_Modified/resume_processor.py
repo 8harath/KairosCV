@@ -4,7 +4,7 @@ import logging
 import datetime
 
 # LangChain imports
-from langchain_google_vertexai import ChatVertexAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableSequence
@@ -27,27 +27,25 @@ def setup_resume_tailoring_chain(
     parsers, and returns both the resume tailoring and LaTeX conversion chains.
     """
     # Get configuration from environment variables
-    project = os.getenv("VERTEX_AI_PROJECT")
-    location = os.getenv("VERTEX_AI_LOCATION", "us-central1")
-    model_name = model_name or os.getenv("VERTEX_AI_MODEL", "gemini-1.5-flash-001")
+    api_key = os.getenv("GROQ_API_KEY")
+    model_name = model_name or os.getenv("GROQ_MODEL", "llama-3.1-70b-versatile")
 
-    if not project:
-        logger.error("VERTEX_AI_PROJECT environment variable not set")
-        raise ValueError("VERTEX_AI_PROJECT environment variable is required")
+    if not api_key:
+        logger.error("GROQ_API_KEY environment variable not set")
+        raise ValueError("GROQ_API_KEY environment variable is required")
 
     # Initialize the model
     try:
-        logger.info(f"Initializing model: {model_name} (project={project}, location={location})...")
-        llm = ChatVertexAI(
-            model_name=model_name,
-            project=project,
-            location=location,
+        logger.info(f"Initializing Groq model: {model_name}...")
+        llm = ChatGroq(
+            model=model_name,
+            groq_api_key=api_key,
             temperature=temperature,
         )
-        logger.info("Model initialized successfully.")
+        logger.info("Groq model initialized successfully.")
     except Exception as e:
-        logger.error(f"Error initializing model: {e}", exc_info=True)
-        raise RuntimeError(f"Could not initialize model: {e}")
+        logger.error(f"Error initializing Groq model: {e}", exc_info=True)
+        raise RuntimeError(f"Could not initialize Groq model: {e}")
 
     # 4. Create Prompt Templates
     resume_prompt = ChatPromptTemplate.from_template(RESUME_TAILORING_PROMPT)

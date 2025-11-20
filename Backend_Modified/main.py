@@ -5,6 +5,10 @@ import logging
 import time
 import json
 import shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from fastapi import (
     FastAPI,
