@@ -30,7 +30,7 @@ google-crc32c==1.7.1
 google-genai==1.20.0
 google-resumable-media==2.7.2
 googleapis-common-protos==1.69.2
-gotrue==2.12.0
+# gotrue==2.12.0  # Not needed - removed auth
 greenlet==3.1.1
 grpc-google-iam-v1==0.14.2
 grpcio==1.71.0
@@ -69,7 +69,7 @@ orjson==3.10.16
 packaging==24.2
 pdflatex==0.1.3
 pluggy==1.5.0
-postgrest==1.0.1
+# postgrest==1.0.1  # Not needed - removed Supabase
 propcache==0.3.1
 proto-plus==1.26.1
 protobuf==5.29.4
@@ -81,7 +81,7 @@ pydantic-extra-types==2.10.3
 pydantic-settings==2.8.1
 pydantic_core==2.33.1
 Pygments==2.19.1
-PyJWT==2.10.1
+# PyJWT==2.10.1  # Not needed - removed auth
 PyMuPDF==1.25.5
 pypdf==5.4.0
 pytest==8.3.5
@@ -92,7 +92,7 @@ python-dotenv==1.1.0
 python-json-logger==3.3.0
 python-multipart==0.0.20
 PyYAML==6.0.2
-realtime==2.4.2
+# realtime==2.4.2  # Not needed - removed Supabase
 regex==2024.11.6
 requests==2.32.3
 requests-toolbelt==1.0.0
@@ -105,11 +105,11 @@ six==1.17.0
 sniffio==1.3.1
 SQLAlchemy==2.0.40
 starlette==0.46.1
-storage3==0.11.3
+# storage3==0.11.3  # Not needed - removed Supabase
 StrEnum==0.4.15
-stripe==12.0.0
-supabase==2.15.0
-supafunc==0.9.4
+# stripe==12.0.0  # Not needed - removed payments
+# supabase==2.15.0  # Not needed - removed Supabase
+# supafunc==0.9.4  # Not needed - removed Supabase
 tenacity==9.1.2
 tiktoken==0.9.0
 tqdm==4.67.1
@@ -125,4 +125,4 @@ watchfiles==1.0.4
 websockets==14.2
 yarl==1.19.0
 zstandard==0.23.0
-resend==2.15.0
+# resend==2.15.0  # Not needed - removed email service

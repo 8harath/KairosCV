@@ -1,0 +1,87 @@
+{
+  "basicInfo": {
+    "fullName": "John Doe",
+    "phone": "+1 (555) 123-4567",
+    "email": "john.doe@example.com",
+    "linkedin": "https://linkedin.com/in/johndoe",
+    "github": "https://github.com/johndoe",
+    "website": "https://johndoe.dev"
+  },
+  "education": [
+    {
+      "id": "edu1",
+      "institution": "University of Technology",
+      "location": "San Francisco, CA",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "2018-09",
+      "endDate": "2022-05",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp1",
+      "organization": "Tech Corp",
+      "jobTitle": "Software Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "2022-06",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Developed and maintained RESTful APIs serving 1M+ daily active users using Python and FastAPI",
+        "Implemented CI/CD pipelines reducing deployment time by 60% using GitHub Actions and Docker",
+        "Collaborated with cross-functional teams to design and launch 3 major product features",
+        "Optimized database queries resulting in 40% improvement in application response time"
+      ]
+    },
+    {
+      "id": "exp2",
+      "organization": "Startup Inc",
+      "jobTitle": "Junior Developer",
+      "location": "Remote",
+      "startDate": "2021-06",
+      "endDate": "2022-05",
+      "isPresent": false,
+      "description": [
+        "Built responsive web applications using React and TypeScript",
+        "Integrated third-party APIs and payment gateways (Stripe, PayPal)",
+        "Participated in agile development process with daily standups and sprint planning"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj1",
+      "name": "AI Resume Optimizer",
+      "technologies": "Python, FastAPI, Google Gemini, LaTeX",
+      "startDate": "2024-01",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Developed an AI-powered resume optimization platform using Google Gemini API",
+        "Implemented LaTeX PDF generation pipeline with 95% success rate",
+        "Built RESTful API with authentication and rate limiting capabilities"
+      ]
+    },
+    {
+      "id": "proj2",
+      "name": "E-commerce Platform",
+      "technologies": "Next.js, PostgreSQL, Stripe",
+      "startDate": "2023-03",
+      "endDate": "2023-09",
+      "isPresent": false,
+      "description": [
+        "Created full-stack e-commerce platform with shopping cart and checkout flow",
+        "Integrated Stripe payment processing and webhook handling",
+        "Implemented product search with filters and pagination"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, JavaScript, TypeScript, SQL, Java",
+    "frameworks": "FastAPI, React, Next.js, Node.js, Express",
+    "developerTools": "Git, Docker, GitHub Actions, VS Code, Postman",
+    "libraries": "Pandas, NumPy, LangChain, TailwindCSS, Prisma"
+  }
+}

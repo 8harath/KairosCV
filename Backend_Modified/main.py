@@ -4,6 +4,7 @@ import sys
 import logging
 import time
 import json
+import shutil
 
 from fastapi import (
     FastAPI,
@@ -11,7 +12,6 @@ from fastapi import (
     UploadFile,
     Form,
     HTTPException,
-    Depends,
     Request,
     Header,
     status,
@@ -19,12 +19,10 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # Import from project modules
 from models import (
     TailoredResumeResponse,
-    User,
     MessageResponse,
     ResumeData,
     JsonToLatexResponse,
@@ -35,13 +33,7 @@ from resume_processor import (
     generate_tailored_resume,
     generate_latex_resume,
 )
-from auth import bearer_scheme
 from latex_converter import convert_latex_to_pdf
-from auth_utils import get_user_id_from_jwt
-from usage import check_user_usage_limits, increment_user_usage
-from supabase_utils import upload_pdf_to_bucket, insert_resume_record
-from email_service import send_resume_conversion_notification
-import shutil
 
 # --- Initial Setup ---
 
@@ -98,7 +90,6 @@ async def health_check():
 
 @app.post("/tailor", tags=["Resume"], response_model=TailoredResumeResponse)
 async def tailor_resume_endpoint(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
     job_description: str = Form(
         ..., min_length=50, description="The full text of the job description."
     ),
@@ -108,28 +99,8 @@ async def tailor_resume_endpoint(
 ):
     """
     Receives a job description and a resume file, tailors the resume,
-    and returns the result.
+    and returns the result. (No authentication required)
     """
-    # Extract user_id from JWT
-    user_id = get_user_id_from_jwt(credentials)
-    logger.info(f"Request from user_id: {user_id}")
-
-    # Check usage limits
-    daily, monthly = check_user_usage_limits(user_id)
-    daily_current_str = (
-        str(daily.current_usage) if hasattr(daily, "current_usage") else str(daily)
-    )
-    daily_limit_str = str(daily.limit) if hasattr(daily, "limit") else "N/A"
-    monthly_current_str = (
-        str(monthly.current_usage)
-        if hasattr(monthly, "current_usage")
-        else str(monthly)
-    )
-    monthly_limit_str = str(monthly.limit) if hasattr(monthly, "limit") else "N/A"
-    logger.info(
-        f"User usage: Daily={daily_current_str}/{daily_limit_str}, Monthly={monthly_current_str}/{monthly_limit_str}"
-    )
-
     start_time = time.time()
     logger.info(f"Received tailor request for file '{resume_file.filename}'.")
 
@@ -162,9 +133,6 @@ async def tailor_resume_endpoint(
         processing_time_ms = (end_time - start_time) * 1000
         logger.info(f"Request completed in {processing_time_ms:.2f} ms.")
 
-        # Increment usage counters
-        increment_user_usage(user_id, daily, monthly)
-
         return TailoredResumeResponse(
             filename=resume_file.filename,
             original_content_length=len(original_resume_text),
@@ -191,32 +159,15 @@ async def tailor_resume_endpoint(
 
 @app.post("/convert-latex", tags=["Resume"])
 async def convert_to_latex_endpoint(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
     resume_file: UploadFile = File(
         ..., description="The user's resume file (PDF, DOCX, MD, DOC)."
     ),
 ) -> Response:
     """
     Converts a resume file to LaTeX format and returns a compiled PDF.
-    Adds JWT authentication, user usage limit check, and removes Stripe dependencies.
+    No authentication required.
     """
-    # Extract user_id from JWT
-    user_id = get_user_id_from_jwt(credentials)
-    # Check usage limits
-    daily, monthly = check_user_usage_limits(user_id)
-    daily_current_str = (
-        str(daily.current_usage) if hasattr(daily, "current_usage") else str(daily)
-    )
-    daily_limit_str = str(daily.limit) if hasattr(daily, "limit") else "N/A"
-    monthly_current_str = (
-        str(monthly.current_usage)
-        if hasattr(monthly, "current_usage")
-        else str(monthly)
-    )
-    monthly_limit_str = str(monthly.limit) if hasattr(monthly, "limit") else "N/A"
-    logger.info(
-        f"User usage: Daily={daily_current_str}/{daily_limit_str}, Monthly={monthly_current_str}/{monthly_limit_str}"
-    )
+    logger.info(f"Received convert-latex request for file '{resume_file.filename}'")
 
     # Parse file and convert to LaTeX
     try:
@@ -236,29 +187,20 @@ async def convert_to_latex_endpoint(
         )
         pdf_content, pdf_filename = await convert_latex_to_pdf(latex_resume_text)
 
-        # Upload PDF to Supabase bucket and get public link
+        # Save PDF locally (no Supabase upload)
+        output_dir = os.path.join(os.getcwd(), "generated_pdfs")
+        os.makedirs(output_dir, exist_ok=True)
         local_pdf_path = os.path.join(os.getcwd(), "latex_output", pdf_filename)
-        public_url = upload_pdf_to_bucket(local_pdf_path, pdf_filename)
+        output_pdf_path = os.path.join(output_dir, pdf_filename)
 
-        # Insert record into resume_table
-        insert_resume_record(public_url, user_id)
+        # Copy PDF to generated_pdfs directory
+        shutil.copy(local_pdf_path, output_pdf_path)
+        logger.info(f"PDF saved to {output_pdf_path}")
 
-        # Send email notification
-        try:
-            email_sent = await send_resume_conversion_notification(
-                credentials=credentials,
-                resume_link=public_url,
-                conversion_type="resume"
-            )
-            if email_sent:
-                logger.info(f"Email notification sent to user {user_id}")
-            else:
-                logger.warning(f"Failed to send email notification to user {user_id}")
-        except Exception as email_error:
-            logger.error(f"Error sending email notification: {email_error}")
-            # Don't fail the main request if email fails
+        # Generate download URL
+        download_url = f"/download/{pdf_filename}"
 
-        # Clean up only files related to this PDF conversion
+        # Clean up latex_output files
         latex_output_dir = os.path.join(os.getcwd(), "latex_output")
         base_name, _ = os.path.splitext(pdf_filename)
         for ext in [".pdf", ".tex", ".aux", ".log", ".out"]:
@@ -269,6 +211,13 @@ async def convert_to_latex_endpoint(
             except Exception as cleanup_err:
                 logger.warning(f"Failed to delete {file_path}: {cleanup_err}")
 
+        logger.info(f"Successfully converted resume to PDF: {pdf_filename}")
+        return {
+            "message": "Resume converted successfully.",
+            "pdf_filename": pdf_filename,
+            "download_url": download_url
+        }
+
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -276,63 +225,18 @@ async def convert_to_latex_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
-    # Increment usage counters
-    increment_user_usage(user_id, daily, monthly)
-    daily_log_val = "N/A"
-    if (
-        hasattr(daily, "current_usage")
-        and getattr(daily, "current_usage", None) is not None
-    ):
-        daily_log_val = str(daily.current_usage + 1)
-    elif isinstance(daily, int):
-        daily_log_val = str(daily + 1)
-
-    monthly_log_val = "N/A"
-    if (
-        hasattr(monthly, "current_usage")
-        and getattr(monthly, "current_usage", None) is not None
-    ):
-        monthly_log_val = str(monthly.current_usage + 1)
-    elif isinstance(monthly, int):
-        monthly_log_val = str(monthly + 1)
-    logger.info(
-        f"Incremented usage for user {user_id}. New usage: Daily={daily_log_val}, Monthly={monthly_log_val}"
-    )
-
-    return {"resume_link": public_url}
 
 
 @app.post("/convert-json-to-latex", tags=["Resume"], response_model=JsonToLatexResponse)
 async def convert_json_to_latex_endpoint(
     resume_data: ResumeData,  # Expect ResumeData model as request body
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ) -> JsonToLatexResponse:
     """
     Converts structured JSON resume data to LaTeX format and returns a compiled PDF.
-    Requires JWT authentication and tracks user usage.
+    No authentication required.
     """
     start_time = time.time()
     logger.info("Received convert-json-to-latex request.")
-
-    # Extract user_id from JWT
-    user_id = get_user_id_from_jwt(credentials)
-    logger.info(f"Request from user_id: {user_id}")
-
-    # Check usage limits
-    daily, monthly = check_user_usage_limits(user_id)
-    daily_current_str = (
-        str(daily.current_usage) if hasattr(daily, "current_usage") else str(daily)
-    )
-    daily_limit_str = str(daily.limit) if hasattr(daily, "limit") else "N/A"
-    monthly_current_str = (
-        str(monthly.current_usage)
-        if hasattr(monthly, "current_usage")
-        else str(monthly)
-    )
-    monthly_limit_str = str(monthly.limit) if hasattr(monthly, "limit") else "N/A"
-    logger.info(
-        f"User usage: Daily={daily_current_str}/{daily_limit_str}, Monthly={monthly_current_str}/{monthly_limit_str}"
-    )
 
     if not latex_conversion_chain:
         logger.critical("LaTeX conversion chain is not available.")
@@ -360,52 +264,29 @@ async def convert_json_to_latex_endpoint(
         pdf_content, pdf_filename = await convert_latex_to_pdf(latex_resume_text)
         logger.info(f"Successfully compiled LaTeX to PDF: {pdf_filename}")
 
-        # Upload PDF to Supabase bucket and get public link
-        # Ensure 'latex_output' directory exists (convert_latex_to_pdf should handle this, but good practice)
+        # Save PDF locally (no Supabase upload)
         latex_output_dir = os.path.join(os.getcwd(), "latex_output")
         os.makedirs(latex_output_dir, exist_ok=True)
         local_pdf_path = os.path.join(latex_output_dir, pdf_filename)
 
-        # convert_latex_to_pdf already writes the file, so we just need to ensure the path is correct for upload
-        if not os.path.exists(local_pdf_path):
-            # This case should ideally not happen if convert_latex_to_pdf succeeds
-            # and writes the file as expected.
-            logger.error(
-                f"PDF file not found at {local_pdf_path} after generation. This is unexpected."
-            )
-            # Fallback: attempt to write pdf_content to local_pdf_path if it wasn't found
-            # This might indicate an issue in convert_latex_to_pdf's file handling logic if it occurs
-            with open(local_pdf_path, "wb") as f_pdf:
+        # Copy to generated_pdfs directory
+        output_dir = os.path.join(os.getcwd(), "generated_pdfs")
+        os.makedirs(output_dir, exist_ok=True)
+        output_pdf_path = os.path.join(output_dir, pdf_filename)
+
+        if os.path.exists(local_pdf_path):
+            shutil.copy(local_pdf_path, output_pdf_path)
+        else:
+            # Fallback: write pdf_content directly
+            with open(output_pdf_path, "wb") as f_pdf:
                 f_pdf.write(pdf_content)
-            logger.info(
-                f"Manually wrote PDF content to {local_pdf_path} as a fallback."
-            )
 
-        public_url = upload_pdf_to_bucket(local_pdf_path, pdf_filename)
-        logger.info(f"Successfully uploaded PDF to Supabase. Public URL: {public_url}")
+        logger.info(f"PDF saved to {output_pdf_path}")
 
-        # Insert record into resume_table
-        insert_resume_record(public_url, user_id)  # Added source_type
-        logger.info(
-            f"Successfully inserted resume record for user {user_id} with URL {public_url}"
-        )
+        # Generate download URL
+        download_url = f"/download/{pdf_filename}"
 
-        # Send email notification
-        try:
-            email_sent = await send_resume_conversion_notification(
-                credentials=credentials,
-                resume_link=public_url,
-                conversion_type="json"
-            )
-            if email_sent:
-                logger.info(f"Email notification sent to user {user_id}")
-            else:
-                logger.warning(f"Failed to send email notification to user {user_id}")
-        except Exception as email_error:
-            logger.error(f"Error sending email notification: {email_error}")
-            # Don't fail the main request if email fails
-
-        # Clean up generated files (PDF, .tex, .aux, .log, .out)
+        # Clean up latex_output files
         base_name, _ = os.path.splitext(pdf_filename)
         extensions_to_clean = [".pdf", ".tex", ".aux", ".log", ".out"]
         for ext in extensions_to_clean:
@@ -420,49 +301,30 @@ async def convert_json_to_latex_endpoint(
         end_time = time.time()
         processing_time_ms = (end_time - start_time) * 1000
         logger.info(
-            f"Request /convert-json-to-latex completed in {processing_time_ms:.2f} ms for user {user_id}."
+            f"Request /convert-json-to-latex completed in {processing_time_ms:.2f} ms."
         )
 
-        # Increment usage counters
-        increment_user_usage(user_id, daily, monthly)
-        daily_log_val = "N/A"
-        if (
-            hasattr(daily, "current_usage")
-            and getattr(daily, "current_usage", None) is not None
-        ):
-            daily_log_val = str(daily.current_usage + 1)
-        elif isinstance(daily, int):
-            daily_log_val = str(daily + 1)
-
-        monthly_log_val = "N/A"
-        if (
-            hasattr(monthly, "current_usage")
-            and getattr(monthly, "current_usage", None) is not None
-        ):
-            monthly_log_val = str(monthly.current_usage + 1)
-        elif isinstance(monthly, int):
-            monthly_log_val = str(monthly + 1)
-        logger.info(
-            f"Incremented usage for user {user_id}. New usage: Daily={daily_log_val}, Monthly={monthly_log_val}"
+        return JsonToLatexResponse(
+            message="Resume converted successfully from JSON.",
+            resume_link=download_url,
+            pdf_filename=pdf_filename
         )
-
-        return JsonToLatexResponse(resume_link=public_url, pdf_filename=pdf_filename)
 
     except HTTPException as he:
         logger.error(
-            f"HTTPException in /convert-json-to-latex for user {user_id}: {he.detail}",
+            f"HTTPException in /convert-json-to-latex: {he.detail}",
             exc_info=True,
         )
         raise he
     except ValueError as ve:  # For Pydantic validation errors or other value errors
         logger.error(
-            f"ValueError in /convert-json-to-latex for user {user_id}: {str(ve)}",
+            f"ValueError in /convert-json-to-latex: {str(ve)}",
             exc_info=True,
         )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
     except RuntimeError as re:
         logger.error(
-            f"RuntimeError in /convert-json-to-latex for user {user_id}: {str(re)}",
+            f"RuntimeError in /convert-json-to-latex: {str(re)}",
             exc_info=True,
         )
         raise HTTPException(
@@ -470,13 +332,28 @@ async def convert_json_to_latex_endpoint(
         )
     except Exception as e:
         logger.error(
-            f"Unexpected error in /convert-json-to-latex for user {user_id}: {e}",
+            f"Unexpected error in /convert-json-to-latex: {e}",
             exc_info=True,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred during JSON to LaTeX conversion.",
         )
+
+
+@app.get("/download/{pdf_filename}", tags=["Resume"])
+async def download_pdf(pdf_filename: str):
+    """Download generated PDF file"""
+    pdf_path = os.path.join(os.getcwd(), "generated_pdfs", pdf_filename)
+
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=404, detail="PDF not found")
+
+    return FileResponse(
+        path=pdf_path,
+        media_type="application/pdf",
+        filename=pdf_filename
+    )
 
 
 if __name__ == "__main__":

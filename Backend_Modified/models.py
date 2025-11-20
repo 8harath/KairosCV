@@ -8,12 +8,6 @@ class TailoredResumeResponse(BaseModel):
     job_description_length: int = Field(..., description="Number of characters in the provided job description.")
     tailored_resume_text: str = Field(..., description="The tailored resume content.")
 
-class User(BaseModel):
-    """Simple user model for anonymous access."""
-    user_id: str
-    email: str | None = None
-    credits: int = 999  # Set high default for anonymous access
-
 class MessageResponse(BaseModel):
     """Generic message response model."""
     message: str
@@ -70,5 +64,5 @@ class ResumeData(BaseModel):
 
 class JsonToLatexResponse(BaseModel):
     message: str = Field(default="Resume converted successfully from JSON.")
-    resume_link: str | None = None
-    pdf_filename: str | None = None
+    resume_link: str
+    pdf_filename: str

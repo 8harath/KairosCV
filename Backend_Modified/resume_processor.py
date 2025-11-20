@@ -19,27 +19,29 @@ logger = logging.getLogger(__name__)
 
 
 def setup_resume_tailoring_chain(
-    model_name: str = None,  # Set model name here
+    model_name: str = None,
     temperature: float = 0.7,
 ) -> tuple[RunnableSequence, RunnableSequence]:
     """
     Initializes the model, loads prompts, sets up
     parsers, and returns both the resume tailoring and LaTeX conversion chains.
     """
-    # 1. Load API Key (should be loaded already by main app)
-    # google_api_key = os.getenv("GOOGLE_API_KEY")
+    # Get configuration from environment variables
+    project = os.getenv("VERTEX_AI_PROJECT")
+    location = os.getenv("VERTEX_AI_LOCATION", "us-central1")
+    model_name = model_name or os.getenv("VERTEX_AI_MODEL", "gemini-1.5-flash-001")
 
-    # if not google_api_key:
-    #     logger.error("GOOGLE_API_KEY is not available in environment variables.")
-    #     raise ValueError("GOOGLE_API_KEY is not configured.")
+    if not project:
+        logger.error("VERTEX_AI_PROJECT environment variable not set")
+        raise ValueError("VERTEX_AI_PROJECT environment variable is required")
 
-    # # 2. Initialize the model
+    # Initialize the model
     try:
-        logger.info(f"Initializing model: {model_name}...")
+        logger.info(f"Initializing model: {model_name} (project={project}, location={location})...")
         llm = ChatVertexAI(
             model_name=model_name,
-            project=None,  # Set Google Cloud project here
-            location=None,  # Set Google Cloud location here
+            project=project,
+            location=location,
             temperature=temperature,
         )
         logger.info("Model initialized successfully.")
@@ -70,7 +72,7 @@ async def generate_tailored_resume(
     Takes original resume text, job description text, and a pre-configured
     LangChain chain, and returns a tailored resume string (asynchronously).
     """
-        logger.info("Processing resume tailoring...")
+    logger.info("Processing resume tailoring...")
     if not resume_content or not job_description:
         logger.error("Attempted to tailor resume with empty content.")
         raise ValueError("Resume content and job description cannot be empty.")

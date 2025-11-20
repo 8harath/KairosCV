@@ -43,4 +43,5 @@ VISION_EXTRACTION.md
 IMPLEMENTATION_SUMMARY.md
 
 # temp files
-test-puppeteer.js
+test-puppeteer.jsBackend_Modified/__pycache__/
+*.pyc

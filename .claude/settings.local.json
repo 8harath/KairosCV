@@ -33,7 +33,8 @@
       "Bash(pip install:*)",
       "Bash(sudo apt-get update:*)",
       "Bash(sudo apt-get install:*)",
-      "Bash(pdflatex:*)"
+      "Bash(pdflatex:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
