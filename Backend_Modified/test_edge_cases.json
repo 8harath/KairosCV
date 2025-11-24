@@ -1,0 +1,73 @@
+{
+  "basicInfo": {
+    "fullName": "Test O'Brien & Smith",
+    "phone": "+1-555-0100",
+    "email": "test@example.com",
+    "linkedin": "https://linkedin.com/in/test-user",
+    "github": "https://github.com/test-user",
+    "website": "https://portfolio.example.com"
+  },
+  "education": [
+    {
+      "id": "edu1",
+      "institution": "University of Test & Research",
+      "location": "San Francisco, CA",
+      "degree": "B.S. in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "2018-09",
+      "endDate": "2022-05",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp1",
+      "organization": "Tech Corp & Co.",
+      "jobTitle": "Senior R&D Engineer",
+      "location": "Remote",
+      "startDate": "2022-06",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Improved performance by 50% using C++ & Python optimization techniques",
+        "Managed $100K budget for infrastructure upgrades",
+        "Led team of 10+ engineers in developing next-gen AI/ML solutions",
+        "Implemented features with special chars: {brackets}, _underscores_, $variables$, #hashtags, ~tildes~"
+      ]
+    },
+    {
+      "id": "exp2",
+      "organization": "StartUp Inc.",
+      "jobTitle": "Software Engineer",
+      "location": "New York, NY",
+      "startDate": "2020-01",
+      "endDate": "2022-05",
+      "isPresent": false,
+      "description": [
+        "Developed web applications handling 100% uptime",
+        "Used technologies like Node.js & Express"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj1",
+      "name": "AI Resume Optimizer (Version 2.0)",
+      "technologies": "Python, FastAPI, React, LaTeX",
+      "startDate": "2023-01",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Built system processing 1,000+ resumes/day",
+        "Achieved 95% accuracy rate using advanced NLP & ML models",
+        "Reduced processing time from 10s to <1s (90% improvement)"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, JavaScript, TypeScript, C++, Go, Rust",
+    "frameworks": "React, Node.js, FastAPI, Django, Flask, Express.js",
+    "developerTools": "Git, Docker, Kubernetes, AWS, GCP, VS Code, Vim",
+    "libraries": "NumPy, Pandas, TensorFlow, PyTorch, React Query"
+  }
+}

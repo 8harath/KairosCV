@@ -1,0 +1,627 @@
+{
+  "basicInfo": {
+    "fullName": "Performance Test User",
+    "phone": "+1-555-9999",
+    "email": "perf@test.com",
+    "linkedin": "linkedin.com/in/perftest",
+    "github": "github.com/perftest",
+    "website": "https://perftest.com"
+  },
+  "education": [
+    {
+      "id": "edu0",
+      "institution": "University 0",
+      "location": "City 0, ST",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "2015-09",
+      "endDate": "2019-05",
+      "isPresent": false
+    },
+    {
+      "id": "edu1",
+      "institution": "University 1",
+      "location": "City 1, ST",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": null,
+      "startDate": "2016-09",
+      "endDate": "2020-05",
+      "isPresent": false
+    },
+    {
+      "id": "edu2",
+      "institution": "University 2",
+      "location": "City 2, ST",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "2017-09",
+      "endDate": "2021-05",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp0",
+      "organization": "Company 0 Inc.",
+      "jobTitle": "Software Engineer Level 1",
+      "location": "Remote",
+      "startDate": "2020-01",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Developed feature 0-0 using modern tech stack",
+        "Developed feature 0-1 using modern tech stack",
+        "Developed feature 0-2 using modern tech stack",
+        "Developed feature 0-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp1",
+      "organization": "Company 1 Inc.",
+      "jobTitle": "Software Engineer Level 2",
+      "location": "City 1, ST",
+      "startDate": "2020-02",
+      "endDate": "2021-08",
+      "isPresent": false,
+      "description": [
+        "Developed feature 1-0 using modern tech stack",
+        "Developed feature 1-1 using modern tech stack",
+        "Developed feature 1-2 using modern tech stack",
+        "Developed feature 1-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp2",
+      "organization": "Company 2 Inc.",
+      "jobTitle": "Software Engineer Level 3",
+      "location": "Remote",
+      "startDate": "2020-03",
+      "endDate": "2021-09",
+      "isPresent": false,
+      "description": [
+        "Developed feature 2-0 using modern tech stack",
+        "Developed feature 2-1 using modern tech stack",
+        "Developed feature 2-2 using modern tech stack",
+        "Developed feature 2-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp3",
+      "organization": "Company 3 Inc.",
+      "jobTitle": "Software Engineer Level 4",
+      "location": "City 3, ST",
+      "startDate": "2020-04",
+      "endDate": "2021-10",
+      "isPresent": false,
+      "description": [
+        "Developed feature 3-0 using modern tech stack",
+        "Developed feature 3-1 using modern tech stack",
+        "Developed feature 3-2 using modern tech stack",
+        "Developed feature 3-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp4",
+      "organization": "Company 4 Inc.",
+      "jobTitle": "Software Engineer Level 5",
+      "location": "Remote",
+      "startDate": "2020-05",
+      "endDate": "2021-11",
+      "isPresent": false,
+      "description": [
+        "Developed feature 4-0 using modern tech stack",
+        "Developed feature 4-1 using modern tech stack",
+        "Developed feature 4-2 using modern tech stack",
+        "Developed feature 4-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp5",
+      "organization": "Company 5 Inc.",
+      "jobTitle": "Software Engineer Level 1",
+      "location": "City 5, ST",
+      "startDate": "2021-06",
+      "endDate": "2022-12",
+      "isPresent": false,
+      "description": [
+        "Developed feature 5-0 using modern tech stack",
+        "Developed feature 5-1 using modern tech stack",
+        "Developed feature 5-2 using modern tech stack",
+        "Developed feature 5-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp6",
+      "organization": "Company 6 Inc.",
+      "jobTitle": "Software Engineer Level 2",
+      "location": "Remote",
+      "startDate": "2021-07",
+      "endDate": "2022-01",
+      "isPresent": false,
+      "description": [
+        "Developed feature 6-0 using modern tech stack",
+        "Developed feature 6-1 using modern tech stack",
+        "Developed feature 6-2 using modern tech stack",
+        "Developed feature 6-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp7",
+      "organization": "Company 7 Inc.",
+      "jobTitle": "Software Engineer Level 3",
+      "location": "City 7, ST",
+      "startDate": "2021-08",
+      "endDate": "2022-02",
+      "isPresent": false,
+      "description": [
+        "Developed feature 7-0 using modern tech stack",
+        "Developed feature 7-1 using modern tech stack",
+        "Developed feature 7-2 using modern tech stack",
+        "Developed feature 7-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp8",
+      "organization": "Company 8 Inc.",
+      "jobTitle": "Software Engineer Level 4",
+      "location": "Remote",
+      "startDate": "2021-09",
+      "endDate": "2022-03",
+      "isPresent": false,
+      "description": [
+        "Developed feature 8-0 using modern tech stack",
+        "Developed feature 8-1 using modern tech stack",
+        "Developed feature 8-2 using modern tech stack",
+        "Developed feature 8-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp9",
+      "organization": "Company 9 Inc.",
+      "jobTitle": "Software Engineer Level 5",
+      "location": "City 9, ST",
+      "startDate": "2021-10",
+      "endDate": "2022-04",
+      "isPresent": false,
+      "description": [
+        "Developed feature 9-0 using modern tech stack",
+        "Developed feature 9-1 using modern tech stack",
+        "Developed feature 9-2 using modern tech stack",
+        "Developed feature 9-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp10",
+      "organization": "Company 10 Inc.",
+      "jobTitle": "Software Engineer Level 1",
+      "location": "Remote",
+      "startDate": "2022-11",
+      "endDate": "2023-05",
+      "isPresent": false,
+      "description": [
+        "Developed feature 10-0 using modern tech stack",
+        "Developed feature 10-1 using modern tech stack",
+        "Developed feature 10-2 using modern tech stack",
+        "Developed feature 10-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp11",
+      "organization": "Company 11 Inc.",
+      "jobTitle": "Software Engineer Level 2",
+      "location": "City 11, ST",
+      "startDate": "2022-12",
+      "endDate": "2023-06",
+      "isPresent": false,
+      "description": [
+        "Developed feature 11-0 using modern tech stack",
+        "Developed feature 11-1 using modern tech stack",
+        "Developed feature 11-2 using modern tech stack",
+        "Developed feature 11-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp12",
+      "organization": "Company 12 Inc.",
+      "jobTitle": "Software Engineer Level 3",
+      "location": "Remote",
+      "startDate": "2022-01",
+      "endDate": "2023-07",
+      "isPresent": false,
+      "description": [
+        "Developed feature 12-0 using modern tech stack",
+        "Developed feature 12-1 using modern tech stack",
+        "Developed feature 12-2 using modern tech stack",
+        "Developed feature 12-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp13",
+      "organization": "Company 13 Inc.",
+      "jobTitle": "Software Engineer Level 4",
+      "location": "City 13, ST",
+      "startDate": "2022-02",
+      "endDate": "2023-08",
+      "isPresent": false,
+      "description": [
+        "Developed feature 13-0 using modern tech stack",
+        "Developed feature 13-1 using modern tech stack",
+        "Developed feature 13-2 using modern tech stack",
+        "Developed feature 13-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp14",
+      "organization": "Company 14 Inc.",
+      "jobTitle": "Software Engineer Level 5",
+      "location": "Remote",
+      "startDate": "2022-03",
+      "endDate": "2023-09",
+      "isPresent": false,
+      "description": [
+        "Developed feature 14-0 using modern tech stack",
+        "Developed feature 14-1 using modern tech stack",
+        "Developed feature 14-2 using modern tech stack",
+        "Developed feature 14-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp15",
+      "organization": "Company 15 Inc.",
+      "jobTitle": "Software Engineer Level 1",
+      "location": "City 15, ST",
+      "startDate": "2023-04",
+      "endDate": "2024-10",
+      "isPresent": false,
+      "description": [
+        "Developed feature 15-0 using modern tech stack",
+        "Developed feature 15-1 using modern tech stack",
+        "Developed feature 15-2 using modern tech stack",
+        "Developed feature 15-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp16",
+      "organization": "Company 16 Inc.",
+      "jobTitle": "Software Engineer Level 2",
+      "location": "Remote",
+      "startDate": "2023-05",
+      "endDate": "2024-11",
+      "isPresent": false,
+      "description": [
+        "Developed feature 16-0 using modern tech stack",
+        "Developed feature 16-1 using modern tech stack",
+        "Developed feature 16-2 using modern tech stack",
+        "Developed feature 16-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp17",
+      "organization": "Company 17 Inc.",
+      "jobTitle": "Software Engineer Level 3",
+      "location": "City 17, ST",
+      "startDate": "2023-06",
+      "endDate": "2024-12",
+      "isPresent": false,
+      "description": [
+        "Developed feature 17-0 using modern tech stack",
+        "Developed feature 17-1 using modern tech stack",
+        "Developed feature 17-2 using modern tech stack",
+        "Developed feature 17-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp18",
+      "organization": "Company 18 Inc.",
+      "jobTitle": "Software Engineer Level 4",
+      "location": "Remote",
+      "startDate": "2023-07",
+      "endDate": "2024-01",
+      "isPresent": false,
+      "description": [
+        "Developed feature 18-0 using modern tech stack",
+        "Developed feature 18-1 using modern tech stack",
+        "Developed feature 18-2 using modern tech stack",
+        "Developed feature 18-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    },
+    {
+      "id": "exp19",
+      "organization": "Company 19 Inc.",
+      "jobTitle": "Software Engineer Level 5",
+      "location": "City 19, ST",
+      "startDate": "2023-08",
+      "endDate": "2024-02",
+      "isPresent": false,
+      "description": [
+        "Developed feature 19-0 using modern tech stack",
+        "Developed feature 19-1 using modern tech stack",
+        "Developed feature 19-2 using modern tech stack",
+        "Developed feature 19-3 using modern tech stack",
+        "Improved performance by 10% through optimization",
+        "Improved performance by 15% through optimization",
+        "Improved performance by 20% through optimization",
+        "Improved performance by 25% through optimization"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj0",
+      "name": "Project 0: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2021-01",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Built scalable system handling 1000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 20ms through caching"
+      ]
+    },
+    {
+      "id": "proj1",
+      "name": "Project 1: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2021-02",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Built scalable system handling 2000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 30ms through caching"
+      ]
+    },
+    {
+      "id": "proj2",
+      "name": "Project 2: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2021-03",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Built scalable system handling 3000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 40ms through caching"
+      ]
+    },
+    {
+      "id": "proj3",
+      "name": "Project 3: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2021-04",
+      "endDate": "2022-10",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 4000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 50ms through caching"
+      ]
+    },
+    {
+      "id": "proj4",
+      "name": "Project 4: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2021-05",
+      "endDate": "2022-11",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 5000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 60ms through caching"
+      ]
+    },
+    {
+      "id": "proj5",
+      "name": "Project 5: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2022-06",
+      "endDate": "2023-12",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 6000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 70ms through caching"
+      ]
+    },
+    {
+      "id": "proj6",
+      "name": "Project 6: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2022-07",
+      "endDate": "2023-01",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 7000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 80ms through caching"
+      ]
+    },
+    {
+      "id": "proj7",
+      "name": "Project 7: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2022-08",
+      "endDate": "2023-02",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 8000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 90ms through caching"
+      ]
+    },
+    {
+      "id": "proj8",
+      "name": "Project 8: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2022-09",
+      "endDate": "2023-03",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 9000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 100ms through caching"
+      ]
+    },
+    {
+      "id": "proj9",
+      "name": "Project 9: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2022-10",
+      "endDate": "2023-04",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 10000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 110ms through caching"
+      ]
+    },
+    {
+      "id": "proj10",
+      "name": "Project 10: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2023-11",
+      "endDate": "2024-05",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 11000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 120ms through caching"
+      ]
+    },
+    {
+      "id": "proj11",
+      "name": "Project 11: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2023-12",
+      "endDate": "2024-06",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 12000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 130ms through caching"
+      ]
+    },
+    {
+      "id": "proj12",
+      "name": "Project 12: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2023-01",
+      "endDate": "2024-07",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 13000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 140ms through caching"
+      ]
+    },
+    {
+      "id": "proj13",
+      "name": "Project 13: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2023-02",
+      "endDate": "2024-08",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 14000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 150ms through caching"
+      ]
+    },
+    {
+      "id": "proj14",
+      "name": "Project 14: Advanced System",
+      "technologies": "Python, React, TypeScript, Docker, AWS",
+      "startDate": "2023-03",
+      "endDate": "2024-09",
+      "isPresent": false,
+      "description": [
+        "Built scalable system handling 15000 requests/sec",
+        "Implemented features with 99% uptime",
+        "Reduced latency by 160ms through caching"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, JavaScript, TypeScript, Java, C++, Go, Rust, Ruby, PHP, Swift, Kotlin, Dart",
+    "frameworks": "React, Angular, Vue, Django, Flask, FastAPI, Express, NestJS, Spring Boot, Rails",
+    "developerTools": "Git, Docker, Kubernetes, Jenkins, CircleCI, GitHub Actions, VS Code, IntelliJ, Vim",
+    "libraries": "NumPy, Pandas, TensorFlow, PyTorch, React Query, Redux, Axios, Lodash, Jest, Pytest"
+  }
+}

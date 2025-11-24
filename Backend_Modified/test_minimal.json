@@ -1,0 +1,18 @@
+{
+  "basicInfo": {
+    "fullName": "Minimal Test User",
+    "phone": "+1-555-0100",
+    "email": "minimal@example.com",
+    "linkedin": "linkedin.com/in/minimal",
+    "github": "github.com/minimal"
+  },
+  "education": [],
+  "experience": [],
+  "projects": [],
+  "skills": {
+    "languages": "Python",
+    "frameworks": "FastAPI",
+    "developerTools": "Git",
+    "libraries": "NumPy"
+  }
+}
