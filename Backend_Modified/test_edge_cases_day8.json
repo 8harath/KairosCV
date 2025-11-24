@@ -1,0 +1,62 @@
+{
+  "basicInfo": {
+    "fullName": "María O'Brien-García",
+    "phone": "+1 (555) 123-4567",
+    "email": "maría.o'brien@example.com",
+    "linkedin": "https://linkedin.com/in/maria-obrien-garcia",
+    "github": "https://github.com/maria-obrien"
+  },
+  "education": [
+    {
+      "id": "edu1",
+      "institution": "University of Texas @ Austin",
+      "location": "Austin, TX",
+      "degree": "B.S. in Computer Science & Mathematics",
+      "minor": "",
+      "startDate": "2018-08",
+      "endDate": "2022-05",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp1",
+      "organization": "Tech Corp (Acme & Associates)",
+      "jobTitle": "Senior Software Engineer - C++/Python Developer",
+      "location": "San Francisco, CA",
+      "startDate": "2022-06",
+      "endDate": "",
+      "isPresent": true,
+      "description": [
+        "Developed high-performance algorithms achieving 50% improvement in runtime & 30% reduction in memory usage",
+        "Led team of 5 engineers building distributed system handling 100,000+ req/sec with <10ms p99 latency",
+        "Architected microservices using React.js, Node.js & PostgreSQL (migrating from legacy PHP/MySQL stack)",
+        "This is an extremely long bullet point that tests how LaTeX handles text wrapping and line breaks when the content exceeds typical character limits and continues for multiple lines to ensure proper formatting doesn't break",
+        "Implemented CI/CD pipeline reducing deployment time from 2 hours to <15 minutes (using Jenkins, Docker & Kubernetes)",
+        "Optimized database queries improving page load time from ~3s to <500ms (reducing bounce rate by 25%)",
+        "Mentored 3 junior developers on best practices for TDD, pair programming & code reviews"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj1",
+      "name": "AI-Powered Resume Parser™",
+      "technologies": "Python, TensorFlow, BERT, FastAPI, PostgreSQL, Redis",
+      "startDate": "2023-01",
+      "endDate": "2023-06",
+      "isPresent": false,
+      "description": [
+        "Built NLP model using BERT achieving 95% accuracy in extracting entities (names, emails, skills, etc.)",
+        "Processed 50,000+ resumes with $100/month AWS cost (using Lambda + S3 + RDS)",
+        "Tech stack: Python 3.11, PyTorch 2.0, FastAPI, Docker, AWS (Lambda/S3/RDS)"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, C++, JavaScript/TypeScript, Go, Rust, SQL (PostgreSQL/MySQL)",
+    "frameworks": "React.js, Node.js, FastAPI, Django, Flask, TensorFlow, PyTorch",
+    "developerTools": "Git, Docker, Kubernetes, Jenkins, GitHub Actions, AWS (EC2/S3/Lambda/RDS)",
+    "libraries": "NumPy, pandas, scikit-learn, Redis, RabbitMQ, Celery"
+  }
+}

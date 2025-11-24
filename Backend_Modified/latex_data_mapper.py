@@ -182,26 +182,30 @@ def generate_contact_section(basic_info: BasicInfo) -> str:
         contact_parts.append(phone)
 
     if email:
-        contact_parts.append(f"\\href{{mailto:{email}}}{{{email}}}")
+        # Jake's style: underlined email links
+        contact_parts.append(f"\\href{{mailto:{email}}}{{\\underline{{{email}}}}}")
 
     if basic_info.linkedin:
         linkedin_url = basic_info.linkedin
         # Remove protocol if present
         linkedin_display = linkedin_url.replace('https://', '').replace('http://', '')
         linkedin_display = linkedin_display.replace('www.', '')
-        contact_parts.append(f"\\href{{{linkedin_url}}}{{LinkedIn: {escape_latex(linkedin_display)}}}")
+        # Jake's style: underlined links with clean display text
+        contact_parts.append(f"\\href{{{linkedin_url}}}{{\\underline{{{escape_latex(linkedin_display)}}}}}")
 
     if basic_info.github:
         github_url = basic_info.github
         github_display = github_url.replace('https://', '').replace('http://', '')
         github_display = github_display.replace('www.', '')
-        contact_parts.append(f"\\href{{{github_url}}}{{GitHub: {escape_latex(github_display)}}}")
+        # Jake's style: underlined links with clean display text
+        contact_parts.append(f"\\href{{{github_url}}}{{\\underline{{{escape_latex(github_display)}}}}}")
 
     if basic_info.website:
         website_url = basic_info.website
         website_display = website_url.replace('https://', '').replace('http://', '')
         website_display = website_display.replace('www.', '')
-        contact_parts.append(f"\\href{{{website_url}}}{{{escape_latex(website_display)}}}")
+        # Jake's style: underlined links
+        contact_parts.append(f"\\href{{{website_url}}}{{\\underline{{{escape_latex(website_display)}}}}}")
 
     contact_line = " $|$ ".join(contact_parts)
 
