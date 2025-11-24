@@ -1,0 +1,198 @@
+
+%-------------------------
+% Resume in LaTeX
+% Based on Jake's Resume Template
+% License: MIT
+% ATS-Optimized for Maximum Compatibility
+%-------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+% \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+%   \textbf{\href{http://sourabhbajaj.com/}{\Large Sourabh Bajaj}} & Email : \href{mailto:sourabh@sourabhbajaj.com}{sourabh@sourabhbajaj.com}\\
+%   \href{http://sourabhbajaj.com/}{http://www.sourabhbajaj.com} & Mobile : +1-123-456-7890 \\
+% \end{tabular*}
+
+\begin{center}
+    \textbf{\Huge \scshape Jane Smith} \\ \vspace{1pt}
+    \small +1-555-0123 $|$ \href{mailto:jane.smith@example.com}{\underline{jane.smith@example.com}} $|$
+    \href{https://linkedin.com/in/janesmith}{\underline{linkedin.com/in/janesmith}} $|$
+    \href{https://github.com/janesmith}{\underline{github.com/janesmith}}
+\end{center}
+
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {University of California, Berkeley}{Berkeley, CA}
+      {Bachelor of Science in Computer Science; GPA: 3.8}{Aug 2018 -- May 2022}
+
+    % ADDITIONAL EDUCATION ENTRIES
+    % \resumeSubheading
+    %   {Second Institution}{City, State}
+    %   {Degree Name}{Start Date -- End Date}
+
+  \resumeSubHeadingListEnd
+
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Software Engineer}{Aug 2018 -- May 2022}
+      {Tech Innovations Inc.}{Berkeley, CA}
+      \resumeItemListStart
+        \resumeItem{Developed scalable microservices architecture serving 1M+ daily users using Python and FastAPI}
+        \resumeItem{Reduced API response time by 40\% through database query optimization and caching strategies}
+        \resumeItem{Led migration from monolithic architecture to microservices, improving deployment frequency by 300\%}
+        \resumeItem{Mentored 3 junior engineers and conducted code reviews for team of 8 developers}
+      \resumeItemListEnd
+
+    % ADDITIONAL EXPERIENCE ENTRIES
+    % \resumeSubheading
+    %   {Second Job Title}{Start Date -- End Date}
+    %   {Company Name}{City, State}
+    %   \resumeItemListStart
+    %     \resumeItem{Achievement bullet point}
+    %     \resumeItem{Another achievement}
+    %   \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \resumeSubHeadingListStart
+
+      \resumeProjectHeading
+          {\textbf{AI Resume Optimizer} $|$ \emph{Next.js, Python, FastAPI, PostgreSQL, OpenAI API}}{Aug 2018 -- May 2022}
+          \resumeItemListStart
+            \resumeItem{Built full-stack application with AI-powered resume optimization using GPT-4}
+            \resumeItem{Implemented real-time collaboration features with WebSockets}
+            \resumeItem{Deployed on AWS with CI/CD pipeline, serving 1000+ users}
+          \resumeItemListEnd
+
+      % ADDITIONAL PROJECT ENTRIES
+      % \resumeProjectHeading
+      %     {\textbf{Second Project} $|$ \emph{Python, Flask, PostgreSQL}}{Jan 2023 -- Mar 2023}
+      %     \resumeItemListStart
+      %       \resumeItem{Built a web application that...}
+      %       \resumeItem{Implemented features including...}
+      %     \resumeItemListEnd
+
+    \resumeSubHeadingListEnd
+
+
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages}{: Python, JavaScript, TypeScript, Go, SQL} \\
+     \textbf{Frameworks}{: React, Next.js, FastAPI, Flask, Node.js} \\
+     \textbf{Developer Tools}{: Git, Docker, Kubernetes, AWS, PostgreSQL, Redis} \\
+     \textbf{Libraries}{: NumPy, Pandas, TensorFlow, PyTorch}
+    }}
+ \end{itemize}
+
+
+%-------------------------------------------
+\end{document}
