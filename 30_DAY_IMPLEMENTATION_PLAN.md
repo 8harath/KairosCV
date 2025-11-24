@@ -669,7 +669,8 @@ Return the tailored resume in plain text format, structured clearly with section
 - **17:00 - 18:00** (1h) - Test Prompts with Vertex AI
   - [ ] Create test script `test_prompts.py`:
     ```python
-    from resume_processor import setup_resume_tailoring_chain, generate_latex_resume
+    from resume_processor impo
+    rt setup_resume_tailoring_chain, generate_latex_resume
     import json
 
     # Test data
