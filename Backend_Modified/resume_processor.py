@@ -2,6 +2,7 @@
 import os
 import logging
 import datetime
+import json
 
 # LangChain imports
 from langchain_groq import ChatGroq
@@ -12,6 +13,10 @@ from langchain_core.exceptions import OutputParserException
 
 # Custom prompt imports
 from prompts import RESUME_TAILORING_PROMPT, LATEX_CONVERSION_PROMPT, LATEX_TEMPLATE
+
+# Data mapping imports
+from latex_data_mapper import map_resume_data_to_latex, validate_latex_output
+from models import ResumeData
 
 logger = logging.getLogger(__name__)
 
@@ -120,21 +125,97 @@ async def generate_tailored_resume(
         raise RuntimeError(f"Processing failed: {e}")
 
 
-# --- LaTeX Conversion Function ---
+# --- LaTeX Conversion Function (Direct Data Mapping) ---
 async def generate_latex_resume(resume_content: str, chain: RunnableSequence) -> str:
     """
-    Takes original resume text and converts it to LaTeX format using the provided chain.
-    Returns a string containing valid LaTeX code for a professional resume.
+    Generate LaTeX resume from JSON data using direct template mapping.
+
+    This function now uses latex_data_mapper for reliable, deterministic conversion
+    instead of relying on AI generation. This ensures:
+    - Consistent formatting
+    - Proper character escaping
+    - No AI hallucination
+    - Faster processing
+
+    Args:
+        resume_content: JSON string containing resume data (must match ResumeData schema)
+        chain: RunnableSequence (not used in direct mapping, kept for API compatibility)
+
+    Returns:
+        Complete LaTeX document as string
+
+    Raises:
+        ValueError: If resume_content is invalid JSON or doesn't match schema
+        RuntimeError: If LaTeX generation fails
     """
     if not resume_content:
         logger.error("Attempted to convert empty resume content")
         raise ValueError("Resume content cannot be empty")
 
-    # Define base_dir to save the .tex file
-    base_dir = os.getcwd()  # Configure output directory here
+    try:
+        # Parse JSON input
+        logger.info("Parsing resume JSON data...")
+        try:
+            resume_dict = json.loads(resume_content)
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON: {e}")
+            raise ValueError(f"Invalid JSON format: {str(e)}")
+
+        # Validate against Pydantic model
+        logger.info("Validating resume data against schema...")
+        try:
+            resume_data = ResumeData(**resume_dict)
+        except Exception as e:
+            logger.error(f"Schema validation failed: {e}")
+            raise ValueError(f"Resume data doesn't match expected schema: {str(e)}")
+
+        # Map data to LaTeX template using direct injection
+        logger.info("Mapping resume data to LaTeX template...")
+        latex_document = map_resume_data_to_latex(resume_data, LATEX_TEMPLATE)
+
+        # Validate generated LaTeX
+        is_valid, errors = validate_latex_output(latex_document)
+        if not is_valid:
+            logger.warning(f"LaTeX validation warnings: {errors}")
+            # Continue anyway - these are warnings, not blocking errors
+
+        logger.info(f"Successfully generated LaTeX document ({len(latex_document)} characters)")
+        return latex_document
+
+    except ValueError:
+        # Re-raise ValueError as-is (already formatted)
+        raise
+    except Exception as e:
+        logger.error(f"Error during LaTeX generation: {e}", exc_info=True)
+        raise RuntimeError(f"LaTeX generation failed: {str(e)}")
+
+
+# --- AI-Based LaTeX Conversion (Fallback/Alternative) ---
+async def generate_latex_resume_with_ai(resume_content: str, chain: RunnableSequence) -> str:
+    """
+    ALTERNATIVE: AI-based LaTeX conversion using LangChain.
+
+    This is the original implementation that uses AI to convert resume text to LaTeX.
+    Use this when:
+    - Input is plain text (not structured JSON)
+    - Want AI enhancement during conversion
+    - Need flexible format handling
+
+    For structured JSON data, use generate_latex_resume() instead (faster, more reliable).
+
+    Args:
+        resume_content: Plain text resume content
+        chain: LangChain RunnableSequence for conversion
+
+    Returns:
+        LaTeX document as string
+    """
+    if not resume_content:
+        logger.error("Attempted to convert empty resume content")
+        raise ValueError("Resume content cannot be empty")
 
     try:
-        # Use the template from prompts.py instead of reading from file
+        # Use AI to convert text to LaTeX
         latex_resume = await chain.ainvoke(
             {"resume_content": resume_content, "latex_template": LATEX_TEMPLATE}
         )
@@ -152,5 +233,5 @@ async def generate_latex_resume(resume_content: str, chain: RunnableSequence) ->
         return latex_resume
 
     except Exception as e:
-        logger.error(f"Error during LaTeX conversion: {e}", exc_info=True)
-        raise RuntimeError(f"LaTeX conversion failed: {e}")
+        logger.error(f"Error during AI LaTeX conversion: {e}", exc_info=True)
+        raise RuntimeError(f"AI LaTeX conversion failed: {e}")

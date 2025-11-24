@@ -341,93 +341,23 @@ LATEX_TEMPLATE = r"""
 \begin{document}
 
 %----------HEADING----------
-% \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
-%   \textbf{\href{http://sourabhbajaj.com/}{\Large Sourabh Bajaj}} & Email : \href{mailto:sourabh@sourabhbajaj.com}{sourabh@sourabhbajaj.com}\\
-%   \href{http://sourabhbajaj.com/}{http://www.sourabhbajaj.com} & Mobile : +1-123-456-7890 \\
-% \end{tabular*}
-
-\begin{center}
-    \textbf{\Huge \scshape [FULL_NAME]} \\ \vspace{1pt}
-    \small [PHONE] $|$ \href{mailto:[EMAIL]}{\underline{[EMAIL]}} $|$
-    \href{[LINKEDIN_URL]}{\underline{linkedin.com/in/[LINKEDIN_USERNAME]}} $|$
-    \href{[GITHUB_URL]}{\underline{github.com/[GITHUB_USERNAME]}}
-\end{center}
+[CONTACT]
 
 
 %-----------EDUCATION-----------
-\section{Education}
-  \resumeSubHeadingListStart
-    \resumeSubheading
-      {[UNIVERSITY_NAME]}{[CITY, STATE]}
-      {[DEGREE] in [MAJOR]; GPA: [GPA]}{[START_DATE] -- [END_DATE]}
-
-    % ADDITIONAL EDUCATION ENTRIES
-    % \resumeSubheading
-    %   {Second Institution}{City, State}
-    %   {Degree Name}{Start Date -- End Date}
-
-  \resumeSubHeadingListEnd
+[EDUCATION]
 
 
 %-----------EXPERIENCE-----------
-\section{Experience}
-  \resumeSubHeadingListStart
-
-    \resumeSubheading
-      {[JOB_TITLE]}{[START_DATE] -- [END_DATE]}
-      {[COMPANY_NAME]}{[CITY, STATE]}
-      \resumeItemListStart
-        \resumeItem{[ACHIEVEMENT_BULLET_1]}
-        \resumeItem{[ACHIEVEMENT_BULLET_2]}
-        \resumeItem{[ACHIEVEMENT_BULLET_3]}
-        \resumeItem{[ACHIEVEMENT_BULLET_4]}
-      \resumeItemListEnd
-
-    % ADDITIONAL EXPERIENCE ENTRIES
-    % \resumeSubheading
-    %   {Second Job Title}{Start Date -- End Date}
-    %   {Company Name}{City, State}
-    %   \resumeItemListStart
-    %     \resumeItem{Achievement bullet point}
-    %     \resumeItem{Another achievement}
-    %   \resumeItemListEnd
-
-  \resumeSubHeadingListEnd
+[EXPERIENCE]
 
 
 %-----------PROJECTS-----------
-\section{Projects}
-    \resumeSubHeadingListStart
-
-      \resumeProjectHeading
-          {\textbf{[PROJECT_NAME]} $|$ \emph{[TECHNOLOGIES_USED]}}{[START_DATE] -- [END_DATE]}
-          \resumeItemListStart
-            \resumeItem{[PROJECT_ACHIEVEMENT_1]}
-            \resumeItem{[PROJECT_ACHIEVEMENT_2]}
-            \resumeItem{[PROJECT_ACHIEVEMENT_3]}
-          \resumeItemListEnd
-
-      % ADDITIONAL PROJECT ENTRIES
-      % \resumeProjectHeading
-      %     {\textbf{Second Project} $|$ \emph{Python, Flask, PostgreSQL}}{Jan 2023 -- Mar 2023}
-      %     \resumeItemListStart
-      %       \resumeItem{Built a web application that...}
-      %       \resumeItem{Implemented features including...}
-      %     \resumeItemListEnd
-
-    \resumeSubHeadingListEnd
+[PROJECTS]
 
 
 %-----------TECHNICAL SKILLS-----------
-\section{Technical Skills}
- \begin{itemize}[leftmargin=0.15in, label={}]
-    \small{\item{
-     \textbf{Languages}{: [PROGRAMMING_LANGUAGES]} \\
-     \textbf{Frameworks}{: [FRAMEWORKS_AND_LIBRARIES]} \\
-     \textbf{Developer Tools}{: [TOOLS_AND_PLATFORMS]} \\
-     \textbf{Libraries}{: [ADDITIONAL_LIBRARIES]}
-    }}
- \end{itemize}
+[SKILLS]
 
 
 %-------------------------------------------
