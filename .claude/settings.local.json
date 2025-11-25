@@ -44,7 +44,8 @@
       "Bash(time curl:*)",
       "Bash(ls:*)",
       "Bash(tree:*)",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
