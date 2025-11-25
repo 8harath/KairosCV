@@ -44,3 +44,19 @@ IMPLEMENTATION_SUMMARY.md
 
 # temp files
 test-puppeteer.js
+
+# Python
+Backend_Modified/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+generated_pdfs/
+latex_output/
