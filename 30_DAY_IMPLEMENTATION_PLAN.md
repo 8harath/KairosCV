@@ -350,48 +350,27 @@ You'll integrate the FastAPI backend to provide **professional LaTeX PDF generat
 
 ---
 
-### **Day 4: Configure Vertex AI & Test LangChain**
+### **Day 4: Configure Groq API & Test LangChain**
 
-**Daily Goal:** Set up Google Cloud Vertex AI for resume processing
+**Daily Goal:** Set up Groq API for resume processing with LangChain
 
 **Time Breakdown:**
 
-- **09:00 - 10:30** (1.5h) - Google Cloud Project Setup
-  - [ ] Go to: https://console.cloud.google.com
-  - [ ] Create new project: "kairoscv-backend"
-  - [ ] Enable Vertex AI API:
-    - Navigate to "APIs & Services" > "Library"
-    - Search "Vertex AI API"
-    - Click "Enable"
-  - [ ] Enable billing (required for Vertex AI)
-  - [ ] Note project ID (e.g., "kairoscv-backend-123456")
+- **09:00 - 10:00** (1h) - Groq Account Setup
+  - [ ] Go to: https://console.groq.com
+  - [ ] Sign up for free account (no credit card required!)
+  - [ ] Navigate to API Keys section
+  - [ ] Click "Create API Key"
+  - [ ] Name: "kairoscv-backend"
+  - [ ] Copy and save API key securely
+  - [ ] Note: Free tier includes generous limits (good for MVP)
 
-- **10:30 - 12:00** (1.5h) - Service Account Creation
-  - [ ] Go to "IAM & Admin" > "Service Accounts"
-  - [ ] Click "Create Service Account"
-  - [ ] Name: "kairoscv-backend-sa"
-  - [ ] Grant roles:
-    - "Vertex AI User"
-    - "Vertex AI Service Agent"
-  - [ ] Click "Create Key" > JSON
-  - [ ] Download JSON file (e.g., `kairoscv-backend-sa-key.json`)
-  - [ ] Move to safe location:
-    ```bash
-    mkdir -p ~/.gcp
-    mv ~/Downloads/kairoscv-*.json ~/.gcp/kairoscv-sa-key.json
-    chmod 600 ~/.gcp/kairoscv-sa-key.json
-    ```
-
-- **12:00 - 13:00** (1h) - Lunch Break
-
-- **13:00 - 14:30** (1.5h) - Environment Variables Setup
+- **10:00 - 11:00** (1h) - Environment Variables Setup
   - [ ] Create `.env` file in Backend_Modified/:
     ```bash
-    # Google Cloud Vertex AI
-    GOOGLE_APPLICATION_CREDENTIALS=/Users/yourname/.gcp/kairoscv-sa-key.json
-    VERTEX_AI_PROJECT=kairoscv-backend-123456
-    VERTEX_AI_LOCATION=us-central1
-    VERTEX_AI_MODEL=gemini-1.5-flash-001
+    # Groq AI Configuration
+    GROQ_API_KEY=your_groq_api_key_here
+    GROQ_MODEL=llama-3.3-70b-versatile
 
     # App Settings
     PORT=8080
@@ -407,80 +386,100 @@ You'll integrate the FastAPI backend to provide **professional LaTeX PDF generat
     from dotenv import load_dotenv
     load_dotenv()  # Add at top of file
     ```
-  - [ ] Install python-dotenv if missing:
+  - [ ] Verify python-dotenv is installed:
     ```bash
     pip install python-dotenv
     ```
 
-- **14:30 - 16:00** (1.5h) - Update resume_processor.py
+- **11:00 - 12:00** (1h) - Verify Groq Configuration
+  - [ ] Check that langchain-groq is in requirements.txt
+  - [ ] Verify Groq model availability
+  - [ ] Review Groq pricing (free tier limits)
+  - [ ] Note: Much cheaper than Vertex AI, no GCP billing needed!
+
+- **12:00 - 13:00** (1h) - Lunch Break
+
+- **13:00 - 14:30** (1.5h) - Update resume_processor.py
   - [ ] Open `resume_processor.py`
-  - [ ] Update model initialization (lines 36-44):
+  - [ ] Verify model initialization uses Groq (should already be correct):
     ```python
-    project = os.getenv("VERTEX_AI_PROJECT")
-    location = os.getenv("VERTEX_AI_LOCATION", "us-central1")
-    model_name = model_name or os.getenv("VERTEX_AI_MODEL", "gemini-1.5-flash-001")
+    # Get configuration from environment variables
+    api_key = os.getenv("GROQ_API_KEY")
+    model_name = model_name or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-    if not project:
-        raise ValueError("VERTEX_AI_PROJECT not set in environment")
+    if not api_key:
+        logger.error("GROQ_API_KEY environment variable not set")
+        raise ValueError("GROQ_API_KEY environment variable is required")
 
-    llm = ChatVertexAI(
-        model_name=model_name,
-        project=project,
-        location=location,
+    # Initialize the Groq model via LangChain
+    llm = ChatGroq(
+        model=model_name,
+        groq_api_key=api_key,
         temperature=temperature,
     )
     ```
+  - [ ] Verify imports at top of file:
+    ```python
+    from langchain_groq import ChatGroq  # NOT ChatVertexAI
+    ```
 
-- **16:00 - 16:30** (0.5h) - Break
+- **14:30 - 15:00** (0.5h) - Break
 
-- **16:30 - 18:00** (1.5h) - Test Vertex AI Connection
-  - [ ] Create test script `test_vertex_ai.py`:
+- **15:00 - 16:30** (1.5h) - Test Groq Connection
+  - [ ] Create test script `test_groq.py`:
     ```python
     import os
     from dotenv import load_dotenv
-    from langchain_google_vertexai import ChatVertexAI
+    from langchain_groq import ChatGroq
 
     load_dotenv()
 
-    project = os.getenv("VERTEX_AI_PROJECT")
-    location = os.getenv("VERTEX_AI_LOCATION")
+    api_key = os.getenv("GROQ_API_KEY")
+    model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-    print(f"Testing Vertex AI connection...")
-    print(f"Project: {project}")
-    print(f"Location: {location}")
+    print(f"Testing Groq API connection...")
+    print(f"Model: {model}")
+    print(f"API Key: {'*' * 20}{api_key[-4:] if api_key else 'NOT SET'}")
 
     try:
-        llm = ChatVertexAI(
-            model_name="gemini-1.5-flash-001",
-            project=project,
-            location=location,
+        llm = ChatGroq(
+            model=model,
+            groq_api_key=api_key,
             temperature=0.3,
         )
 
-        result = llm.invoke("Say 'Hello from Vertex AI!' in one sentence.")
+        result = llm.invoke("Say 'Hello from Groq!' in one sentence.")
         print(f"✅ Success: {result.content}")
+        print(f"✅ Groq API is working correctly!")
     except Exception as e:
         print(f"❌ Error: {e}")
+        print(f"❌ Check your GROQ_API_KEY in .env file")
     ```
   - [ ] Run test:
     ```bash
-    python3 test_vertex_ai.py
+    python3 test_groq.py
     ```
-  - [ ] Fix any authentication errors
+  - [ ] Fix any API key errors
   - [ ] Document successful connection
 
+- **16:30 - 18:00** (1.5h) - Test Resume Processing Chain
+  - [ ] Test the full LangChain setup
+  - [ ] Verify prompts work with Groq
+  - [ ] Compare speed vs. Vertex AI (should be faster!)
+  - [ ] Document any issues
+
 **End of Day Checklist:**
-- [ ] GCP project created
-- [ ] Vertex AI enabled
-- [ ] Service account configured
-- [ ] Test connection successful
+- [ ] Groq account created
+- [ ] API key obtained
 - [ ] Environment variables set
+- [ ] Test connection successful
+- [ ] LangChain working with Groq
 
 **Expected Issues:**
-- Billing must be enabled (use free $300 credit)
-- Service account permissions might be wrong (re-check roles)
-- Environment variable path issues (use absolute paths)
-- First API call might take 30-60 seconds (cold start)
+- API key not set correctly (check .env file)
+- Rate limits on free tier (should be fine for development)
+- First API call might take a few seconds (model loading)
+- Much faster and simpler than Vertex AI setup! ✅
 
 ---
 
@@ -666,7 +665,7 @@ Return the tailored resume in plain text format, structured clearly with section
 """
     ```
 
-- **17:00 - 18:00** (1h) - Test Prompts with Vertex AI
+- **17:00 - 18:00** (1h) - Test Prompts with Groq
   - [ ] Create test script `test_prompts.py`:
     ```python
     from resume_processor impo
@@ -707,7 +706,7 @@ Return the tailored resume in plain text format, structured clearly with section
 **End of Day Checklist:**
 - [ ] LATEX_CONVERSION_PROMPT written
 - [ ] LATEX_TEMPLATE created and tested
-- [ ] Prompts tested with Vertex AI
+- [ ] Prompts tested with Groq
 - [ ] LaTeX output verified
 
 **Expected Issues:**
@@ -1330,15 +1329,15 @@ Return the tailored resume in plain text format, structured clearly with section
         except:
             pdflatex_ok = False
 
-        # Check Vertex AI
-        vertex_ai_ok = bool(os.getenv('VERTEX_AI_PROJECT'))
+        # Check Groq API
+        groq_api_ok = bool(os.getenv('GROQ_API_KEY'))
 
-        status = "healthy" if (pdflatex_ok and vertex_ai_ok) else "degraded"
+        status = "healthy" if (pdflatex_ok and groq_api_ok) else "degraded"
 
         return {
             "status": status,
             "pdflatex": "ok" if pdflatex_ok else "error",
-            "vertex_ai": "configured" if vertex_ai_ok else "missing",
+            "groq_api": "configured" if groq_api_ok else "missing",
             "timestamp": time.time()
         }
     ```
@@ -1770,14 +1769,12 @@ I'll create a condensed plan for these days:
         rootDir: Backend_Modified
         dockerfilePath: ./Dockerfile
         envVars:
-          - key: VERTEX_AI_PROJECT
+          - key: GROQ_API_KEY
             sync: false
-          - key: VERTEX_AI_LOCATION
-            value: us-central1
-          - key: VERTEX_AI_MODEL
-            value: gemini-1.5-flash-001
-          - key: GOOGLE_APPLICATION_CREDENTIALS
-            sync: false
+          - key: GROQ_MODEL
+            value: llama-3.3-70b-versatile
+          - key: PORT
+            value: 8080
           - fromGroup: backend-secrets
         healthCheckPath: /health
         autoDeploy: false
@@ -1789,8 +1786,8 @@ I'll create a condensed plan for these days:
   - [ ] Create production .env template
   - [ ] Document all required env vars
   - [ ] Set up Render environment groups:
-    - `backend-secrets`: VERTEX_AI_PROJECT, GOOGLE_APPLICATION_CREDENTIALS
-  - [ ] Upload service account JSON securely
+    - `backend-secrets`: GROQ_API_KEY (from Groq console)
+  - [ ] Note: No service account JSON needed (simpler than Vertex AI!)
 
 - **15:00 - 16:00** (1h) - Frontend Production Config
   - [ ] Update `next.config.mjs`:
@@ -2225,20 +2222,21 @@ I'll create a condensed plan for these days:
 
 ---
 
-### Problem 3: Vertex AI Quota Exceeded
+### Problem 3: Groq API Rate Limit Exceeded
 
-**Likelihood:** Medium (if app goes viral)
-**Impact:** High (AI features stop working)
+**Likelihood:** Low-Medium (free tier is generous)
+**Impact:** Medium (AI features temporarily slow down)
 
 **Symptoms:**
-- "Quota exceeded" errors from Vertex AI
+- "Rate limit exceeded" errors from Groq
 - 429 status codes
-- Users can't generate resumes
+- Users experience delays
 
 **Solutions:**
-1. **Request quota increase:**
-   - Go to GCP Console → IAM & Admin → Quotas
-   - Request increase for "Vertex AI API requests per minute"
+1. **Check free tier limits:**
+   - Groq free tier: Very generous limits
+   - Monitor usage in Groq console
+   - Upgrade to paid tier if needed (still cheaper than Vertex AI)
 
 2. **Implement caching:**
    ```python
@@ -2254,15 +2252,15 @@ I'll create a condensed plan for these days:
    ```python
    try:
        latex = await generate_with_ai(resume_data)
-   except QuotaExceeded:
-       logger.warning("Quota exceeded, using template")
+   except RateLimitError:
+       logger.warning("Rate limit hit, using template")
        latex = generate_from_template(resume_data)
    ```
 
 **Prevention:**
-- Monitor quota usage daily
-- Set up billing alerts
-- Have template fallback ready
+- Monitor API usage in Groq dashboard
+- Implement request queuing if needed
+- Have template fallback ready (already implemented!)
 
 ---
 
@@ -2454,14 +2452,15 @@ I'll create a condensed plan for these days:
 **Impact:** High (Budget exceeded)
 
 **Symptoms:**
-- Unexpected bills from GCP, Render
-- Vertex AI costs > $50/month
+- Unexpected bills from Render
+- Groq usage higher than expected
 - Storage costs increasing
 
 **Solutions:**
 1. **Set billing alerts:**
-   - GCP: Set budget alerts at $25, $50, $100
+   - Groq: Monitor free tier usage (very generous limits)
    - Render: Monitor usage dashboard daily
+   - Note: Total costs should be <$25/month with Groq!
 
 2. **Implement usage limits:**
    ```python
@@ -2486,14 +2485,15 @@ I'll create a condensed plan for these days:
    ```
 
 3. **Optimize API usage:**
-   - Cache Vertex AI responses
+   - Cache Groq responses
    - Reduce prompt sizes
-   - Use batch processing
+   - Use template-based generation (already implemented!)
 
 **Prevention:**
 - Daily cost monitoring
 - Usage analytics
 - Budget planning
+- Note: Groq is much more cost-effective than Vertex AI!
 
 ---
 
@@ -2658,7 +2658,7 @@ By Day 30, you should have:
 
 - ⏳ **If you're part-time:** Double the timeline (60 days)
 - 🆘 **If you get stuck:** Ask for help early (don't waste 4 hours on one error)
-- 💸 **If costs are too high:** Disable Vertex AI, use template-only mode
+- 💸 **If costs are too high:** Groq free tier should be sufficient; use template-only mode as fallback
 - 🐛 **If bugs pile up:** Add buffer days for bug fixing
 
 ### Most Important Advice

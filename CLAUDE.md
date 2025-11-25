@@ -3,34 +3,48 @@
 ## 🎯 Project Overview
 
 **Project Name:** KairosCV - AI-Powered Resume Optimization Platform
-**Current Status:** Transition to HTML-to-PDF approach (Branch: bharath-013)
-**Goal:** Build an MVP that converts any resume format into ATS-optimized PDFs using AI enhancement
+**Current Status:** Backend Integration (Branch: backend-integration-no-auth)
+**Goal:** Build an MVP that converts any resume format into ATS-optimized PDFs using LaTeX and AI enhancement
 
-**CRITICAL:** This project uses **Next.js 16 + TypeScript**, NOT FastAPI/Python. The stack has evolved from the original design.
+**CRITICAL ARCHITECTURE DECISION:** This project uses a **hybrid approach**:
+- **Frontend:** Next.js 16 + TypeScript (for UI and initial parsing)
+- **Backend:** FastAPI + Python + LangChain + LaTeX (for professional PDF generation)
+
+The main backend is the **Python/LaTeX/LangChain backend** in `Backend_Modified/`.
 
 ---
 
 ## 📐 Current Architecture (ACCURATE AS OF NOV 2025)
 
-### Actual Technology Stack
+### Technology Stack
+
+**Frontend (Next.js):**
 ```
 Framework:     Next.js 16 (App Router)
 Language:      TypeScript
 Runtime:       Node.js 18+
 Package Mgr:   pnpm
 UI:            React 19 + Radix UI + Tailwind CSS
-AI:            Google Gemini 1.5 Flash API
+AI (Frontend): Google Gemini 1.5 Flash API (for parsing/extraction)
 Parsers:       pdf-parse, mammoth, pdf-lib
-PDF Gen:       Puppeteer (NEW - replacing pdf-lib)
-Templates:     Handlebars (NEW)
-Validation:    Zod (NEW)
-Hosting:       Render.com
+Validation:    Zod
 ```
 
-### Actual File Structure
+**Backend (Python) - MAIN BACKEND:**
+```
+Framework:     FastAPI
+Language:      Python 3.11+
+AI:            Groq (llama-3.3-70b-versatile via LangChain)
+PDF Gen:       LaTeX (pdflatex) + Jake's Resume Template
+Data Mapping:  Direct template injection (latex_data_mapper.py)
+Validation:    Pydantic
+Hosting:       Render.com (Docker)
+```
+
+### File Structure
 ```
 kairosCV/
-├── app/
+├── app/                              # Next.js Frontend
 │   ├── api/
 │   │   ├── upload/route.ts          # File upload endpoint
 │   │   ├── stream/[fileId]/route.ts # SSE progress streaming
@@ -41,22 +55,40 @@ kairosCV/
 ├── lib/
 │   ├── resume-processor.ts          # Main processing pipeline
 │   ├── file-storage.ts              # File I/O utilities
-│   ├── parsers/                     # NEW - Enhanced parsers
-│   ├── ai/                          # NEW - Gemini integration
-│   ├── templates/                   # NEW - HTML templates
-│   ├── pdf/                         # NEW - Puppeteer generator
-│   └── schemas/                     # NEW - Zod schemas
+│   ├── parsers/                     # Enhanced parsers (PDF/DOCX/TXT)
+│   ├── ai/                          # Gemini integration (frontend AI)
+│   ├── services/                    # API clients (backend integration)
+│   ├── mappers/                     # Data transformers (frontend ↔ backend)
+│   ├── templates/                   # HTML templates (Puppeteer fallback)
+│   ├── pdf/                         # Puppeteer generator (fallback)
+│   └── schemas/                     # Zod schemas
 ├── components/                       # React UI components
-├── public/                          # Static assets
-└── uploads/                         # Temporary file storage
+├── Backend_Modified/                 # **MAIN BACKEND (Python)**
+│   ├── main.py                      # FastAPI app with endpoints
+│   ├── resume_processor.py          # LangChain + Groq integration
+│   ├── latex_data_mapper.py         # Direct LaTeX template injection
+│   ├── latex_converter.py           # PDF compilation (pdflatex)
+│   ├── models.py                    # Pydantic schemas
+│   ├── prompts.py                   # LangChain prompts
+│   ├── latex_output/                # Temporary LaTeX files
+│   ├── generated_pdfs/              # Generated PDF outputs
+│   ├── requirements.txt             # Python dependencies
+│   ├── Dockerfile                   # Docker config for deployment
+│   └── .env                         # Environment variables (GROQ_API_KEY)
+├── uploads/                          # Temporary file storage
+└── render.yaml                       # Multi-service deployment config
 ```
 
-### Data Flow (CURRENT)
+### Data Flow (TARGET ARCHITECTURE)
 ```
-User Upload → Next.js API Route → File Validation →
-Parse (PDF/DOCX/TXT) → Extract Sections →
-Gemini AI Enhancement → HTML Template Population →
-Puppeteer PDF Generation → Download Link (SSE Progress Updates)
+User Upload → Next.js API → File Validation →
+Parse (PDF/DOCX/TXT) with Gemini AI →
+Transform Data → **Python Backend API** →
+Groq AI Enhancement → LaTeX Template Injection →
+pdflatex PDF Compilation → Download Link
+
+(SSE Progress Updates throughout)
+(Puppeteer PDF Generation as fallback if backend unavailable)
 ```
 
 ---
@@ -591,37 +623,45 @@ Closes #42
 
 ---
 
-## 🎯 Current Sprint Goals (Branch: bharath-013)
+## 🎯 Current Sprint Goals (Branch: backend-integration-no-auth)
 
-### Week 1: Foundation
-- [x] Create implementation plan ✅
-- [x] Create risk analysis ✅
-- [ ] Install dependencies
-- [ ] Set up Zod schemas
-- [ ] Test Puppeteer locally
+### Week 1: Backend Setup (Days 1-8) ✅ COMPLETE
+- [x] Environment setup ✅
+- [x] Remove authentication code ✅
+- [x] Configure Groq API (replaces Vertex AI) ✅
+- [x] Create LaTeX templates (Jake's Resume) ✅
+- [x] Implement direct data mapping ✅
+- [x] Test LaTeX compilation ✅
+- [x] Handle edge cases ✅
+- [x] Performance optimization (<1s) ✅
 
-### Week 2: Core Features
-- [ ] Enhance resume parser
-- [ ] Integrate Gemini API
-- [ ] Test AI enhancement quality
-- [ ] Implement caching
+### Week 2: Schema Alignment & Backend Polish (Days 9-14) 🔄 IN PROGRESS
+- [x] Day 8: LaTeX template refinement ✅
+- [ ] Day 9-11: Fix schema mismatches (frontend ↔ backend)
+- [ ] Day 12-13: Add missing sections (certifications, awards, etc.)
+- [ ] Day 14: Backend testing & optimization
 
-### Week 3: PDF Generation
-- [ ] Create HTML template
-- [ ] Set up Puppeteer generator
-- [ ] Test PDF output quality
-- [ ] Optimize memory usage
+### Week 3: Frontend Integration (Days 15-21)
+- [ ] Create backend API client (lib/services/backend-api.ts)
+- [ ] Create data transformers (lib/mappers/frontend-to-backend.ts)
+- [ ] Integrate into resume-processor.ts
+- [ ] Test full flow locally
+- [ ] Implement fallback to Puppeteer
+- [ ] End-to-end testing
 
-### Week 4: Launch
-- [ ] Write comprehensive tests
-- [ ] Deploy to production
-- [ ] Monitor performance
-- [ ] Gather user feedback
+### Week 4: Deployment & Launch (Days 22-30)
+- [ ] Deploy Python backend to Render (Docker)
+- [ ] Deploy Next.js frontend
+- [ ] Configure CORS and environment variables
+- [ ] Integration testing in production
+- [ ] Bug fixes and optimization
+- [ ] Soft launch and monitoring
 
 ---
 
 ## 🚀 Quick Start Commands
 
+### Frontend (Next.js)
 ```bash
 # Install dependencies
 pnpm install
@@ -643,6 +683,38 @@ pnpm type-check
 
 # Lint code
 pnpm lint
+```
+
+### Backend (Python/FastAPI)
+```bash
+# Navigate to backend
+cd Backend_Modified
+
+# Create virtual environment (first time only)
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # Linux/Mac
+# or
+venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your GROQ_API_KEY
+
+# Run backend server
+uvicorn main:app --reload --host 0.0.0.0 --port 8080
+
+# Test health endpoint
+curl http://localhost:8080/health
+
+# Test PDF generation (with sample data)
+curl -X POST http://localhost:8080/convert-json-to-latex \
+  -H "Content-Type: application/json" \
+  -d @test_data.json
 ```
 
 ---
