@@ -1,13 +1,17 @@
 services:
+  # Next.js Frontend - main application
   - type: web
-    name: kairoscv
+    name: kairoscv-frontend
     env: node
     plan: free
+    branch: main
     buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm run build
     startCommand: pnpm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: GOOGLE_GEMINI_API_KEY
+        sync: false  # Set this in Render dashboard - get from https://ai.google.dev
     region: oregon
 
