@@ -1,0 +1,86 @@
+{
+  "basicInfo": {
+    "fullName": "David Martinez",
+    "phone": "+1-555-0600",
+    "email": "david.martinez@tech.com",
+    "linkedin": "linkedin.com/in/davidmartinez",
+    "github": "github.com/dmartinez",
+    "website": "davidmartinez.io"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Carnegie Mellon University",
+      "location": "Pittsburgh, PA",
+      "degree": "M.S. Software Engineering",
+      "minor": null,
+      "startDate": "Aug 2010",
+      "endDate": "May 2012",
+      "isPresent": false
+    },
+    {
+      "id": "edu-2",
+      "institution": "University of Illinois Urbana-Champaign",
+      "location": "Urbana, IL",
+      "degree": "B.S. Computer Science",
+      "minor": null,
+      "startDate": "Aug 2006",
+      "endDate": "May 2010",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Amazon",
+      "jobTitle": "Principal Engineer",
+      "location": "Seattle, WA",
+      "startDate": "Jan 2020",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Lead architecture and technical strategy for Prime Video platform serving 200M+ subscribers",
+        "Reduced infrastructure costs by $5M annually through optimization",
+        "Managed team of 15 engineers across 3 squads",
+        "Drove adoption of microservices architecture reducing deployment time by 70%",
+        "Presented technical talks at AWS re:Invent and published 3 technical blog posts"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Netflix",
+      "jobTitle": "Senior Software Engineer",
+      "location": "Los Gatos, CA",
+      "startDate": "May 2015",
+      "endDate": "Dec 2019",
+      "isPresent": false,
+      "description": [
+        "Built recommendation engine improving user engagement by 35%",
+        "Architected distributed system handling 10M+ requests per minute",
+        "Mentored 8 junior engineers and conducted technical interviews",
+        "Led migration from monolith to microservices for streaming platform"
+      ]
+    },
+    {
+      "id": "exp-3",
+      "organization": "Microsoft",
+      "jobTitle": "Software Engineer II",
+      "location": "Redmond, WA",
+      "startDate": "June 2012",
+      "endDate": "April 2015",
+      "isPresent": false,
+      "description": [
+        "Developed features for Azure cloud platform",
+        "Improved system reliability from 99.5% to 99.99% uptime",
+        "Implemented monitoring and alerting system reducing MTTR by 60%"
+      ]
+    }
+  ],
+  "projects": [],
+  "skills": {
+    "languages": "Java, Python, Go, C++, JavaScript, TypeScript, Rust",
+    "frameworks": "Spring Boot, Django, FastAPI, Node.js, React",
+    "developerTools": "AWS, GCP, Kubernetes, Docker, Terraform, Jenkins, Datadog",
+    "libraries": "Kafka, Redis, PostgreSQL, MongoDB, Cassandra, Elasticsearch"
+  }
+}
