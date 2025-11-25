@@ -1,0 +1,90 @@
+{
+  "basicInfo": {
+    "fullName": "Chris Anderson",
+    "phone": "+1-555-1000",
+    "email": "chris.anderson@mobile.dev",
+    "linkedin": "linkedin.com/in/chrisanderson",
+    "github": "github.com/canderson",
+    "website": "chrisanderson.dev"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "University of Michigan",
+      "location": "Ann Arbor, MI",
+      "degree": "B.S. Computer Science",
+      "minor": "Mathematics",
+      "startDate": "Sept 2016",
+      "endDate": "May 2020",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Uber",
+      "jobTitle": "Senior iOS Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "Feb 2022",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Lead iOS development for rider app with 100M+ downloads",
+        "Reduced app crash rate from 2% to 0.1% through improved error handling",
+        "Implemented real-time location tracking with 99.9% accuracy",
+        "Optimized app size by 30% improving download conversion by 15%",
+        "Mentored 4 junior iOS engineers"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Snapchat",
+      "jobTitle": "iOS Engineer",
+      "location": "Los Angeles, CA",
+      "startDate": "June 2020",
+      "endDate": "Jan 2022",
+      "isPresent": false,
+      "description": [
+        "Developed camera features used by 300M+ daily active users",
+        "Implemented AR filters using Metal and Core ML",
+        "Improved camera launch time by 40% through optimization",
+        "Collaborated with Android team for feature parity"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Fitness Tracking App",
+      "technologies": "Swift, SwiftUI, HealthKit, CoreData, Firebase",
+      "startDate": "Jan 2023",
+      "endDate": "June 2023",
+      "isPresent": false,
+      "description": [
+        "Built iOS app for tracking workouts and nutrition",
+        "Integrated with Apple Watch for real-time heart rate monitoring",
+        "Achieved 50K+ downloads on App Store with 4.8-star rating",
+        "Implemented subscription model using StoreKit"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Recipe Sharing Platform",
+      "technologies": "React Native, TypeScript, Redux, Firebase, Expo",
+      "startDate": "Sept 2021",
+      "endDate": "Dec 2021",
+      "isPresent": false,
+      "description": [
+        "Created cross-platform app for sharing recipes",
+        "Implemented image recognition using TensorFlow Lite",
+        "Built offline-first architecture with data sync"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Swift, Objective-C, JavaScript, TypeScript, Kotlin",
+    "frameworks": "SwiftUI, UIKit, React Native, Flutter, Combine, CoreData",
+    "developerTools": "Xcode, Git, Fastlane, TestFlight, Firebase, Crashlytics",
+    "libraries": "Alamofire, Kingfisher, SnapKit, RxSwift, CoreML, ARKit"
+  }
+}
