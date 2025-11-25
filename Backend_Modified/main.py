@@ -38,6 +38,8 @@ from resume_processor import (
     generate_latex_resume,
 )
 from latex_converter import convert_latex_to_pdf
+from pdf_metadata import add_pdf_metadata
+from file_cleanup import cleanup_all, get_cleanup_stats
 
 # --- Initial Setup ---
 
@@ -82,6 +84,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Startup/Shutdown Events ---
+
+@app.on_event("startup")
+async def startup_event():
+    """Run cleanup on application startup"""
+    logger.info("Running startup cleanup...")
+    try:
+        stats = cleanup_all(
+            pdf_max_age_hours=24,  # Clean PDFs older than 24 hours
+            latex_max_age_hours=1,  # Clean LaTeX files older than 1 hour
+            dry_run=False
+        )
+        logger.info(f"Startup cleanup complete: {stats}")
+    except Exception as e:
+        logger.error(f"Startup cleanup failed: {e}")
+        # Don't fail startup if cleanup fails
+
 
 # --- API Endpoints ---
 
@@ -286,6 +306,14 @@ async def convert_json_to_latex_endpoint(
                 f_pdf.write(pdf_content)
 
         logger.info(f"PDF saved to {output_pdf_path}")
+
+        # Add metadata to PDF
+        try:
+            add_pdf_metadata(output_pdf_path, resume_data)
+            logger.info(f"Added metadata to PDF: {pdf_filename}")
+        except Exception as meta_err:
+            logger.warning(f"Failed to add metadata to PDF: {meta_err}")
+            # Continue anyway - metadata is nice-to-have
 
         # Generate download URL
         download_url = f"/download/{pdf_filename}"
