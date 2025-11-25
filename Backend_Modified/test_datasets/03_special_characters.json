@@ -1,0 +1,61 @@
+{
+  "basicInfo": {
+    "fullName": "María O'Brien-García",
+    "phone": "+1-555-0300",
+    "email": "maria.obrien@email.com",
+    "linkedin": "linkedin.com/in/maria-obrien",
+    "github": "github.com/mobrien",
+    "website": "maria-garcia.dev"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "University of Texas @ Austin",
+      "location": "Austin, TX",
+      "degree": "B.S. Computer Science & Mathematics",
+      "minor": null,
+      "startDate": "Aug 2018",
+      "endDate": "May 2022",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "AT&T Labs",
+      "jobTitle": "Software Engineer (C++/Python)",
+      "location": "Dallas, TX",
+      "startDate": "June 2022",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Developed network optimization algorithms achieving <500ms latency",
+        "Improved throughput by ~40% using advanced caching strategies",
+        "Managed projects with budgets exceeding $100K",
+        "Reduced error rates from 5% to 0.1% through robust testing",
+        "Collaborated with Johnson & Johnson on healthcare data systems"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Data Pipeline™",
+      "technologies": "Python, Apache Spark, AWS S3, Kafka",
+      "startDate": "Jan 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Built ETL pipeline processing 100TB+ data daily",
+        "Reduced costs by ~$50K/month through optimization",
+        "Handled edge cases: missing data, duplicates, & format inconsistencies"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, C++, JavaScript, SQL",
+    "frameworks": "React, Django, FastAPI",
+    "developerTools": "Git, Docker, Jenkins, AWS",
+    "libraries": "NumPy, Pandas, TensorFlow"
+  }
+}
