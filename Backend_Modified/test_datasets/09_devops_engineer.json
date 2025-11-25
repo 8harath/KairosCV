@@ -1,0 +1,99 @@
+{
+  "basicInfo": {
+    "fullName": "Jessica Lee",
+    "phone": "+1-555-0900",
+    "email": "jessica.lee@cloud.com",
+    "linkedin": "linkedin.com/in/jessicalee",
+    "github": "github.com/jlee",
+    "website": "jessicalee.cloud"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Georgia Institute of Technology",
+      "location": "Atlanta, GA",
+      "degree": "M.S. Computer Science",
+      "minor": "Distributed Systems",
+      "startDate": "Aug 2019",
+      "endDate": "May 2021",
+      "isPresent": false
+    },
+    {
+      "id": "edu-2",
+      "institution": "University of Washington",
+      "location": "Seattle, WA",
+      "degree": "B.S. Computer Engineering",
+      "minor": null,
+      "startDate": "Sept 2015",
+      "endDate": "June 2019",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "HashiCorp",
+      "jobTitle": "Staff DevOps Engineer",
+      "location": "Remote",
+      "startDate": "Jan 2022",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Architected multi-cloud infrastructure serving 10M+ API requests daily",
+        "Reduced deployment time from 2 hours to 15 minutes using GitOps",
+        "Implemented observability stack (Prometheus, Grafana, Loki) improving MTTD by 80%",
+        "Led migration to Kubernetes reducing infrastructure costs by $200K annually",
+        "Mentored 6 engineers on cloud-native best practices"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Twilio",
+      "jobTitle": "Senior DevOps Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "June 2021",
+      "endDate": "Dec 2021",
+      "isPresent": false,
+      "description": [
+        "Managed CI/CD pipelines for 50+ microservices",
+        "Implemented infrastructure as code using Terraform and Ansible",
+        "Achieved 99.99% uptime for critical services",
+        "Automated incident response reducing resolution time by 70%"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Cloud Cost Optimization Tool",
+      "technologies": "Go, AWS SDK, Terraform, Grafana",
+      "startDate": "March 2023",
+      "endDate": "Sept 2023",
+      "isPresent": false,
+      "description": [
+        "Built tool to identify and eliminate cloud waste",
+        "Saved companies average of $50K monthly on AWS costs",
+        "Open-sourced with 3K+ GitHub stars"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Kubernetes Operator",
+      "technologies": "Go, Kubernetes, Docker, Helm",
+      "startDate": "Jan 2022",
+      "endDate": "May 2022",
+      "isPresent": false,
+      "description": [
+        "Created custom Kubernetes operator for automated scaling",
+        "Reduced manual intervention by 90%",
+        "Adopted by 20+ teams across organization"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, Go, Bash, YAML, HCL (Terraform)",
+    "frameworks": "Kubernetes, Docker, Helm, ArgoCD, Flux",
+    "developerTools": "AWS, GCP, Azure, Terraform, Ansible, Jenkins, GitLab CI, GitHub Actions",
+    "libraries": "Prometheus, Grafana, ELK Stack, Datadog, PagerDuty, Vault"
+  }
+}
