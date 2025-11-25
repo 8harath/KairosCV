@@ -41,7 +41,10 @@
       "Bash(curl:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(/dev/null)",
-      "Bash(time curl:*)"
+      "Bash(time curl:*)",
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": [],
     "ask": []
