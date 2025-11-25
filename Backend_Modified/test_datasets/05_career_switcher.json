@@ -1,0 +1,95 @@
+{
+  "basicInfo": {
+    "fullName": "Sarah Johnson",
+    "phone": "+1-555-0500",
+    "email": "sarah.johnson@gmail.com",
+    "linkedin": "linkedin.com/in/sarahjohnson",
+    "github": "github.com/sjohnson",
+    "website": "sarahjohnson.com"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "General Assembly",
+      "location": "New York, NY",
+      "degree": "Software Engineering Immersive",
+      "minor": null,
+      "startDate": "Jan 2023",
+      "endDate": "April 2023",
+      "isPresent": false
+    },
+    {
+      "id": "edu-2",
+      "institution": "New York University",
+      "location": "New York, NY",
+      "degree": "B.A. Business Administration",
+      "minor": "Marketing",
+      "startDate": "Sept 2015",
+      "endDate": "May 2019",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Freelance",
+      "jobTitle": "Full-Stack Web Developer",
+      "location": "Remote",
+      "startDate": "May 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Built 5+ client websites using React, Node.js, and MongoDB",
+        "Increased client conversion rates by average of 45%",
+        "Managed full project lifecycle from requirements to deployment"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Deloitte Consulting",
+      "jobTitle": "Business Analyst",
+      "location": "New York, NY",
+      "startDate": "June 2019",
+      "endDate": "Dec 2022",
+      "isPresent": false,
+      "description": [
+        "Analyzed business processes for Fortune 500 clients",
+        "Created data visualizations and dashboards using Tableau",
+        "Led requirements gathering sessions with stakeholders"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "E-commerce Platform",
+      "technologies": "React, Node.js, Express, PostgreSQL, Stripe API",
+      "startDate": "May 2023",
+      "endDate": "Aug 2023",
+      "isPresent": false,
+      "description": [
+        "Built full-stack e-commerce site with payment processing",
+        "Implemented inventory management and order tracking",
+        "Deployed on Heroku with 99.9% uptime"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Task Management App",
+      "technologies": "React, Firebase, Material-UI",
+      "startDate": "Feb 2023",
+      "endDate": "April 2023",
+      "isPresent": false,
+      "description": [
+        "Created collaborative task manager with real-time sync",
+        "Implemented drag-and-drop interface for intuitive UX"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "JavaScript, Python, SQL, HTML, CSS",
+    "frameworks": "React, Node.js, Express, Django, Bootstrap",
+    "developerTools": "Git, GitHub, VS Code, Postman, Chrome DevTools",
+    "libraries": "PostgreSQL, MongoDB, Firebase, Stripe API, JWT"
+  }
+}
