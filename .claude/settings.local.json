@@ -25,7 +25,18 @@
       "Bash(npx tsc:*)",
       "Bash(node --version)",
       "Bash(pnpm --version:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(git log:*)",
+      "Bash(for branch in RD backend-integration-no-auth main-remote02-integration remote-01 remote-02)",
+      "Bash(do echo \"=== $branch ===\")",
+      "Bash(done)",
+      "Bash(for branch in bharath-001 bharath-011 bharath-012 bharath-013 lochan-01 kai phase-1)",
+      "Bash(do echo \"=== origin/$branch ===\")",
+      "Bash(chmod:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(./scripts/organize-branches.sh:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
