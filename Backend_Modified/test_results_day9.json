@@ -1,0 +1,97 @@
+{
+  "total": 10,
+  "successful": 10,
+  "success_rate": 100.0,
+  "results": [
+    {
+      "file": "01_minimal_resume.json",
+      "success": true,
+      "time": 3.56,
+      "pdf_size": 88889,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "02_extensive_resume.json",
+      "success": true,
+      "time": 0.377,
+      "pdf_size": 101183,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "03_special_characters.json",
+      "success": true,
+      "time": 0.845,
+      "pdf_size": 98843,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "04_recent_grad.json",
+      "success": true,
+      "time": 0.34,
+      "pdf_size": 97919,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "05_career_switcher.json",
+      "success": true,
+      "time": 0.354,
+      "pdf_size": 99803,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "06_senior_engineer.json",
+      "success": true,
+      "time": 0.352,
+      "pdf_size": 97076,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "07_data_scientist.json",
+      "success": true,
+      "time": 0.326,
+      "pdf_size": 103641,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "08_frontend_specialist.json",
+      "success": true,
+      "time": 0.384,
+      "pdf_size": 97983,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "09_devops_engineer.json",
+      "success": true,
+      "time": 0.33,
+      "pdf_size": 100313,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    },
+    {
+      "file": "10_mobile_developer.json",
+      "success": true,
+      "time": 0.322,
+      "pdf_size": 99558,
+      "errors": [
+        "Missing \\documentclass"
+      ]
+    }
+  ]
+}
