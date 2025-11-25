@@ -1,0 +1,109 @@
+{
+  "basicInfo": {
+    "fullName": "Michael Chen",
+    "phone": "+1-555-0200",
+    "email": "michael.chen@email.com",
+    "linkedin": "linkedin.com/in/michaelchen",
+    "github": "github.com/mchen",
+    "website": "michaelchen.dev"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Massachusetts Institute of Technology",
+      "location": "Cambridge, MA",
+      "degree": "Master of Science in Computer Science",
+      "minor": "Artificial Intelligence",
+      "startDate": "Sept 2020",
+      "endDate": "May 2022",
+      "isPresent": false
+    },
+    {
+      "id": "edu-2",
+      "institution": "University of California, Berkeley",
+      "location": "Berkeley, CA",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "Aug 2016",
+      "endDate": "May 2020",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Google",
+      "jobTitle": "Senior Software Engineer",
+      "location": "Mountain View, CA",
+      "startDate": "Jan 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Led development of machine learning platform serving 100M+ users",
+        "Reduced latency by 60% through optimization of data pipelines",
+        "Mentored team of 5 engineers on best practices",
+        "Architected microservices handling 1M+ requests per second"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Meta",
+      "jobTitle": "Software Engineer",
+      "location": "Menlo Park, CA",
+      "startDate": "June 2022",
+      "endDate": "Dec 2022",
+      "isPresent": false,
+      "description": [
+        "Developed features for Instagram reaching 2B+ users",
+        "Implemented A/B testing framework improving conversion by 25%",
+        "Collaborated with cross-functional teams across 3 time zones"
+      ]
+    },
+    {
+      "id": "exp-3",
+      "organization": "Amazon Web Services",
+      "jobTitle": "Software Development Engineer Intern",
+      "location": "Seattle, WA",
+      "startDate": "June 2021",
+      "endDate": "Aug 2021",
+      "isPresent": false,
+      "description": [
+        "Built internal tools for EC2 monitoring dashboard",
+        "Automated deployment pipeline reducing release time by 80%"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Open Source ML Framework",
+      "technologies": "Python, TensorFlow, Docker, Kubernetes",
+      "startDate": "Jan 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Created machine learning framework with 5K+ GitHub stars",
+        "Implemented distributed training across 100+ GPUs",
+        "Published paper at NeurIPS 2023"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Real-time Chat Application",
+      "technologies": "Node.js, WebSockets, Redis, React",
+      "startDate": "Sept 2022",
+      "endDate": "Dec 2022",
+      "isPresent": false,
+      "description": [
+        "Built scalable chat app supporting 10K concurrent users",
+        "Implemented end-to-end encryption for secure messaging"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, JavaScript, TypeScript, Go, C++, Java",
+    "frameworks": "React, Node.js, FastAPI, Django, TensorFlow, PyTorch",
+    "developerTools": "Git, Docker, Kubernetes, AWS, GCP, Jenkins, Terraform",
+    "libraries": "NumPy, Pandas, scikit-learn, Redis, PostgreSQL, MongoDB"
+  }
+}
