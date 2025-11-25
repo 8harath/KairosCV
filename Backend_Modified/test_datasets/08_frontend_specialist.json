@@ -1,0 +1,88 @@
+{
+  "basicInfo": {
+    "fullName": "Ryan Thompson",
+    "phone": "+1-555-0800",
+    "email": "ryan.thompson@design.com",
+    "linkedin": "linkedin.com/in/ryanthompson",
+    "github": "github.com/rthompson",
+    "website": "ryanthompson.design"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Rhode Island School of Design",
+      "location": "Providence, RI",
+      "degree": "B.F.A. Interaction Design",
+      "minor": "Computer Science",
+      "startDate": "Sept 2017",
+      "endDate": "May 2021",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Airbnb",
+      "jobTitle": "Senior Frontend Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "March 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Lead frontend development for host dashboard serving 5M+ hosts worldwide",
+        "Improved page load time by 50% through code splitting and lazy loading",
+        "Built reusable component library used across 20+ product teams",
+        "Implemented accessibility features achieving WCAG 2.1 Level AA compliance"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Stripe",
+      "jobTitle": "Frontend Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "June 2021",
+      "endDate": "Feb 2023",
+      "isPresent": false,
+      "description": [
+        "Developed payment UI components for Stripe Checkout",
+        "Reduced bundle size by 40% through optimization and tree-shaking",
+        "Collaborated with designers to implement pixel-perfect interfaces",
+        "Built responsive designs supporting 50+ languages and currencies"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Design System",
+      "technologies": "React, TypeScript, Storybook, Styled Components, Figma",
+      "startDate": "Jan 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Created comprehensive design system with 100+ components",
+        "Published on npm with 50K+ weekly downloads",
+        "Documented design principles and usage guidelines"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Animation Library",
+      "technologies": "JavaScript, CSS3, GSAP, Framer Motion",
+      "startDate": "Sept 2022",
+      "endDate": "Dec 2022",
+      "isPresent": false,
+      "description": [
+        "Built animation library for smooth micro-interactions",
+        "Achieved 60fps performance on all modern browsers",
+        "Featured on CSS-Tricks and Codrops"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "JavaScript, TypeScript, HTML5, CSS3, SASS, GraphQL",
+    "frameworks": "React, Next.js, Vue.js, Svelte, TailwindCSS, Styled Components",
+    "developerTools": "Git, Webpack, Vite, Figma, Chrome DevTools, Lighthouse",
+    "libraries": "Redux, React Query, Framer Motion, GSAP, D3.js, Three.js"
+  }
+}
