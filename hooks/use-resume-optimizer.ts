@@ -17,6 +17,7 @@ export function useResumeOptimizer() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [fileId, setFileId] = useState<string | null>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
 
   const startProcessing = useCallback((fileId: string) => {
@@ -26,6 +27,7 @@ export function useResumeOptimizer() {
     setStage("")
     setMessage("Initializing...")
     setDownloadUrl(null)
+    setFileId(fileId)
 
     // Close existing connection if any
     if (eventSourceRef.current) {
@@ -95,6 +97,7 @@ export function useResumeOptimizer() {
     downloadUrl,
     error,
     isProcessing,
+    fileId,
     startProcessing,
     cleanup,
   }

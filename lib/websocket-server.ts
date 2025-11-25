@@ -1,4 +1,4 @@
-import { WebSocket, Server as WebSocketServer } from "ws"
+import { WebSocket, WebSocketServer } from "ws"
 
 export function createWebSocketServer(httpServer: any) {
   const wss = new WebSocketServer({ noServer: true })

@@ -1,125 +1,165 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import Header from "@/components/header"
-import Footer from "@/components/Footer"
+import FileUploader from "@/components/file-uploader"
+import ProgressTracker from "@/components/progress-tracker"
+import ResultsPanel from "@/components/results-panel"
 import LoadingAnimation from "@/components/loading-animation"
-import { ArrowRightIcon, UploadIcon, SparklesIcon, FileIcon } from "@/components/icons"
+import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
+import { toast } from "@/hooks/use-toast"
 
-export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true)
+export default function Home() {
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [file, setFile] = useState<File | null>(null)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
+
+  // Display errors from processing
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Processing error",
+        description: error,
+        variant: "destructive",
+      })
+    }
+  }, [error])
+
+  // Update PDF URL when download URL is available
+  useEffect(() => {
+    if (downloadUrl && !isProcessing) {
+      // Set PDF URL for preview when download is ready
+      setPdfUrl(downloadUrl)
+    }
+  }, [downloadUrl, isProcessing])
 
   useEffect(() => {
-    // Show loading animation briefly on initial load
+    // Show loading animation for 1.5 seconds on initial mount
     const timer = setTimeout(() => {
-      setIsLoading(false)
+      setIsInitialLoading(false)
     }, 1500)
 
     return () => clearTimeout(timer)
   }, [])
 
-  if (isLoading) {
+  const handleFileSelect = async (selectedFile: File | null) => {
+    if (!selectedFile) {
+      setFile(null)
+      return
+    }
+
+    // Validate file
+    const validTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+    ]
+    const validExtensions = [".pdf", ".docx", ".txt"]
+    const fileName = selectedFile.name.toLowerCase()
+    const hasValidExtension = validExtensions.some((ext) => fileName.endsWith(ext))
+
+    if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF, DOCX, or TXT file.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 5MB. Please choose a smaller file.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setFile(selectedFile)
+    setPdfUrl(null)
+
+    try {
+      // Upload file
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.detail || "Upload failed")
+      }
+
+      const uploadData = await uploadResponse.json()
+      const fileId = uploadData.file_id
+
+      // Start processing
+      startProcessing(fileId)
+
+      toast({
+        title: "File uploaded",
+        description: "Your resume is being processed...",
+      })
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+      console.error("[v0] Error:", errorMessage)
+      toast({
+        title: "Upload failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      setFile(null)
+    }
+  }
+
+  const handleReset = () => {
+    setFile(null)
+    setPdfUrl(null)
+    cleanup()
+  }
+
+  useEffect(() => {
+    return () => {
+      cleanup()
+    }
+  }, [cleanup])
+
+  if (isInitialLoading) {
     return <LoadingAnimation />
   }
 
   return (
-    <>
+    <main
+      className="min-h-screen bg-background text-foreground"
+      role="main"
+      itemScope
+      itemType="https://schema.org/WebApplication"
+    >
       <Header />
-      <main className="min-h-screen bg-background text-foreground pt-28 md:pt-32">
-        {/* Hero Section */}
-        <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Main Headline */}
-          <div className="mb-12 md:mb-16 animate-in fade-in">
-            <h1 className="mb-6">
-              Land Your Dream Job.
-              <br />
-              <span className="text-4xl sm:text-5xl md:text-6xl font-normal text-muted-foreground">
-                Let AI Handle the Rest.
-              </span>
-            </h1>
-            <p className="text-lead max-w-2xl mx-auto mb-8">
-              Transform any resume into an ATS-optimized PDF in under 60 seconds.
-              Focus on your skills, we&apos;ll handle the formatting.
-            </p>
-          </div>
 
-          {/* CTA Section */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-16 justify-center items-center">
-            <Link href="/optimize" className="btn-hero inline-flex items-center gap-2">
-              Optimize Your Resume Now
-              <ArrowRightIcon className="w-5 h-5" />
-            </Link>
-            <Link href="/intent" className="text-sm font-semibold underline hover:no-underline transition-all">
-              See how it works →
-            </Link>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-16">
-            <div className="card-interactive group text-center animate-in fade-in delay-100 relative">
-              <span className="absolute top-4 left-4 w-10 h-10 bg-primary text-primary-foreground font-black flex items-center justify-center text-lg border-2 border-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                1
-              </span>
-              <div className="mb-6 mt-8 flex justify-center">
-                <UploadIcon className="w-16 h-16 stroke-2" />
-              </div>
-              <h3 className="mb-3">Upload</h3>
-              <p className="text-sm">
-                Drop your resume in any format—PDF, DOCX, or TXT. Instant processing.
-              </p>
+      <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
+        <section aria-labelledby="upload-section">
+          {!isProcessing && !pdfUrl && !error ? (
+            <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+          ) : isProcessing ? (
+            <ProgressTracker progress={progress} stage={stage} message={message} />
+          ) : error ? (
+            <div className="text-center space-y-4">
+              <p className="text-destructive">{error}</p>
+              <button onClick={handleReset} className="btn">
+                Try Again
+              </button>
             </div>
-
-            <div className="card-interactive group text-center animate-in fade-in delay-200 relative">
-              <span className="absolute top-4 left-4 w-10 h-10 bg-primary text-primary-foreground font-black flex items-center justify-center text-lg border-2 border-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                2
-              </span>
-              <div className="mb-6 mt-8 flex justify-center">
-                <SparklesIcon className="w-16 h-16 stroke-2" />
-              </div>
-              <h3 className="mb-3">AI Enhance</h3>
-              <p className="text-sm">
-                Our AI analyzes and enhances your content for maximum ATS compatibility.
-              </p>
-            </div>
-
-            <div className="card-interactive group text-center animate-in fade-in delay-300 relative">
-              <span className="absolute top-4 left-4 w-10 h-10 bg-primary text-primary-foreground font-black flex items-center justify-center text-lg border-2 border-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                3
-              </span>
-              <div className="mb-6 mt-8 flex justify-center">
-                <FileIcon className="w-16 h-16 stroke-2" />
-              </div>
-              <h3 className="mb-3">Download</h3>
-              <p className="text-sm">
-                Get your professionally formatted, ATS-optimized resume in seconds.
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="mt-16 pt-16 border-t-2 border-primary">
-            <div className="grid grid-cols-3 gap-6 md:gap-12 text-center">
-              <div className="animate-in zoom-in delay-100">
-                <div className="text-3xl sm:text-4xl md:text-5xl font-black mb-2">Free</div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Always Free</p>
-              </div>
-              <div className="animate-in zoom-in delay-200">
-                <div className="text-3xl sm:text-4xl md:text-5xl font-black mb-2">{"<60s"}</div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Processing Time</p>
-              </div>
-              <div className="animate-in zoom-in delay-300">
-                <div className="text-3xl sm:text-4xl md:text-5xl font-black mb-2">AI</div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Powered</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-        <Footer />
-      </main>
-    </>
+          ) : (
+            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
+          )}
+        </section>
+      </div>
+    </main>
   )
 }

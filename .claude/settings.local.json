@@ -22,7 +22,10 @@
       "Bash(rm:*)",
       "Bash(pnpm remove:*)",
       "Bash(find:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node --version)",
+      "Bash(pnpm --version:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
