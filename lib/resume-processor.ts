@@ -1,108 +1,78 @@
+/**
+ * Resume Processor - Thin Client to Python Backend
+ *
+ * This module acts as a lightweight client that:
+ * 1. Parses files to extract raw text (PDF, DOCX, TXT)
+ * 2. Extracts basic structured data using simple regex
+ * 3. Sends data to Python backend for LaTeX PDF generation
+ * 4. Returns download URL for generated PDF
+ *
+ * Heavy lifting (AI, LaTeX, PDF generation) is done by Python backend.
+ */
+
 import fs from "fs-extra"
 import path from "path"
-import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
-import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
-import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
-import { generateResumePDF } from "./pdf/pdf-generator"
-import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
-import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
-import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-handler"
-import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
-import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
-import { extractWithVisionAndVerify } from "./parsers/vision-extractor"
-
-export interface ResumeData {
-  text: string
-  sections: {
-    [key: string]: string[]
-  }
-  skills: string[]
-  experience: string[]
-  education: string[]
-}
+import pdf from "pdf-parse"
+import mammoth from "mammoth"
+import { getUploadFilePath, fileExists } from "./file-storage"
+import { backendAPI, type ResumeData as BackendResumeData } from "./services/backend-api"
+import { transformToBackendSchema } from "./mappers/schema-mapper"
 
 export interface ProcessingProgress {
   stage: string
   progress: number
   message: string
-  confidence?: ResumeConfidence // Optional confidence score
+  download_url?: string
+  error?: string
 }
 
-// Parse PDF file using enhanced multi-strategy extraction + vision cross-verification
-export async function parsePDF(filePath: string): Promise<{ text: string; extractionInfo?: string }> {
-  // Step 1: Text-based extraction
-  const result = await extractPDFEnhanced(filePath)
+// ============================================================================
+// Basic Text Extraction (Minimal Parsing)
+// ============================================================================
 
-  console.log('📄 PDF Extraction Result:', {
-    method: result.method,
-    confidence: result.confidence,
-    metadata: result.metadata
-  })
-
-  const features = []
-  if (result.metadata?.hasMultiColumn) features.push('multi-column')
-  if (result.metadata?.hasTables) features.push('tables')
-
-  // Step 2: Vision-based extraction and cross-verification
-  let finalText = result.text
-  let extractionMethod = result.method
-  let visionInfo = ''
-
+/**
+ * Extract text from PDF using pdf-parse (simple, reliable)
+ */
+async function parsePDF(filePath: string): Promise<string> {
   try {
-    console.log('🔍 Running vision-based cross-verification...')
-
-    const { visionResult, crossVerification, bestText } = await extractWithVisionAndVerify(
-      filePath,
-      result.text
-    )
-
-    finalText = bestText // Use merged/best text
-    visionInfo = ` | Vision: ${visionResult.metadata.ocrConfidence.toFixed(0)}% | Match: ${crossVerification.matchPercentage}% | Using: ${crossVerification.recommendation}`
-
-    console.log(`✅ Vision cross-verification complete: ${crossVerification.recommendation}`)
-
+    const dataBuffer = await fs.readFile(filePath)
+    const data = await pdf(dataBuffer)
+    return data.text
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
-    console.log(`⚠️  Vision extraction failed: ${errorMsg}`)
-    console.log('⚠️  Falling back to text-only extraction')
-    visionInfo = ' | Vision: unavailable'
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Vision extraction error details:', error)
-    }
-    // Continue with text-only extraction
-  }
-
-  return {
-    text: finalText,
-    extractionInfo: `Method: ${extractionMethod} | Confidence: ${result.confidence}%${visionInfo} | Features: ${features.length > 0 ? features.join(', ') : 'standard'}`
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`PDF parsing failed: ${msg}`)
   }
 }
 
-// Parse DOCX file using enhanced HTML-based extraction
-export async function parseDOCX(filePath: string): Promise<{ text: string; extractionInfo?: string }> {
-  const result = await extractDOCXEnhanced(filePath)
-
-  console.log('📄 DOCX Extraction Result:', {
-    confidence: result.confidence,
-    metadata: result.metadata
-  })
-
-  return {
-    text: result.text,
-    extractionInfo: `Confidence: ${result.confidence}% | Bullets: ${result.metadata.hasBullets} | Tables: ${result.metadata.hasTables}`
+/**
+ * Extract text from DOCX using mammoth (HTML conversion)
+ */
+async function parseDOCX(filePath: string): Promise<string> {
+  try {
+    const result = await mammoth.extractRawText({ path: filePath })
+    return result.value
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`DOCX parsing failed: ${msg}`)
   }
 }
 
-// Parse TXT file
-export async function parseTXT(filePath: string): Promise<string> {
-  return await fs.readFile(filePath, "utf-8")
+/**
+ * Read plain text file
+ */
+async function parseTXT(filePath: string): Promise<string> {
+  try {
+    return await fs.readFile(filePath, "utf-8")
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`TXT reading failed: ${msg}`)
+  }
 }
 
-// Parse resume based on file extension
-export async function parseResume(
-  filePath: string,
-  fileType: string
-): Promise<{ text: string; extractionInfo?: string }> {
+/**
+ * Parse resume file based on extension
+ */
+export async function parseResumeFile(filePath: string, fileType: string): Promise<string> {
   const ext = path.extname(filePath).toLowerCase()
 
   if (ext === ".pdf" || fileType.includes("pdf")) {
@@ -110,149 +80,117 @@ export async function parseResume(
   } else if (ext === ".docx" || fileType.includes("word")) {
     return await parseDOCX(filePath)
   } else if (ext === ".txt" || fileType.includes("text")) {
-    const text = await parseTXT(filePath)
-    return { text, extractionInfo: "Plain text file" }
+    return await parseTXT(filePath)
   } else {
     throw new Error(`Unsupported file type: ${ext}`)
   }
 }
 
-// Extract sections from resume text (basic implementation)
-export function extractSections(text: string): ResumeData {
-  const lines = text.split("\n").map((line) => line.trim()).filter((line) => line.length > 0)
-  
-  const sections: { [key: string]: string[] } = {}
-  const skills: string[] = []
-  const experience: string[] = []
-  const education: string[] = []
-  
-  let currentSection = ""
-  
-  for (const line of lines) {
-    // Detect section headers (common resume sections)
-    const lowerLine = line.toLowerCase()
-    if (
-      lowerLine.includes("experience") ||
-      lowerLine.includes("work") ||
-      lowerLine.includes("employment")
-    ) {
-      currentSection = "experience"
-      sections[currentSection] = sections[currentSection] || []
-    } else if (lowerLine.includes("education")) {
-      currentSection = "education"
-      sections[currentSection] = sections[currentSection] || []
-    } else if (lowerLine.includes("skill")) {
-      currentSection = "skills"
-      sections[currentSection] = sections[currentSection] || []
-    } else if (currentSection) {
-      sections[currentSection].push(line)
-      
-      // Populate typed arrays
-      if (currentSection === "experience") {
-        experience.push(line)
-      } else if (currentSection === "education") {
-        education.push(line)
-      } else if (currentSection === "skills") {
-        skills.push(line)
-      }
-    }
-  }
-  
+// ============================================================================
+// Basic Data Extraction (Simple Regex-Based)
+// ============================================================================
+
+/**
+ * Extract basic structured data from raw text using simple patterns
+ * This is a lightweight alternative to AI extraction
+ */
+export function extractBasicStructuredData(text: string): any {
+  const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0)
+
+  // Extract name (usually first non-empty line or line with capital letters)
+  const nameCandidate = lines.find(l => {
+    const words = l.split(/\s+/)
+    return words.length >= 2 && words.length <= 4 && /^[A-Z]/.test(l)
+  }) || "Unknown Name"
+
+  // Extract email
+  const emailMatch = text.match(/[\w\.-]+@[\w\.-]+\.\w+/)
+  const email = emailMatch ? emailMatch[0] : ""
+
+  // Extract phone
+  const phoneMatch = text.match(/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/)
+  const phone = phoneMatch ? phoneMatch[0] : ""
+
+  // Extract LinkedIn
+  const linkedinMatch = text.match(/linkedin\.com\/in\/[\w-]+/)
+  const linkedin = linkedinMatch ? `https://${linkedinMatch[0]}` : ""
+
+  // Extract GitHub
+  const githubMatch = text.match(/github\.com\/[\w-]+/)
+  const github = githubMatch ? `https://${githubMatch[0]}` : ""
+
+  // Extract education (look for universities and degrees)
+  const educationKeywords = ['university', 'college', 'institute', 'school', 'bachelor', 'master', 'phd', 'b.s.', 'm.s.']
+  const educationSections = lines.filter(l =>
+    educationKeywords.some(kw => l.toLowerCase().includes(kw))
+  )
+
+  // Extract experience (look for company indicators)
+  const experienceKeywords = ['engineer', 'developer', 'manager', 'analyst', 'consultant', 'intern']
+  const experienceSections = lines.filter(l =>
+    experienceKeywords.some(kw => l.toLowerCase().includes(kw))
+  )
+
+  // Extract skills (common programming languages and frameworks)
+  const skillKeywords = [
+    'python', 'javascript', 'java', 'c++', 'react', 'node',
+    'typescript', 'sql', 'aws', 'docker', 'kubernetes', 'git'
+  ]
+  const skills = skillKeywords.filter(skill =>
+    text.toLowerCase().includes(skill)
+  )
+
   return {
-    text,
-    sections,
-    skills,
-    experience,
-    education,
+    basicInfo: {
+      fullName: nameCandidate,
+      phone: phone,
+      email: email,
+      linkedin: linkedin,
+      github: github,
+      website: null,
+    },
+    education: educationSections.slice(0, 2).map((edu, i) => ({
+      id: `edu-${i}`,
+      institution: edu.slice(0, 100),
+      location: "",
+      degree: "",
+      minor: null,
+      startDate: "",
+      endDate: null,
+      isPresent: false,
+    })),
+    experience: experienceSections.slice(0, 3).map((exp, i) => ({
+      id: `exp-${i}`,
+      organization: exp.slice(0, 50),
+      jobTitle: "",
+      location: "",
+      startDate: "",
+      endDate: null,
+      isPresent: false,
+      description: [],
+    })),
+    projects: [],
+    skills: {
+      languages: skills.join(', '),
+      frameworks: "",
+      developerTools: "",
+      libraries: "",
+    },
   }
 }
 
-// Enhance resume with AI using Gemini
-export async function enhanceWithAI(
-  resumeData: ResumeData,
-  parsedResume?: ParsedResume
-): Promise<{ enhancedData: ResumeData; enhancedSkills: SkillsCategories | null; summary: string | null }> {
-  if (!isGeminiConfigured()) {
-    console.warn("Gemini API not configured. Skipping AI enhancement.")
-    return { enhancedData: resumeData, enhancedSkills: null, summary: null }
-  }
+// ============================================================================
+// Main Processing Pipeline
+// ============================================================================
 
-  try {
-    // Extract and categorize skills using AI
-    const enhancedSkills = await extractSkills(resumeData.text)
-
-    // Generate professional summary
-    const summary = await generateSummary(resumeData.text)
-
-    // Enhance experience bullets if we have parsed experience data
-    if (parsedResume && parsedResume.experience.length > 0) {
-      for (const exp of parsedResume.experience) {
-        if (exp.bullets.length > 0) {
-          const enhanced = await enhanceBulletPoints(exp.bullets, exp.title, exp.company)
-          // Update the bullets with enhanced versions
-          exp.bullets = enhanced.map(e => e.enhanced)
-        }
-      }
-    }
-
-    return {
-      enhancedData: {
-        ...resumeData,
-        skills: [
-          ...enhancedSkills.languages,
-          ...enhancedSkills.frameworks,
-          ...enhancedSkills.tools,
-          ...enhancedSkills.databases,
-        ],
-      },
-      enhancedSkills,
-      summary,
-    }
-  } catch (error) {
-    console.error("Error in AI enhancement:", error)
-    return { enhancedData: resumeData, enhancedSkills: null, summary: null }
-  }
-}
-
-// Generate LaTeX content (placeholder)
-export function generateLaTeX(resumeData: ResumeData): string {
-  // TODO: Implement LaTeX template generation
-  // For now, return a simple structure
-  const sections = Object.entries(resumeData.sections)
-    .map(([name, content]) => `\\section{${name}}\n${content.join("\n")}`)
-    .join("\n\n")
-  
-  return `\\documentclass{article}
-\\begin{document}
-${sections}
-\\end{document}`
-}
-
-// Generate PDF from parsed resume data using Puppeteer and Jake's template
-export async function generatePDF(
-  parsedResume: ParsedResume,
-  summary?: string
-): Promise<Buffer> {
-  try {
-    // Generate PDF using Puppeteer and Jake's Resume template
-    const pdfBuffer = await generateResumePDF(parsedResume, summary, {
-      format: "letter",
-      printBackground: true,
-    })
-
-    return pdfBuffer
-  } catch (error) {
-    console.error("Error generating PDF:", error)
-    throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : "Unknown error"}`)
-  }
-}
-
-// Process resume file (main processing pipeline using Gemini for extraction)
+/**
+ * Process resume file: parse → extract → send to Python backend → return PDF URL
+ */
 export async function* processResume(
   fileId: string,
   fileType: string,
   originalFilename: string
-): AsyncGenerator<ProcessingProgress, ResumeData, unknown> {
+): AsyncGenerator<ProcessingProgress, void, unknown> {
   try {
     // Stage 1: Parse file to extract raw text
     yield { stage: "parsing", progress: 10, message: "Reading resume file..." }
@@ -263,167 +201,66 @@ export async function* processResume(
       throw new Error("Uploaded file not found")
     }
 
-    const parseResult = await parseResume(filePath, fileType)
-    const rawText = parseResult.text
+    const rawText = await parseResumeFile(filePath, fileType)
 
-    // Show extraction details in progress
-    if (parseResult.extractionInfo) {
-      yield {
-        stage: "parsing",
-        progress: 20,
-        message: `Text extraction complete | ${parseResult.extractionInfo}`
-      }
-    } else {
-      yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
-    }
+    yield { stage: "parsing", progress: 30, message: "Text extraction complete" }
 
-    // Stage 2: Use Gemini to extract ALL structured data from the resume
-    yield { stage: "enhancing", progress: 30, message: "Analyzing resume with AI..." }
+    // Stage 2: Extract basic structured data
+    yield { stage: "extracting", progress: 40, message: "Extracting resume data..." }
 
-    let extractedData = await extractCompleteResumeData(rawText)
+    const extractedData = extractBasicStructuredData(rawText)
 
-    // Fallback to basic parsing if AI extraction fails (e.g., API unavailable)
-    if (!extractedData) {
-      console.warn("AI extraction failed, falling back to basic parsing...")
-      yield { stage: "enhancing", progress: 40, message: "Using fallback parser (AI service unavailable)..." }
+    yield { stage: "extracting", progress: 60, message: "Data extraction complete" }
 
-      // Use the enhanced parser as fallback
-      const parsedFallback = parseResumeEnhanced(rawText)
+    // Stage 3: Transform to backend schema
+    yield { stage: "transforming", progress: 70, message: "Preparing data for backend..." }
 
-      // Convert to expected format
-      extractedData = {
-        contact: parsedFallback.contact,
-        summary: parsedFallback.summary,
-        experience: parsedFallback.experience,
-        education: parsedFallback.education,
-        skills: parsedFallback.skills,
-        projects: parsedFallback.projects,
-        certifications: parsedFallback.certifications,
-      }
-    }
+    const backendData: BackendResumeData = transformToBackendSchema(extractedData)
 
-    yield { stage: "enhancing", progress: 50, message: "Enhancing content for ATS optimization..." }
+    yield { stage: "transforming", progress: 75, message: "Data transformation complete" }
 
-    // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
-    let enhancedData = await enhanceExtractedData(extractedData)
+    // Stage 4: Send to Python backend for LaTeX PDF generation
+    yield { stage: "generating", progress: 80, message: "Generating professional PDF with LaTeX..." }
 
-    yield { stage: "enhancing", progress: 70, message: "Optimizing bullet points..." }
+    const response = await backendAPI.convertResumeToLatex(backendData)
 
-    // Stage 3.4: Handle ALL edge cases (deduplication, normalization, cleanup)
-    yield { stage: "cleaning", progress: 71, message: "Removing duplicates and normalizing data..." }
-    enhancedData = handleAllEdgeCases(enhancedData, rawText)
+    yield { stage: "generating", progress: 95, message: "PDF generation complete!" }
 
-    // Validate processed data
-    const processedValidation = validateProcessedData(enhancedData as any)
-    if (processedValidation.warnings.length > 0) {
-      console.warn('⚠️  Data quality warnings:', processedValidation.warnings)
-    }
-    if (processedValidation.issues.length > 0) {
-      console.error('❌ Data quality issues:', processedValidation.issues)
-    }
+    // Stage 5: Return download URL
+    const downloadUrl = `/api/proxy-download/${response.pdf_filename}`
 
-    // Stage 3.5: Validate and score resume data quality
-    yield { stage: "validating", progress: 72, message: "Validating resume data..." }
-
-    const validation = safeValidateResumeData(enhancedData)
-
-    if (!validation.success) {
-      console.warn('Resume data validation failed:', validation.errors)
-      // Fill defaults for missing required fields
-      enhancedData = fillDefaults(enhancedData as any)
-      yield {
-        stage: "validating",
-        progress: 75,
-        message: "Auto-fixing missing fields..."
-      }
-    } else {
-      yield { stage: "validating", progress: 75, message: "Validation passed!" }
-    }
-
-    // Calculate confidence score
-    yield { stage: "scoring", progress: 77, message: "Calculating quality score..." }
-    const confidenceScore = scoreResume(enhancedData)
-
-    // Log confidence for debugging
-    console.log('📊 Resume Confidence Score:', {
-      overall: confidenceScore.overall,
-      level: confidenceScore.level,
-      contact: confidenceScore.sections.contact.score,
-      experience: confidenceScore.sections.experience.score,
-      education: confidenceScore.sections.education.score,
-      skills: confidenceScore.sections.skills.score,
-      projects: confidenceScore.sections.projects.score,
-    })
-
-    // Yield progress with confidence score
-    yield {
-      stage: "scoring",
-      progress: 79,
-      message: `Resume quality: ${confidenceScore.overall}% (${confidenceScore.level})`,
-      confidence: confidenceScore
-    }
-
-    // Stage 4: Convert to ParsedResume format for PDF generation
-    const parsedResume: ParsedResume = {
-      contact: {
-        name: enhancedData.contact?.name || "Your Name",
-        email: enhancedData.contact?.email || "",
-        phone: enhancedData.contact?.phone || "",
-        linkedin: enhancedData.contact?.linkedin || "",
-        github: enhancedData.contact?.github || "",
-        website: enhancedData.contact?.website || "",
-        location: enhancedData.contact?.location || "",
-      },
-      summary: enhancedData.summary,
-      experience: enhancedData.experience || [],
-      education: enhancedData.education || [],
-      skills: enhancedData.skills || {
-        languages: [],
-        frameworks: [],
-        tools: [],
-        databases: [],
-      },
-      projects: enhancedData.projects || [],
-      certifications: enhancedData.certifications || [],
-      // New comprehensive sections
-      awards: enhancedData.awards,
-      publications: enhancedData.publications,
-      languageProficiency: enhancedData.languageProficiency,
-      volunteer: enhancedData.volunteer,
-      hobbies: enhancedData.hobbies,
-      references: enhancedData.references,
-      customSections: enhancedData.customSections,
-    }
-
-    yield { stage: "generating", progress: 80, message: "Generating optimized PDF..." }
-
-    // Stage 5: Generate PDF using Puppeteer and Jake's template
-    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary)
-
-    // Save generated PDF
-    await saveGeneratedPDF(fileId, pdfBuffer)
-    yield { stage: "compiling", progress: 95, message: "Finalizing..." }
-
-    // Final completion message
     yield {
       stage: "complete",
       progress: 100,
       message: "Resume optimization complete!",
+      download_url: downloadUrl,
     }
 
-    // Return basic resume data for compatibility
-    const resumeData: ResumeData = {
-      text: rawText,
-      sections: {},
-      skills: parsedResume.skills.languages.concat(parsedResume.skills.frameworks),
-      experience: parsedResume.experience.map(exp => exp.title),
-      education: parsedResume.education.map(edu => edu.institution),
-    }
-
-    return resumeData
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    yield {
+      stage: "error",
+      progress: 0,
+      message: `Processing failed: ${errorMessage}`,
+      error: errorMessage,
+    }
     throw new Error(`Processing failed: ${errorMessage}`)
   }
 }
 
+// ============================================================================
+// Health Check
+// ============================================================================
+
+/**
+ * Check if Python backend is available
+ */
+export async function checkBackendHealth(): Promise<boolean> {
+  try {
+    const response = await backendAPI.healthCheck()
+    return response.message === "API is running!"
+  } catch (error) {
+    console.error("Backend health check failed:", error)
+    return false
+  }
+}
