@@ -1,0 +1,97 @@
+{
+  "basicInfo": {
+    "fullName": "Dr. Emily Watson",
+    "phone": "+1-555-0700",
+    "email": "emily.watson@research.edu",
+    "linkedin": "linkedin.com/in/emilywatson",
+    "github": "github.com/ewatson",
+    "website": "emilywatson.research"
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Stanford University",
+      "location": "Stanford, CA",
+      "degree": "Ph.D. in Computer Science",
+      "minor": "Machine Learning",
+      "startDate": "Sept 2018",
+      "endDate": "June 2023",
+      "isPresent": false
+    },
+    {
+      "id": "edu-2",
+      "institution": "UC Berkeley",
+      "location": "Berkeley, CA",
+      "degree": "B.S. Computer Science & Statistics",
+      "minor": null,
+      "startDate": "Aug 2014",
+      "endDate": "May 2018",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "OpenAI",
+      "jobTitle": "Research Scientist",
+      "location": "San Francisco, CA",
+      "startDate": "July 2023",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Conduct cutting-edge research in large language models and reinforcement learning",
+        "Published 5 papers at top-tier conferences (NeurIPS, ICML, ICLR)",
+        "Developed novel training techniques improving model efficiency by 40%",
+        "Collaborate with cross-functional teams to deploy models at scale"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "organization": "Google Research",
+      "jobTitle": "Research Intern",
+      "location": "Mountain View, CA",
+      "startDate": "June 2021",
+      "endDate": "Sept 2021",
+      "isPresent": false,
+      "description": [
+        "Worked on neural architecture search for computer vision",
+        "Developed automated ML pipeline reducing experiment time by 60%",
+        "Co-authored paper published at CVPR 2022"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Novel Attention Mechanism",
+      "technologies": "Python, PyTorch, CUDA, Hugging Face Transformers",
+      "startDate": "Jan 2022",
+      "endDate": "Dec 2022",
+      "isPresent": false,
+      "description": [
+        "Proposed new attention mechanism for transformers reducing complexity from O(n²) to O(n log n)",
+        "Achieved state-of-the-art results on 3 benchmark datasets",
+        "Open-sourced implementation with 10K+ downloads"
+      ]
+    },
+    {
+      "id": "proj-2",
+      "name": "Time Series Forecasting Library",
+      "technologies": "Python, TensorFlow, scikit-learn, Pandas",
+      "startDate": "Sept 2020",
+      "endDate": "May 2021",
+      "isPresent": false,
+      "description": [
+        "Created Python library for multivariate time series forecasting",
+        "Integrated 15+ state-of-the-art forecasting models",
+        "Used by 50+ companies for demand prediction"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, R, Julia, C++, SQL",
+    "frameworks": "PyTorch, TensorFlow, scikit-learn, XGBoost, LightGBM",
+    "developerTools": "Jupyter, Git, Docker, AWS SageMaker, MLflow, Weights & Biases",
+    "libraries": "NumPy, Pandas, Matplotlib, Seaborn, NLTK, spaCy, Hugging Face"
+  }
+}
