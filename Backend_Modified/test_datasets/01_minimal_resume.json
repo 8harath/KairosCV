@@ -1,0 +1,44 @@
+{
+  "basicInfo": {
+    "fullName": "Jane Doe",
+    "phone": "+1-555-0100",
+    "email": "jane.doe@example.com",
+    "linkedin": "linkedin.com/in/janedoe",
+    "github": "github.com/janedoe",
+    "website": null
+  },
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "State University",
+      "location": "City, ST",
+      "degree": "B.S. Computer Science",
+      "minor": null,
+      "startDate": "Aug 2018",
+      "endDate": "May 2022",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "organization": "Tech Startup",
+      "jobTitle": "Software Engineer",
+      "location": "Remote",
+      "startDate": "June 2022",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Built scalable web applications",
+        "Improved performance by 40%"
+      ]
+    }
+  ],
+  "projects": [],
+  "skills": {
+    "languages": "Python, JavaScript",
+    "frameworks": "React, FastAPI",
+    "developerTools": "Git, Docker",
+    "libraries": "NumPy, Pandas"
+  }
+}
