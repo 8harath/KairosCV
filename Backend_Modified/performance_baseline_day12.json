@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-11-26T21:45:05.274613",
+  "base_url": "http://localhost:8080",
+  "initial_memory_mb": 35.7265625,
+  "tests": {
+    "health": {
+      "endpoint": "/health",
+      "method": "GET",
+      "iterations": 20,
+      "successful": 20,
+      "errors": 0,
+      "min_ms": 2033.970594406128,
+      "max_ms": 2091.0003185272217,
+      "mean_ms": 2060.0706934928894,
+      "median_ms": 2061.1050128936768,
+      "stdev_ms": 15.456614761324651,
+      "p95_ms": 2084.050464630127,
+      "p99_ms": 2089.6103477478027
+    },
+    "pdf_generation": {
+      "endpoint": "/convert-json-to-latex",
+      "method": "POST",
+      "iterations": 5,
+      "successful": 0,
+      "errors": 5,
+      "min_ms": 2062.4587535858154,
+      "max_ms": 2101.3481616973877,
+      "mean_ms": 2088.111734390259,
+      "median_ms": 2089.750289916992,
+      "stdev_ms": 15.533923183016011,
+      "p95_ms": 2100.9716987609863,
+      "p99_ms": 2101.2728691101074
+    }
+  },
+  "final_memory_mb": 36.7734375,
+  "memory_growth_mb": 1.046875,
+  "cpu_percent": 1.6
+}
