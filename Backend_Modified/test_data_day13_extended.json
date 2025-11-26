@@ -1,0 +1,170 @@
+{
+  "basicInfo": {
+    "fullName": "Jane Smith",
+    "phone": "+1-555-0199",
+    "email": "jane.smith@example.com",
+    "linkedin": "https://linkedin.com/in/janesmith",
+    "github": "https://github.com/janesmith",
+    "website": "https://janesmith.dev"
+  },
+  "education": [
+    {
+      "id": "edu1",
+      "institution": "Stanford University",
+      "location": "Stanford, CA",
+      "degree": "Bachelor of Science in Computer Science",
+      "minor": "Mathematics",
+      "startDate": "2018-09",
+      "endDate": "2022-05",
+      "isPresent": false
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp1",
+      "organization": "Google LLC",
+      "jobTitle": "Senior Software Engineer",
+      "location": "Mountain View, CA",
+      "startDate": "2022-06",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Built scalable microservices handling 1M+ requests/day using Go and Kubernetes",
+        "Reduced API latency by 40% through database query optimization and caching strategies",
+        "Led team of 4 engineers to deliver critical features 2 weeks ahead of schedule",
+        "Mentored 3 junior developers and conducted 20+ technical interviews"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj1",
+      "name": "KairosCV - AI Resume Optimizer",
+      "technologies": "Next.js, Python, FastAPI, LaTeX, Groq API",
+      "startDate": "2024-01",
+      "endDate": "2024-11",
+      "isPresent": true,
+      "description": [
+        "Developed full-stack web application with 100+ active users",
+        "Integrated Groq AI for professional resume enhancement",
+        "Implemented LaTeX PDF generation with 95% success rate"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": "Python, JavaScript, TypeScript, Go, Java, C++",
+    "frameworks": "React, Next.js, FastAPI, Django, Node.js, Express",
+    "developerTools": "Git, Docker, Kubernetes, AWS, GCP, Linux",
+    "libraries": "PostgreSQL, MongoDB, Redis, LangChain"
+  },
+  "certifications": [
+    {
+      "id": "cert1",
+      "name": "AWS Solutions Architect - Associate",
+      "issuer": "Amazon Web Services",
+      "issueDate": "2024-01",
+      "expiryDate": "2027-01",
+      "credentialId": "AWS-ASA-123456789"
+    },
+    {
+      "id": "cert2",
+      "name": "Google Cloud Professional Cloud Architect",
+      "issuer": "Google Cloud",
+      "issueDate": "2023-06",
+      "expiryDate": "2025-06",
+      "credentialId": "GCP-PCA-987654321"
+    },
+    {
+      "id": "cert3",
+      "name": "Certified Kubernetes Administrator (CKA)",
+      "issuer": "Cloud Native Computing Foundation",
+      "issueDate": "2023-03",
+      "expiryDate": null,
+      "credentialId": "LF-CKA-2023-001"
+    }
+  ],
+  "awards": [
+    {
+      "id": "award1",
+      "title": "Best Innovation Award",
+      "issuer": "TechCorp Annual Conference",
+      "date": "2023-12",
+      "description": "Recognized for developing AI-powered resume optimization platform"
+    },
+    {
+      "id": "award2",
+      "title": "Employee of the Year",
+      "issuer": "Google LLC",
+      "date": "2023-12",
+      "description": "Outstanding technical leadership and mentorship"
+    },
+    {
+      "id": "award3",
+      "title": "Dean's List",
+      "issuer": "Stanford University",
+      "date": "2020-05",
+      "description": null
+    }
+  ],
+  "publications": [
+    {
+      "id": "pub1",
+      "title": "Machine Learning for Resume Parsing: A Comprehensive Approach",
+      "authors": "Smith, J., Doe, A., Johnson, B.",
+      "venue": "IEEE Conference on AI Applications",
+      "date": "2024",
+      "url": "https://doi.org/10.1109/example.2024.001"
+    },
+    {
+      "id": "pub2",
+      "title": "Optimizing LaTeX PDF Generation for ATS Compatibility",
+      "authors": "Smith, J.",
+      "venue": "Journal of Software Engineering",
+      "date": "2023",
+      "url": "https://doi.org/10.1234/jse.2023.456"
+    }
+  ],
+  "volunteer": [
+    {
+      "id": "vol1",
+      "organization": "Code for Good",
+      "role": "Software Development Mentor",
+      "location": "San Francisco, CA",
+      "startDate": "2023-01",
+      "endDate": null,
+      "isPresent": true,
+      "description": [
+        "Mentor 10+ students in web development and software engineering best practices",
+        "Organize monthly coding workshops for underprivileged youth",
+        "Built 3 web applications for local non-profit organizations"
+      ]
+    },
+    {
+      "id": "vol2",
+      "organization": "Girls Who Code",
+      "role": "Technical Workshop Leader",
+      "location": "Palo Alto, CA",
+      "startDate": "2021-09",
+      "endDate": "2022-12",
+      "isPresent": false,
+      "description": [
+        "Taught Python programming to 50+ high school students",
+        "Developed curriculum for introductory computer science courses"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "proficiency": "Native"
+    },
+    {
+      "language": "Spanish",
+      "proficiency": "Professional Working Proficiency"
+    },
+    {
+      "language": "Mandarin Chinese",
+      "proficiency": "Elementary Proficiency"
+    }
+  ]
+}

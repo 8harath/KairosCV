@@ -1,0 +1,230 @@
+
+%-------------------------
+% Resume in LaTeX
+% Based on Jake's Resume Template
+% License: MIT
+% ATS-Optimized for Maximum Compatibility
+%-------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Jane Smith} \\ \vspace{1pt}
+    \small +1-555-0199 $|$ \href{mailto:jane.smith@example.com}{\underline{jane.smith@example.com}} $|$ \href{https://linkedin.com/in/janesmith}{\underline{linkedin.com/in/janesmith}} $|$ \href{https://github.com/janesmith}{\underline{github.com/janesmith}} $|$ \href{https://janesmith.dev}{\underline{janesmith.dev}}
+\end{center}
+
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Stanford University}{Stanford, CA}
+      {Bachelor of Science in Computer Science, Minor in Mathematics}{Sept 2018 -- May 2022}
+  \resumeSubHeadingListEnd
+
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Google LLC}{Mountain View, CA}
+      {Senior Software Engineer}{June 2022 -- Present}
+      \resumeItemListStart
+        \resumeItem{Built scalable microservices handling 1M+ requests/day using Go and Kubernetes}
+        \resumeItem{Reduced API latency by 40\% through database query optimization and caching strategies}
+        \resumeItem{Led team of 4 engineers to deliver critical features 2 weeks ahead of schedule}
+        \resumeItem{Mentored 3 junior developers and conducted 20+ technical interviews}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------PROJECTS-----------
+\section{Projects}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\textbf{KairosCV - AI Resume Optimizer} $|$ \emph{Next.js, Python, FastAPI, LaTeX, Groq API}}{}
+      \resumeItemListStart
+        \resumeItem{Developed full-stack web application with 100+ active users}
+        \resumeItem{Integrated Groq AI for professional resume enhancement}
+        \resumeItem{Implemented LaTeX PDF generation with 95\% success rate}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    \resumeItem{\textbf{Languages}: Python, JavaScript, TypeScript, Go, Java, C++}
+    \resumeItem{\textbf{Frameworks}: React, Next.js, FastAPI, Django, Node.js, Express}
+    \resumeItem{\textbf{Developer Tools}: Git, Docker, Kubernetes, AWS, GCP, Linux}
+    \resumeItem{\textbf{Libraries}: PostgreSQL, MongoDB, Redis, LangChain}
+    }}
+ \end{itemize}
+
+
+%-----------CERTIFICATIONS-----------
+\section{Certifications}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {AWS Solutions Architect - Associate}{Amazon Web Services}
+      {Jan 2024 -- Jan 2027}{Credential ID: AWS-ASA-123456789}
+    \resumeSubheading
+      {Google Cloud Professional Cloud Architect}{Google Cloud}
+      {June 2023 -- June 2025}{Credential ID: GCP-PCA-987654321}
+    \resumeSubheading
+      {Certified Kubernetes Administrator (CKA)}{Cloud Native Computing Foundation}
+      {Mar 2023}{Credential ID: LF-CKA-2023-001}
+  \resumeSubHeadingListEnd
+
+
+%-----------AWARDS & HONORS-----------
+\section{Awards \& Honors}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    \resumeItem{\textbf{Best Innovation Award} -- TechCorp Annual Conference, Dec 2023: Recognized for developing AI-powered resume optimization platform}
+    \resumeItem{\textbf{Employee of the Year} -- Google LLC, Dec 2023: Outstanding technical leadership and mentorship}
+    \resumeItem{\textbf{Dean's List} -- Stanford University, May 2020}
+    }}
+ \end{itemize}
+
+
+%-----------PUBLICATIONS-----------
+\section{Publications}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    \resumeItem{\textbf{"Machine Learning for Resume Parsing: A Comprehensive Approach"} -- Smith, J., Doe, A., Johnson, B.. IEEE Conference on AI Applications, 2024. \href{https://doi.org/10.1109/example.2024.001}{\underline{Link}}}
+    \resumeItem{\textbf{"Optimizing LaTeX PDF Generation for ATS Compatibility"} -- Smith, J.. Journal of Software Engineering, 2023. \href{https://doi.org/10.1234/jse.2023.456}{\underline{Link}}}
+    }}
+ \end{itemize}
+
+
+%-----------VOLUNTEER EXPERIENCE-----------
+\section{Volunteer Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Code for Good}{San Francisco, CA}
+      {Software Development Mentor}{Jan 2023 -- Present}
+      \resumeItemListStart
+        \resumeItem{Mentor 10+ students in web development and software engineering best practices}
+        \resumeItem{Organize monthly coding workshops for underprivileged youth}
+        \resumeItem{Built 3 web applications for local non-profit organizations}
+      \resumeItemListEnd
+    \resumeSubheading
+      {Girls Who Code}{Palo Alto, CA}
+      {Technical Workshop Leader}{Sept 2021 -- Dec 2022}
+      \resumeItemListStart
+        \resumeItem{Taught Python programming to 50+ high school students}
+        \resumeItem{Developed curriculum for introductory computer science courses}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------LANGUAGES-----------
+\section{Languages}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    \resumeItem{\textbf{English}: Native, \textbf{Spanish}: Professional Working Proficiency, \textbf{Mandarin Chinese}: Elementary Proficiency}
+    }}
+ \end{itemize}
+
+
+%-------------------------------------------
+\end{document}
