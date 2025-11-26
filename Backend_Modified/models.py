@@ -55,12 +55,59 @@ class Skills(BaseModel):
     developerTools: str
     libraries: str
 
+class CertificationItem(BaseModel):
+    """Model for professional certifications"""
+    id: str
+    name: str
+    issuer: str
+    issueDate: str
+    expiryDate: str | None = None
+    credentialId: str | None = None
+
+class AwardItem(BaseModel):
+    """Model for awards and honors"""
+    id: str
+    title: str
+    issuer: str
+    date: str
+    description: str | None = None
+
+class PublicationItem(BaseModel):
+    """Model for academic/professional publications"""
+    id: str
+    title: str
+    authors: str
+    venue: str
+    date: str
+    url: str | None = None
+
+class VolunteerItem(BaseModel):
+    """Model for volunteer experience"""
+    id: str
+    organization: str
+    role: str
+    location: str
+    startDate: str
+    endDate: str | None = None
+    isPresent: bool
+    description: list[str]
+
+class LanguageItem(BaseModel):
+    """Model for spoken languages (not programming languages)"""
+    language: str
+    proficiency: str
+
 class ResumeData(BaseModel):
     basicInfo: BasicInfo
     education: list[EducationItem]
     experience: list[ExperienceItem]
     projects: list[ProjectItem]
     skills: Skills
+    certifications: list[CertificationItem] | None = None
+    awards: list[AwardItem] | None = None
+    publications: list[PublicationItem] | None = None
+    volunteer: list[VolunteerItem] | None = None
+    languages: list[LanguageItem] | None = None
 
 class JsonToLatexResponse(BaseModel):
     message: str = Field(default="Resume converted successfully from JSON.")
