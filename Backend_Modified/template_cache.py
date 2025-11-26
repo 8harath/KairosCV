@@ -19,6 +19,26 @@ from threading import Lock
 
 logger = logging.getLogger(__name__)
 
+# Global cache instance (singleton pattern)
+_global_cache_instance = None
+
+
+def get_global_cache(ttl_seconds: int = 3600) -> 'TemplateCache':
+    """
+    Get the global template cache instance (singleton pattern).
+
+    Args:
+        ttl_seconds: Time-to-live for cached templates (default: 1 hour)
+
+    Returns:
+        Global TemplateCache instance
+    """
+    global _global_cache_instance
+    if _global_cache_instance is None:
+        _global_cache_instance = TemplateCache(ttl_seconds=ttl_seconds)
+        logger.info(f"Initialized global template cache with TTL={ttl_seconds}s")
+    return _global_cache_instance
+
 
 class TemplateCache:
     """Thread-safe in-memory cache for LaTeX templates"""

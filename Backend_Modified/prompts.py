@@ -425,10 +425,26 @@ def get_latex_template() -> str:
     """
     Get the LaTeX template for direct use (without AI processing).
 
+    Uses template_cache for efficient retrieval with 1-hour TTL.
+
     Returns:
         The complete LaTeX template string
     """
-    return LATEX_TEMPLATE
+    from template_cache import get_global_cache
+
+    cache = get_global_cache()
+
+    def load_template():
+        """Loader function for cache miss"""
+        return LATEX_TEMPLATE
+
+    # Get template from cache (or load if not cached)
+    template = cache.get(
+        key="latex_resume_template",
+        loader_func=load_template
+    )
+
+    return template
 
 
 # ============================================================================
