@@ -188,12 +188,75 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+# --- Health Endpoint Caching (Day 14: Performance Optimization) ---
+# Cache expensive operations to reduce /health response time from 2060ms to <100ms
+
+# pdflatex version cache (check once at startup)
+_PDFLATEX_VERSION_CACHE = {"version": None, "checked": False}
+
+# Disk space cache (60s TTL)
+_DISK_SPACE_CACHE = {"data": None, "timestamp": 0, "ttl": 60}
+
+def _get_cached_pdflatex_version():
+    """Get pdflatex version with caching (startup check only)"""
+    import subprocess
+
+    if not _PDFLATEX_VERSION_CACHE["checked"]:
+        try:
+            result = subprocess.run(
+                ['pdflatex', '--version'],
+                capture_output=True,
+                timeout=5,
+                text=True
+            )
+            if result.returncode == 0:
+                _PDFLATEX_VERSION_CACHE["version"] = result.stdout.split('\n')[0]
+            _PDFLATEX_VERSION_CACHE["checked"] = True
+        except Exception as e:
+            logger.error(f"Failed to check pdflatex version: {e}")
+            _PDFLATEX_VERSION_CACHE["checked"] = True
+
+    return _PDFLATEX_VERSION_CACHE["version"]
+
+def _get_cached_disk_space():
+    """Get disk space with 60s TTL caching"""
+    import shutil as sh
+
+    now = time.time()
+    if now - _DISK_SPACE_CACHE["timestamp"] > _DISK_SPACE_CACHE["ttl"]:
+        try:
+            total, used, free = sh.disk_usage("/")
+            _DISK_SPACE_CACHE["data"] = {
+                "free_mb": round(free / (1024 * 1024), 2),
+                "total_mb": round(total / (1024 * 1024), 2),
+                "used_percent": round((used / total) * 100, 2),
+                "status": "ok" if free > 100 * 1024 * 1024 else "low"
+            }
+            _DISK_SPACE_CACHE["timestamp"] = now
+        except Exception as e:
+            logger.error(f"Failed to check disk space: {e}")
+            _DISK_SPACE_CACHE["data"] = {"status": "error", "message": str(e)}
+
+    return _DISK_SPACE_CACHE["data"]
+
+def _quick_dir_stats():
+    """Get quick directory stats (just count files, don't stat each one)"""
+    try:
+        return {
+            "generated_pdfs": len(os.listdir("generated_pdfs")),
+            "latex_output": len(os.listdir("latex_output"))
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 # --- Startup/Shutdown Events ---
 
 @app.on_event("startup")
 async def startup_event():
-    """Run cleanup on application startup"""
-    logger.info("Running startup cleanup...")
+    """Run cleanup on application startup and cache pdflatex version"""
+    logger.info("Running startup tasks...")
+
+    # 1. Cleanup old files
     try:
         stats = cleanup_all(
             pdf_max_age_hours=24,  # Clean PDFs older than 24 hours
@@ -204,6 +267,15 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Startup cleanup failed: {e}")
         # Don't fail startup if cleanup fails
+
+    # 2. Cache pdflatex version (Day 14: Performance optimization)
+    pdflatex_version = _get_cached_pdflatex_version()
+    if pdflatex_version:
+        logger.info(f"pdflatex detected: {pdflatex_version}")
+    else:
+        logger.warning("pdflatex not found - PDF generation will fail")
+
+    logger.info("Startup complete")
 
 
 # --- API Endpoints ---
@@ -271,40 +343,31 @@ async def startup_event():
 async def health_check():
     """
     Enhanced health check endpoint that verifies all critical dependencies.
-    """
-    import subprocess
-    import shutil as sh
 
+    Optimized for performance (Day 14):
+    - Caches pdflatex version (startup check only)
+    - Caches disk space (60s TTL)
+    - Quick directory stats (count only, no file stats)
+    Target: <100ms (was 2060ms)
+    """
     health_status = {
         "status": "healthy",
         "timestamp": time.time(),
         "checks": {}
     }
 
-    # Check pdflatex availability
-    try:
-        result = subprocess.run(
-            ['pdflatex', '--version'],
-            capture_output=True,
-            timeout=5,
-            text=True
-        )
-        pdflatex_ok = result.returncode == 0
-        if pdflatex_ok:
-            # Extract version from first line
-            version_line = result.stdout.split('\n')[0] if result.stdout else "Unknown"
-            health_status["checks"]["pdflatex"] = {
-                "status": "ok",
-                "version": version_line
-            }
-        else:
-            health_status["checks"]["pdflatex"] = {"status": "error", "message": "pdflatex not found"}
-            health_status["status"] = "degraded"
-    except subprocess.TimeoutExpired:
-        health_status["checks"]["pdflatex"] = {"status": "error", "message": "timeout"}
-        health_status["status"] = "degraded"
-    except Exception as e:
-        health_status["checks"]["pdflatex"] = {"status": "error", "message": str(e)}
+    # Check pdflatex availability (cached - startup check only)
+    pdflatex_version = _get_cached_pdflatex_version()
+    if pdflatex_version:
+        health_status["checks"]["pdflatex"] = {
+            "status": "ok",
+            "version": pdflatex_version
+        }
+    else:
+        health_status["checks"]["pdflatex"] = {
+            "status": "error",
+            "message": "pdflatex not found"
+        }
         health_status["status"] = "degraded"
 
     # Check Groq API configuration
@@ -319,37 +382,39 @@ async def health_check():
         health_status["checks"]["groq_api"] = {"status": "missing", "message": "GROQ_API_KEY not set"}
         health_status["status"] = "degraded"
 
-    # Check disk space
-    try:
-        total, used, free = sh.disk_usage("/")
-        health_status["checks"]["disk_space"] = {
-            "status": "ok" if free > 100 * 1024 * 1024 else "low",  # Warn if < 100MB
-            "free_mb": round(free / (1024 * 1024), 2),
-            "total_mb": round(total / (1024 * 1024), 2),
-            "used_percent": round((used / total) * 100, 2)
-        }
-        if free < 100 * 1024 * 1024:  # Less than 100MB free
-            health_status["status"] = "degraded"
-    except Exception as e:
-        health_status["checks"]["disk_space"] = {"status": "error", "message": str(e)}
+    # Check disk space (cached with 60s TTL)
+    disk_space = _get_cached_disk_space()
+    health_status["checks"]["disk_space"] = disk_space
+    if disk_space.get("status") == "low":
+        health_status["status"] = "degraded"
 
-    # Check output directories
+    # Check output directories (quick stats - count files only, no size calculation)
     try:
-        dir_stats = get_cleanup_stats()
-
+        dir_counts = _quick_dir_stats()
         health_status["checks"]["directories"] = {
             "status": "ok",
-            "generated_pdfs": {
-                "files": dir_stats["generated_pdfs"]["file_count"],
-                "size_mb": round(dir_stats["generated_pdfs"].get("size_mb", 0), 2)
-            },
-            "latex_output": {
-                "files": dir_stats["latex_output"]["file_count"],
-                "size_mb": round(dir_stats["latex_output"].get("size_mb", 0), 2)
-            }
+            "generated_pdfs_count": dir_counts.get("generated_pdfs", 0),
+            "latex_output_count": dir_counts.get("latex_output", 0)
         }
     except Exception as e:
         health_status["checks"]["directories"] = {"status": "error", "message": str(e)}
+
+    # Check template cache statistics (Day 14: Template caching integration)
+    try:
+        from template_cache import get_global_cache
+        cache = get_global_cache()
+        cache_stats = cache.get_stats()
+
+        health_status["checks"]["template_cache"] = {
+            "status": "ok",
+            "hits": cache_stats["hits"],
+            "misses": cache_stats["misses"],
+            "hit_rate_percent": cache_stats["hit_rate_percent"],
+            "entries": cache_stats["current_entries"],
+            "size_mb": cache_stats["total_size_mb"]
+        }
+    except Exception as e:
+        health_status["checks"]["template_cache"] = {"status": "error", "message": str(e)}
 
     return health_status
 
