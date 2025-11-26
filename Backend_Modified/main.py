@@ -86,9 +86,67 @@ except Exception as e:
 
 # --- FastAPI Application Instance ---
 app = FastAPI(
-    title="AI Resume Tailoring API",
-    description="Tailors resumes based on job descriptions using AI.",
-    version="0.2.0",
+    title="KairosCV - AI Resume Optimization API",
+    description="""
+## AI-Powered Resume Optimization Platform
+
+KairosCV converts any resume format into ATS-optimized PDFs using LaTeX and AI enhancement.
+
+### Features
+
+* **Resume Tailoring**: Customize resumes for specific job descriptions using AI
+* **JSON to PDF**: Convert structured resume data to professional LaTeX PDFs
+* **File Conversion**: Upload PDF/DOCX/MD files for LaTeX conversion
+* **Rate Limiting**: IP-based rate limiting to prevent abuse
+* **Health Monitoring**: Comprehensive health checks for all dependencies
+
+### Tech Stack
+
+* **Backend**: FastAPI + Python 3.11+
+* **AI**: Groq (llama-3.3-70b-versatile via LangChain)
+* **PDF Generation**: LaTeX (pdflatex) + Jake's Resume Template
+* **Rate Limiting**: SlowAPI
+
+### Error Handling
+
+All endpoints return structured error responses with error codes and details.
+See the [Error Codes Documentation](#/errors) for complete list.
+
+### Rate Limits
+
+* `/tailor`: 10 requests/minute (AI-intensive)
+* `/convert-json-to-latex`: 15 requests/minute (core feature)
+* `/convert-latex`: 15 requests/minute (file processing)
+
+Exceeding rate limits returns HTTP 429 with retry-after header.
+
+### Links
+
+* [GitHub Repository](https://github.com/8harath/KairosCV)
+* [Documentation](https://github.com/8harath/KairosCV#readme)
+""",
+    version="0.3.0",
+    contact={
+        "name": "KairosCV Team",
+        "url": "https://github.com/8harath/KairosCV",
+        "email": "support@kairoscv.com"
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    docs_url="/docs",  # Swagger UI
+    redoc_url="/redoc",  # ReDoc alternative
+    openapi_tags=[
+        {
+            "name": "Status",
+            "description": "Health checks and system status"
+        },
+        {
+            "name": "Resume",
+            "description": "Resume processing and PDF generation endpoints"
+        }
+    ]
 )
 
 # --- Rate Limiting ---
@@ -151,17 +209,68 @@ async def startup_event():
 # --- API Endpoints ---
 
 
-@app.get("/health", tags=["Status"])
+@app.get(
+    "/health",
+    tags=["Status"],
+    summary="System Health Check",
+    description="""
+    Comprehensive health check that verifies all critical dependencies.
+
+    **Checks Performed:**
+    - pdflatex availability and version
+    - Groq API configuration
+    - Disk space monitoring (warns if <100MB)
+    - Output directory statistics
+
+    **Status Values:**
+    - `healthy`: All systems operational
+    - `degraded`: Some non-critical issues detected
+
+    **Use Cases:**
+    - Monitoring and alerting
+    - Pre-deployment validation
+    - Debugging deployment issues
+    """,
+    response_description="Health status with detailed component checks",
+    responses={
+        200: {
+            "description": "Health check completed",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "healthy",
+                        "timestamp": 1764157314.56,
+                        "checks": {
+                            "pdflatex": {
+                                "status": "ok",
+                                "version": "pdfTeX 3.141592653"
+                            },
+                            "groq_api": {
+                                "status": "configured",
+                                "key_length": 56,
+                                "model": "llama-3.3-70b-versatile"
+                            },
+                            "disk_space": {
+                                "status": "ok",
+                                "free_mb": 14178.81,
+                                "total_mb": 32077.81,
+                                "used_percent": 50.64
+                            },
+                            "directories": {
+                                "status": "ok",
+                                "generated_pdfs": {"files": 5, "size_mb": 1.2},
+                                "latex_output": {"files": 0, "size_mb": 0.0}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 async def health_check():
     """
-    Enhanced health check endpoint.
-
-    Returns:
-        - status: "healthy" or "degraded"
-        - pdflatex: LaTeX compiler availability
-        - groq_api: Groq API key configuration
-        - disk_space: Available disk space info
-        - timestamp: Current server time
+    Enhanced health check endpoint that verifies all critical dependencies.
     """
     import subprocess
     import shutil as sh
