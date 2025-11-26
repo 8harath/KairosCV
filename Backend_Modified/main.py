@@ -275,6 +275,14 @@ async def startup_event():
     else:
         logger.warning("pdflatex not found - PDF generation will fail")
 
+    # 3. Warm template cache (Day 14: Ensure first request is fast)
+    try:
+        from prompts import get_latex_template
+        template = get_latex_template()
+        logger.info(f"Template cache warmed: {len(template)} characters")
+    except Exception as e:
+        logger.warning(f"Failed to warm template cache: {e}")
+
     logger.info("Startup complete")
 
 
