@@ -22,10 +22,10 @@ COLORS = {
 
 def print_test(name: str, passed: bool, details: str = ""):
     """Print test result with color"""
-    status = f"{COLORS['PASS']}✓ PASS{COLORS['END']}" if passed else f"{COLORS['FAIL']}✗ FAIL{COLORS['END']}"
-    print(f"  {status} - {name}")
+    status = f"{COLORS['PASS']}[PASS]{COLORS['END']}" if passed else f"{COLORS['FAIL']}[FAIL]{COLORS['END']}"
+    print(f"  {status} - {name}", flush=True)
     if details and not passed:
-        print(f"         {details}")
+        print(f"         {details}", flush=True)
 
 
 def test_health_endpoint():
@@ -131,8 +131,12 @@ def test_rate_limiting():
         "education": [],
         "experience": [],
         "projects": [],
-        "skills": {"technical": [], "soft": []},
-        "certifications": []
+        "skills": {
+            "languages": "Python, JavaScript",
+            "frameworks": "React, FastAPI",
+            "developerTools": "Git, Docker",
+            "libraries": "NumPy, Pandas"
+        }
     }
 
     try:
@@ -254,9 +258,9 @@ def run_all_tests():
     print(f"{'-'*60}\n")
 
     if pass_rate >= 80:
-        print(f"{COLORS['PASS']}✅ Error handling is working well!{COLORS['END']}\n")
+        print(f"{COLORS['PASS']}[OK] Error handling is working well!{COLORS['END']}\n", flush=True)
     else:
-        print(f"{COLORS['FAIL']}❌ Error handling needs improvement{COLORS['END']}\n")
+        print(f"{COLORS['FAIL']}[ERROR] Error handling needs improvement{COLORS['END']}\n", flush=True)
 
     return pass_rate >= 80
 
