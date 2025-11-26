@@ -14,7 +14,10 @@ Key Features:
 import re
 import logging
 from typing import Dict, List, Any
-from models import ResumeData, BasicInfo, EducationItem, ExperienceItem, ProjectItem, Skills
+from models import (
+    ResumeData, BasicInfo, EducationItem, ExperienceItem, ProjectItem, Skills,
+    CertificationItem, AwardItem, PublicationItem, VolunteerItem, LanguageItem
+)
 
 logger = logging.getLogger(__name__)
 
@@ -410,6 +413,232 @@ def generate_skills_section(skills: Skills) -> str:
     return section
 
 
+def generate_certifications_section(certifications: List[CertificationItem]) -> str:
+    """
+    Generate LaTeX certifications section.
+
+    Format for each item:
+        Certification Name                                   Issuer
+        Issue Date -- Expiry Date                            Credential ID: XXX
+
+    Args:
+        certifications: List of CertificationItem objects
+
+    Returns:
+        LaTeX code for certifications section
+    """
+    if not certifications:
+        return ""
+
+    items = []
+    for cert in certifications:
+        name = escape_latex(cert.name) if cert.name else "Certification"
+        issuer = escape_latex(cert.issuer) if cert.issuer else ""
+        issue_date = format_date(cert.issueDate) if cert.issueDate else ""
+
+        # Build date range
+        if cert.expiryDate:
+            expiry_date = format_date(cert.expiryDate)
+            dates = f"{issue_date} -- {expiry_date}"
+        else:
+            dates = issue_date
+
+        # Credential ID (optional)
+        credential = ""
+        if cert.credentialId:
+            credential = f"Credential ID: {escape_latex(cert.credentialId)}"
+
+        item = f"""    \\resumeSubheading
+      {{{name}}}{{{issuer}}}
+      {{{dates}}}{{{credential}}}"""
+        items.append(item)
+
+    section = "\\section{Certifications}\n  \\resumeSubHeadingListStart\n"
+    section += "\n".join(items)
+    section += "\n  \\resumeSubHeadingListEnd"
+
+    return section
+
+
+def generate_awards_section(awards: List[AwardItem]) -> str:
+    """
+    Generate LaTeX awards & honors section.
+
+    Format for each item:
+        Award Title -- Issuer, Date
+        Description (if provided)
+
+    Args:
+        awards: List of AwardItem objects
+
+    Returns:
+        LaTeX code for awards section
+    """
+    if not awards:
+        return ""
+
+    items = []
+    for award in awards:
+        title = escape_latex(award.title) if award.title else "Award"
+        issuer = escape_latex(award.issuer) if award.issuer else ""
+        date = format_date(award.date) if award.date else ""
+
+        # Build award text
+        award_text = f"\\textbf{{{title}}}"
+        if issuer or date:
+            details = []
+            if issuer:
+                details.append(issuer)
+            if date:
+                details.append(date)
+            award_text += f" -- {', '.join(details)}"
+
+        # Add description if present
+        if award.description:
+            description = escape_latex(award.description)
+            items.append(f"    \\resumeItem{{{award_text}: {description}}}")
+        else:
+            items.append(f"    \\resumeItem{{{award_text}}}")
+
+    section = "\\section{Awards \\& Honors}\n \\begin{itemize}[leftmargin=0.15in, label={}]\n    \\small{\\item{\n"
+    section += "\n".join(items)
+    section += "\n    }}\n \\end{itemize}"
+
+    return section
+
+
+def generate_publications_section(publications: List[PublicationItem]) -> str:
+    """
+    Generate LaTeX publications section.
+
+    Format for each item:
+        "Title" -- Authors. Venue, Date. [URL]
+
+    Args:
+        publications: List of PublicationItem objects
+
+    Returns:
+        LaTeX code for publications section
+    """
+    if not publications:
+        return ""
+
+    items = []
+    for pub in publications:
+        title = escape_latex(pub.title) if pub.title else "Publication"
+        authors = escape_latex(pub.authors) if pub.authors else ""
+        venue = escape_latex(pub.venue) if pub.venue else ""
+        date = format_date(pub.date) if pub.date else ""
+
+        # Build publication citation
+        pub_text = f"\\textbf{{\"{title}\"}}"
+
+        if authors:
+            pub_text += f" -- {authors}."
+
+        if venue or date:
+            details = []
+            if venue:
+                details.append(venue)
+            if date:
+                details.append(date)
+            pub_text += f" {', '.join(details)}."
+
+        # Add URL if present
+        if pub.url:
+            pub_text += f" \\href{{{pub.url}}}{{\\underline{{Link}}}}"
+
+        items.append(f"    \\resumeItem{{{pub_text}}}")
+
+    section = "\\section{Publications}\n \\begin{itemize}[leftmargin=0.15in, label={}]\n    \\small{\\item{\n"
+    section += "\n".join(items)
+    section += "\n    }}\n \\end{itemize}"
+
+    return section
+
+
+def generate_volunteer_section(volunteer: List[VolunteerItem]) -> str:
+    """
+    Generate LaTeX volunteer experience section.
+
+    Format for each item:
+        Organization Name                                    City, State
+        Volunteer Role                                       Start Date -- End Date
+        - Description bullet 1
+        - Description bullet 2
+
+    Args:
+        volunteer: List of VolunteerItem objects
+
+    Returns:
+        LaTeX code for volunteer section
+    """
+    if not volunteer:
+        return ""
+
+    items = []
+    for vol in volunteer:
+        organization = escape_latex(vol.organization) if vol.organization else "Organization"
+        location = escape_latex(vol.location) if vol.location else ""
+        role = escape_latex(vol.role) if vol.role else "Volunteer"
+        dates = format_date_range(
+            vol.startDate or "",
+            vol.endDate or "",
+            vol.isPresent
+        )
+
+        # Start item
+        item = f"""    \\resumeSubheading
+      {{{organization}}}{{{location}}}
+      {{{role}}}{{{dates}}}
+      \\resumeItemListStart"""
+
+        # Add description bullets
+        if vol.description:
+            for bullet in vol.description:
+                escaped_bullet = escape_latex(bullet)
+                item += f"\n        \\resumeItem{{{escaped_bullet}}}"
+
+        item += "\n      \\resumeItemListEnd"
+        items.append(item)
+
+    section = "\\section{Volunteer Experience}\n  \\resumeSubHeadingListStart\n"
+    section += "\n".join(items)
+    section += "\n  \\resumeSubHeadingListEnd"
+
+    return section
+
+
+def generate_languages_section(languages: List[LanguageItem]) -> str:
+    """
+    Generate LaTeX spoken languages section.
+
+    Format:
+        Languages
+        English: Native, Spanish: Professional, Mandarin: Basic
+
+    Args:
+        languages: List of LanguageItem objects
+
+    Returns:
+        LaTeX code for languages section
+    """
+    if not languages:
+        return ""
+
+    language_items = []
+    for lang in languages:
+        language = escape_latex(lang.language) if lang.language else "Language"
+        proficiency = escape_latex(lang.proficiency) if lang.proficiency else "Basic"
+        language_items.append(f"\\textbf{{{language}}}: {proficiency}")
+
+    section = "\\section{Languages}\n \\begin{itemize}[leftmargin=0.15in, label={}]\n    \\small{\\item{\n"
+    section += "    \\resumeItem{" + ", ".join(language_items) + "}\n"
+    section += "    }}\n \\end{itemize}"
+
+    return section
+
+
 # ============================================================================
 # MAIN MAPPING FUNCTION
 # ============================================================================
@@ -436,12 +665,38 @@ def map_resume_data_to_latex(resume_data: ResumeData, latex_template: str) -> st
     logger.info("Mapping resume data to LaTeX template...")
 
     try:
-        # Generate all sections
+        # Generate core sections (required)
         contact = generate_contact_section(resume_data.basicInfo)
         education = generate_education_section(resume_data.education)
         experience = generate_experience_section(resume_data.experience)
         projects = generate_projects_section(resume_data.projects)
         skills = generate_skills_section(resume_data.skills)
+
+        # Generate optional sections (Day 13 additions)
+        certifications = ""
+        if resume_data.certifications:
+            certifications = generate_certifications_section(resume_data.certifications)
+            logger.info(f"Generated certifications section with {len(resume_data.certifications)} items")
+
+        awards = ""
+        if resume_data.awards:
+            awards = generate_awards_section(resume_data.awards)
+            logger.info(f"Generated awards section with {len(resume_data.awards)} items")
+
+        publications = ""
+        if resume_data.publications:
+            publications = generate_publications_section(resume_data.publications)
+            logger.info(f"Generated publications section with {len(resume_data.publications)} items")
+
+        volunteer = ""
+        if resume_data.volunteer:
+            volunteer = generate_volunteer_section(resume_data.volunteer)
+            logger.info(f"Generated volunteer section with {len(resume_data.volunteer)} items")
+
+        languages = ""
+        if resume_data.languages:
+            languages = generate_languages_section(resume_data.languages)
+            logger.info(f"Generated languages section with {len(resume_data.languages)} items")
 
         # Replace placeholders in template
         latex_doc = latex_template
@@ -450,6 +705,11 @@ def map_resume_data_to_latex(resume_data: ResumeData, latex_template: str) -> st
         latex_doc = latex_doc.replace('[EXPERIENCE]', experience)
         latex_doc = latex_doc.replace('[PROJECTS]', projects)
         latex_doc = latex_doc.replace('[SKILLS]', skills)
+        latex_doc = latex_doc.replace('[CERTIFICATIONS]', certifications)
+        latex_doc = latex_doc.replace('[AWARDS]', awards)
+        latex_doc = latex_doc.replace('[PUBLICATIONS]', publications)
+        latex_doc = latex_doc.replace('[VOLUNTEER]', volunteer)
+        latex_doc = latex_doc.replace('[LANGUAGES]', languages)
 
         # Validate that all placeholders were replaced
         remaining_placeholders = re.findall(r'\[([A-Z_]+)\]', latex_doc)
