@@ -360,6 +360,26 @@ LATEX_TEMPLATE = r"""
 [SKILLS]
 
 
+%-----------CERTIFICATIONS-----------
+[CERTIFICATIONS]
+
+
+%-----------AWARDS & HONORS-----------
+[AWARDS]
+
+
+%-----------PUBLICATIONS-----------
+[PUBLICATIONS]
+
+
+%-----------VOLUNTEER EXPERIENCE-----------
+[VOLUNTEER]
+
+
+%-----------LANGUAGES-----------
+[LANGUAGES]
+
+
 %-------------------------------------------
 \end{document}
 """
