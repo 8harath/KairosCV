@@ -23,6 +23,9 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Import from project modules
 from models import (
@@ -74,15 +77,39 @@ app = FastAPI(
     version="0.2.0",
 )
 
+# --- Rate Limiting ---
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # --- CORS Middleware ---
-origins = ["*"]  # Configure allowed origins here
+# Configure allowed origins based on environment
+PRODUCTION = os.getenv("PRODUCTION", "false").lower() == "true"
+
+if PRODUCTION:
+    # Production: Specific domains only
+    origins = [
+        os.getenv("FRONTEND_URL", "https://kairoscv.onrender.com"),
+        "https://kairoscv.com",  # Add your production domain
+    ]
+    logger.info(f"CORS enabled for production origins: {origins}")
+else:
+    # Development: Allow common dev servers
+    origins = [
+        "http://localhost:3000",      # Next.js dev server
+        "http://127.0.0.1:3000",      # Alternative localhost
+        "http://localhost:5173",      # Vite dev server
+        "http://localhost:8000",      # Alternative dev server
+        "http://localhost:8080",      # Alternative dev server
+    ]
+    logger.info(f"CORS enabled for development origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,  # No auth cookies
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # --- Startup/Shutdown Events ---
@@ -106,14 +133,104 @@ async def startup_event():
 # --- API Endpoints ---
 
 
-@app.get("/health", tags=["Status"], response_model=MessageResponse)
+@app.get("/health", tags=["Status"])
 async def health_check():
-    """Simple health check endpoint."""
-    return {"message": "API is running!"}
+    """
+    Enhanced health check endpoint.
+
+    Returns:
+        - status: "healthy" or "degraded"
+        - pdflatex: LaTeX compiler availability
+        - groq_api: Groq API key configuration
+        - disk_space: Available disk space info
+        - timestamp: Current server time
+    """
+    import subprocess
+    import shutil as sh
+
+    health_status = {
+        "status": "healthy",
+        "timestamp": time.time(),
+        "checks": {}
+    }
+
+    # Check pdflatex availability
+    try:
+        result = subprocess.run(
+            ['pdflatex', '--version'],
+            capture_output=True,
+            timeout=5,
+            text=True
+        )
+        pdflatex_ok = result.returncode == 0
+        if pdflatex_ok:
+            # Extract version from first line
+            version_line = result.stdout.split('\n')[0] if result.stdout else "Unknown"
+            health_status["checks"]["pdflatex"] = {
+                "status": "ok",
+                "version": version_line
+            }
+        else:
+            health_status["checks"]["pdflatex"] = {"status": "error", "message": "pdflatex not found"}
+            health_status["status"] = "degraded"
+    except subprocess.TimeoutExpired:
+        health_status["checks"]["pdflatex"] = {"status": "error", "message": "timeout"}
+        health_status["status"] = "degraded"
+    except Exception as e:
+        health_status["checks"]["pdflatex"] = {"status": "error", "message": str(e)}
+        health_status["status"] = "degraded"
+
+    # Check Groq API configuration
+    groq_api_key = os.getenv('GROQ_API_KEY')
+    if groq_api_key and len(groq_api_key) > 0:
+        health_status["checks"]["groq_api"] = {
+            "status": "configured",
+            "key_length": len(groq_api_key),
+            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        }
+    else:
+        health_status["checks"]["groq_api"] = {"status": "missing", "message": "GROQ_API_KEY not set"}
+        health_status["status"] = "degraded"
+
+    # Check disk space
+    try:
+        total, used, free = sh.disk_usage("/")
+        health_status["checks"]["disk_space"] = {
+            "status": "ok" if free > 100 * 1024 * 1024 else "low",  # Warn if < 100MB
+            "free_mb": round(free / (1024 * 1024), 2),
+            "total_mb": round(total / (1024 * 1024), 2),
+            "used_percent": round((used / total) * 100, 2)
+        }
+        if free < 100 * 1024 * 1024:  # Less than 100MB free
+            health_status["status"] = "degraded"
+    except Exception as e:
+        health_status["checks"]["disk_space"] = {"status": "error", "message": str(e)}
+
+    # Check output directories
+    try:
+        dir_stats = get_cleanup_stats()
+
+        health_status["checks"]["directories"] = {
+            "status": "ok",
+            "generated_pdfs": {
+                "files": dir_stats["generated_pdfs"]["file_count"],
+                "size_mb": round(dir_stats["generated_pdfs"].get("size_mb", 0), 2)
+            },
+            "latex_output": {
+                "files": dir_stats["latex_output"]["file_count"],
+                "size_mb": round(dir_stats["latex_output"].get("size_mb", 0), 2)
+            }
+        }
+    except Exception as e:
+        health_status["checks"]["directories"] = {"status": "error", "message": str(e)}
+
+    return health_status
 
 
 @app.post("/tailor", tags=["Resume"], response_model=TailoredResumeResponse)
+@limiter.limit("10/minute")  # Max 10 resume tailoring requests per minute per IP
 async def tailor_resume_endpoint(
+    request: Request,
     job_description: str = Form(
         ..., min_length=50, description="The full text of the job description."
     ),
@@ -182,7 +299,9 @@ async def tailor_resume_endpoint(
 
 
 @app.post("/convert-latex", tags=["Resume"])
+@limiter.limit("15/minute")  # Max 15 conversion requests per minute per IP
 async def convert_to_latex_endpoint(
+    request: Request,
     resume_file: UploadFile = File(
         ..., description="The user's resume file (PDF, DOCX, MD, DOC)."
     ),
@@ -252,7 +371,9 @@ async def convert_to_latex_endpoint(
 
 
 @app.post("/convert-json-to-latex", tags=["Resume"], response_model=JsonToLatexResponse)
+@limiter.limit("15/minute")  # Max 15 PDF generation requests per minute per IP
 async def convert_json_to_latex_endpoint(
+    request: Request,
     resume_data: ResumeData,  # Expect ResumeData model as request body
 ) -> JsonToLatexResponse:
     """
