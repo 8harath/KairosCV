@@ -43,6 +43,20 @@ from resume_processor import (
 from latex_converter import convert_latex_to_pdf
 from pdf_metadata import add_pdf_metadata
 from file_cleanup import cleanup_all, get_cleanup_stats
+from error_handlers import (
+    APIError,
+    ValidationError,
+    FileError,
+    LaTeXError,
+    AIError,
+    SystemError,
+    ErrorCodes,
+    api_error_handler,
+    general_exception_handler,
+    validate_required_fields,
+    check_disk_space,
+    handle_timeout_error,
+)
 
 # --- Initial Setup ---
 
@@ -81,6 +95,10 @@ app = FastAPI(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# --- Error Handlers ---
+app.add_exception_handler(APIError, api_error_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 # --- CORS Middleware ---
 # Configure allowed origins based on environment
@@ -383,11 +401,18 @@ async def convert_json_to_latex_endpoint(
     start_time = time.time()
     logger.info("Received convert-json-to-latex request.")
 
+    # Check disk space before processing
+    try:
+        check_disk_space(min_free_mb=50)  # Require at least 50MB free
+    except SystemError as disk_err:
+        logger.error(f"Disk space check failed: {disk_err}")
+        raise disk_err
+
     if not latex_conversion_chain:
         logger.critical("LaTeX conversion chain is not available.")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Resume processing service temporarily unavailable.",
+        raise AIError(
+            message="Resume processing service temporarily unavailable",
+            error_code=ErrorCodes.AI_API_ERROR
         )
 
     try:
