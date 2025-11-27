@@ -80,7 +80,8 @@
       "Bash(libasound2t64 )",
       "Bash(libglib2.0-0t64 )",
       "Bash(pnpm list:*)",
-      "Bash(npx puppeteer:*)"
+      "Bash(npx puppeteer:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
