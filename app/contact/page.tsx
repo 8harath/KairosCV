@@ -104,8 +104,8 @@ export default function ContactPage() {
                 <div className="space-y-4">
                   <div className="border-l-4 border-primary pl-4">
                     <h3 className="text-sm font-bold uppercase mb-1">EMAIL</h3>
-                    <a href="mailto:hello@kairoscv.app" className="text-base hover:text-primary transition-colors">
-                      hello@kairoscv.app
+                    <a href="mailto:8harath.k@gmail.com" className="text-base hover:text-primary transition-colors">
+                      8harath.k@gmail.com
                     </a>
                   </div>
 
