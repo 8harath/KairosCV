@@ -43,7 +43,13 @@ VISION_EXTRACTION.md
 IMPLEMENTATION_SUMMARY.md
 
 # temp files
-test-puppeteer.jsBackend_Modified/__pycache__/
+test-puppeteer.js
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Backend Python files
+Backend_Modified/__pycache__/
 *.pyc
 Backend_Modified/venv/
 Backend_Modified/generated_pdfs/
