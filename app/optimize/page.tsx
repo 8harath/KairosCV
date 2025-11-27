@@ -14,7 +14,7 @@ export default function Home() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [file, setFile] = useState<File | null>(null)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
-  const { progress, stage, message, downloadUrl, error, isProcessing, startProcessing, cleanup } = useResumeOptimizer()
+  const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
 
   // Display errors from processing
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} onReset={handleReset} />
+            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
           )}
         </section>
         </div>

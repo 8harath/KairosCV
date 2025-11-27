@@ -64,7 +64,7 @@ function levenshteinDistance(str1: string, str2: string): number {
 /**
  * Remove duplicate experience entries
  */
-function deduplicateExperience(experiences: any[]): any[] {
+export function deduplicateExperience(experiences: any[]): any[] {
   if (!experiences || experiences.length === 0) return []
 
   const unique: any[] = []
@@ -90,7 +90,7 @@ function deduplicateExperience(experiences: any[]): any[] {
 /**
  * Remove duplicate education entries
  */
-function deduplicateEducation(education: any[]): any[] {
+export function deduplicateEducation(education: any[]): any[] {
   if (!education || education.length === 0) return []
 
   const unique: any[] = []
@@ -137,7 +137,7 @@ function deduplicateProjects(projects: any[]): any[] {
 /**
  * Remove duplicate skills
  */
-function deduplicateSkills(skills: string[]): string[] {
+export function deduplicateSkills(skills: string[]): string[] {
   if (!skills || skills.length === 0) return []
 
   const unique: string[] = []
@@ -181,7 +181,7 @@ function deduplicateStringArray(arr: string[]): string[] {
 /**
  * Normalize date string to consistent format
  */
-function normalizeDate(date: string | undefined): string {
+export function normalizeDate(date: string | undefined): string {
   if (!date) return ''
 
   const normalized = date.trim()
@@ -258,7 +258,7 @@ function validateDateRange(startDate: string, endDate: string): { start: string;
 /**
  * Normalize phone number
  */
-function normalizePhoneNumber(phone: string | undefined): string {
+export function normalizePhoneNumber(phone: string | undefined): string {
   if (!phone) return ''
 
   // Remove all non-digit characters except + at start
@@ -280,7 +280,7 @@ function normalizePhoneNumber(phone: string | undefined): string {
 /**
  * Normalize URL
  */
-function normalizeURL(url: string | undefined): string {
+export function normalizeURL(url: string | undefined): string {
   if (!url) return ''
 
   let normalized = url.trim()
@@ -300,7 +300,7 @@ function normalizeURL(url: string | undefined): string {
 /**
  * Clean bullet point text
  */
-function cleanBulletPoint(bullet: string): string {
+export function cleanBulletPoint(bullet: string): string {
   if (!bullet) return ''
 
   let cleaned = bullet.trim()

@@ -1,38 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import Header from "@/components/header"
-import FileUploader from "@/components/file-uploader"
-import ProgressTracker from "@/components/progress-tracker"
-import ResultsPanel from "@/components/results-panel"
+import Footer from "@/components/Footer"
 import LoadingAnimation from "@/components/loading-animation"
-import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
-import { toast } from "@/hooks/use-toast"
 
 export default function Home() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const [file, setFile] = useState<File | null>(null)
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
-  const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
-
-  // Display errors from processing
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Processing error",
-        description: error,
-        variant: "destructive",
-      })
-    }
-  }, [error])
-
-  // Update PDF URL when download URL is available
-  useEffect(() => {
-    if (downloadUrl && !isProcessing) {
-      // Set PDF URL for preview when download is ready
-      setPdfUrl(downloadUrl)
-    }
-  }, [downloadUrl, isProcessing])
 
   useEffect(() => {
     // Show loading animation for 1.5 seconds on initial mount
@@ -43,123 +18,181 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
-  const handleFileSelect = async (selectedFile: File | null) => {
-    if (!selectedFile) {
-      setFile(null)
-      return
-    }
-
-    // Validate file
-    const validTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ]
-    const validExtensions = [".pdf", ".docx", ".txt"]
-    const fileName = selectedFile.name.toLowerCase()
-    const hasValidExtension = validExtensions.some((ext) => fileName.endsWith(ext))
-
-    if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF, DOCX, or TXT file.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Maximum file size is 5MB. Please choose a smaller file.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setFile(selectedFile)
-    setPdfUrl(null)
-
-    try {
-      // Upload file
-      const formData = new FormData()
-      formData.append("file", selectedFile)
-
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json()
-        throw new Error(errorData.detail || "Upload failed")
-      }
-
-      const uploadData = await uploadResponse.json()
-      const fileId = uploadData.file_id
-
-      // Start processing
-      startProcessing(fileId)
-
-      toast({
-        title: "File uploaded",
-        description: "Your resume is being processed...",
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error"
-      console.error("[v0] Error:", errorMessage)
-      toast({
-        title: "Upload failed",
-        description: errorMessage,
-        variant: "destructive",
-      })
-      setFile(null)
-    }
-  }
-
-  const handleReset = () => {
-    setFile(null)
-    setPdfUrl(null)
-    cleanup()
-  }
-
-  useEffect(() => {
-    return () => {
-      cleanup()
-    }
-  }, [cleanup])
-
   if (isInitialLoading) {
     return <LoadingAnimation />
   }
 
   return (
-    <main
-      className="min-h-screen bg-background text-foreground"
-      role="main"
-      itemScope
-      itemType="https://schema.org/WebApplication"
-    >
+    <>
       <Header />
-
-      <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
-        <section aria-labelledby="upload-section">
-          {!isProcessing && !pdfUrl && !error ? (
-            <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
-          ) : isProcessing ? (
-            <ProgressTracker progress={progress} stage={stage} message={message} />
-          ) : error ? (
-            <div className="text-center space-y-4">
-              <p className="text-destructive">{error}</p>
-              <button onClick={handleReset} className="btn">
-                Try Again
-              </button>
+      <main className="min-h-screen bg-background text-foreground">
+        {/* Hero Section */}
+        <section className="pt-32 md:pt-40 pb-20 md:pb-32">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6">
+                Transform Your Resume
+                <br />
+                <span className="text-primary">Get Past ATS</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                AI-powered resume optimization that helps you stand out. Upload your resume, and we'll
+                transform it into an ATS-friendly format that gets you noticed.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link
+                  href="/optimize"
+                  className="border-4 border-primary px-8 py-4 font-black text-lg uppercase bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+                >
+                  Optimize Your Resume
+                </Link>
+                <Link
+                  href="/intent"
+                  className="border-4 border-primary px-8 py-4 font-black text-lg uppercase bg-background text-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+                >
+                  Learn More
+                </Link>
+              </div>
             </div>
-          ) : (
-            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
-          )}
+          </div>
         </section>
-      </div>
-    </main>
+
+        {/* How It Works Section */}
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-black text-center mb-4">
+                How It Works
+              </h2>
+              <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+                Get your ATS-optimized resume in three simple steps
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* Step 1 */}
+                <div className="border-4 border-primary p-8 bg-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="border-2 border-primary bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    1
+                  </div>
+                  <h3 className="text-2xl font-black mb-4">Upload Resume</h3>
+                  <p className="text-muted-foreground">
+                    Upload your existing resume in PDF, DOCX, or TXT format. Our system accepts all
+                    standard formats.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="border-4 border-primary p-8 bg-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="border-2 border-primary bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    2
+                  </div>
+                  <h3 className="text-2xl font-black mb-4">AI Enhancement</h3>
+                  <p className="text-muted-foreground">
+                    Our AI analyzes and enhances your content, optimizing bullet points and formatting
+                    for maximum ATS compatibility.
+                  </p>
+                </div>
+
+                {/* Step 3 */}
+                <div className="border-4 border-primary p-8 bg-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="border-2 border-primary bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    3
+                  </div>
+                  <h3 className="text-2xl font-black mb-4">Download & Apply</h3>
+                  <p className="text-muted-foreground">
+                    Get your optimized resume in seconds. Download and start applying with confidence
+                    that you'll pass ATS screening.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-black text-center mb-16">
+                Why Choose KairosCV?
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Feature 1 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">100% Free</h3>
+                  <p className="text-muted-foreground">
+                    No hidden costs, no subscriptions. Optimize your resume completely free, forever.
+                  </p>
+                </div>
+
+                {/* Feature 2 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">Privacy First</h3>
+                  <p className="text-muted-foreground">
+                    We don't store your data. Your resume is processed and immediately deleted from our
+                    servers.
+                  </p>
+                </div>
+
+                {/* Feature 3 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">Lightning Fast</h3>
+                  <p className="text-muted-foreground">
+                    Get your optimized resume in under 60 seconds. No waiting, no hassle.
+                  </p>
+                </div>
+
+                {/* Feature 4 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">AI-Powered</h3>
+                  <p className="text-muted-foreground">
+                    Powered by advanced AI that understands what recruiters and ATS systems are looking for.
+                  </p>
+                </div>
+
+                {/* Feature 5 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">ATS Optimized</h3>
+                  <p className="text-muted-foreground">
+                    Formatted to pass through Applicant Tracking Systems with high compatibility scores.
+                  </p>
+                </div>
+
+                {/* Feature 6 */}
+                <div className="border-2 border-primary p-6">
+                  <h3 className="text-xl font-black mb-3">Open Source</h3>
+                  <p className="text-muted-foreground">
+                    Built transparently. Check our code, contribute, or self-host if you prefer.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-5xl font-black mb-6">
+                Ready to Stand Out?
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                Start optimizing your resume with our free MVP tool.
+              </p>
+              <Link
+                href="/optimize"
+                className="inline-block border-4 border-primary px-8 py-4 font-black text-lg uppercase bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+              >
+                Get Started Now
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </main>
+    </>
   )
 }

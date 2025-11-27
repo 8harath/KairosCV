@@ -5,12 +5,12 @@
 
 export interface ContactInfo {
   name: string
-  email: string
-  phone: string
-  linkedin: string
-  github: string
-  website: string
-  location: string
+  email?: string
+  phone?: string
+  linkedin?: string
+  github?: string
+  website?: string
+  location?: string
 }
 
 export interface ExperienceEntry {
@@ -38,7 +38,10 @@ export interface ProjectEntry {
   description: string
   technologies: string[]
   link?: string
+  github?: string
   bullets: string[]
+  startDate?: string
+  endDate?: string
 }
 
 export interface ParsedResume {
