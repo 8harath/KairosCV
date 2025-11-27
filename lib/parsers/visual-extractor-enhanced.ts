@@ -13,7 +13,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import fs from "fs-extra"
 import { PDFDocument } from "pdf-lib"
-import sharp from "sharp"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 

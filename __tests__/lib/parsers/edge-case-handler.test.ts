@@ -345,7 +345,12 @@ describe("Edge Case Handler", () => {
         tools: ["Git", "Git", "Docker"],
         databases: ["PostgreSQL", "PostgreSQL"]
       }
-      const result = deduplicateSkills(skills)
+      const result = {
+        languages: deduplicateSkills(skills.languages),
+        frameworks: deduplicateSkills(skills.frameworks),
+        tools: deduplicateSkills(skills.tools),
+        databases: deduplicateSkills(skills.databases)
+      }
       expect(result.languages.length).toBe(2)
       expect(result.frameworks.length).toBe(2)
       expect(result.tools.length).toBe(2)
@@ -359,7 +364,12 @@ describe("Edge Case Handler", () => {
         tools: ["git", "Git", "GIT"],
         databases: ["postgresql", "PostgreSQL"]
       }
-      const result = deduplicateSkills(skills)
+      const result = {
+        languages: deduplicateSkills(skills.languages),
+        frameworks: deduplicateSkills(skills.frameworks),
+        tools: deduplicateSkills(skills.tools),
+        databases: deduplicateSkills(skills.databases)
+      }
       expect(result.languages.length).toBe(1)
       expect(result.frameworks.length).toBe(1)
       expect(result.tools.length).toBe(1)
@@ -373,7 +383,12 @@ describe("Edge Case Handler", () => {
         tools: [],
         databases: []
       }
-      const result = deduplicateSkills(skills)
+      const result = {
+        languages: deduplicateSkills(skills.languages),
+        frameworks: deduplicateSkills(skills.frameworks),
+        tools: deduplicateSkills(skills.tools),
+        databases: deduplicateSkills(skills.databases)
+      }
       // Should deduplicate JS and JavaScript
       expect(result.languages.length).toBeLessThanOrEqual(1)
     })
@@ -385,7 +400,12 @@ describe("Edge Case Handler", () => {
         tools: [],
         databases: []
       }
-      const result = deduplicateSkills(skills)
+      const result = {
+        languages: deduplicateSkills(skills.languages),
+        frameworks: deduplicateSkills(skills.frameworks),
+        tools: deduplicateSkills(skills.tools),
+        databases: deduplicateSkills(skills.databases)
+      }
       // Versions should be preserved as different entries
       expect(result.languages.length).toBeGreaterThanOrEqual(1)
     })

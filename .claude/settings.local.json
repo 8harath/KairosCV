@@ -81,7 +81,8 @@
       "Bash(libglib2.0-0t64 )",
       "Bash(pnpm list:*)",
       "Bash(npx puppeteer:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npx puppeteer browsers install chrome)"
     ],
     "deny": [],
     "ask": []
