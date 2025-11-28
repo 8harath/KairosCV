@@ -79,10 +79,12 @@ try:
     )
     logger.info("LangChain chains setup complete.")
 except Exception as e:
-    logger.critical(
-        f"FATAL: Failed to initialize LangChain chains on startup: {e}", exc_info=True
+    logger.warning(
+        f"WARNING: Failed to initialize LangChain chains on startup: {e}"
     )
-    sys.exit(f"Startup failed: Could not initialize LangChain: {e}")
+    logger.warning("Backend will start in degraded mode (AI features disabled)")
+    logger.warning("Set a valid GROQ_API_KEY to enable AI features")
+    # Don't exit - allow server to start for testing
 
 # --- FastAPI Application Instance ---
 app = FastAPI(
@@ -276,14 +278,15 @@ async def startup_event():
         logger.warning("pdflatex not found - PDF generation will fail")
 
     # 3. Warm template cache (Day 14: Ensure first request is fast)
-    try:
-        from prompts import get_latex_template
-        template = get_latex_template()
-        logger.info(f"Template cache warmed: {len(template)} characters")
-    except Exception as e:
-        logger.warning(f"Failed to warm template cache: {e}")
+    # TEMPORARILY DISABLED for Day 16 testing
+    # try:
+    #     from prompts import get_latex_template
+    #     template = get_latex_template()
+    #     logger.info(f"Template cache warmed: {len(template)} characters")
+    # except Exception as e:
+    #     logger.warning(f"Failed to warm template cache: {e}")
 
-    logger.info("Startup complete")
+    logger.info("Startup complete - ready to accept requests")
 
 
 # --- API Endpoints ---
