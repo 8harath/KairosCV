@@ -15,12 +15,30 @@ export default function Home() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const { progress, stage, message, downloadUrl, error, isProcessing, startProcessing, cleanup } = useResumeOptimizer()
 
-  // Display errors from processing
+  // Display errors from processing with helpful messages
   useEffect(() => {
     if (error) {
+      // Provide context-specific error messages
+      let title = "Processing Error"
+      let description = error
+
+      if (error.includes("network") || error.includes("Connection")) {
+        title = "Connection Error"
+        description = "Unable to reach the server. Please check your internet connection and try again."
+      } else if (error.includes("timeout")) {
+        title = "Request Timeout"
+        description = "The request took too long. Please try uploading a smaller file."
+      } else if (error.includes("parse") || error.includes("parsing")) {
+        title = "File Parsing Error"
+        description = "We couldn't read your resume file. Please ensure it's a valid PDF, DOCX, or TXT file."
+      } else if (error.includes("backend") || error.includes("unavailable")) {
+        title = "Backend Unavailable"
+        description = "Our processing server is currently offline. Please try again in a few moments."
+      }
+
       toast({
-        title: "Processing error",
-        description: error,
+        title,
+        description,
         variant: "destructive",
       })
     }
@@ -60,18 +78,20 @@ export default function Home() {
     const hasValidExtension = validExtensions.some((ext) => fileName.endsWith(ext))
 
     if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
+      const fileExt = fileName.split('.').pop()?.toUpperCase() || 'unknown'
       toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF, DOCX, or TXT file.",
+        title: "Invalid File Type",
+        description: `${fileExt} files are not supported. Please upload a PDF, DOCX, or TXT resume file.`,
         variant: "destructive",
       })
       return
     }
 
+    const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2)
     if (selectedFile.size > 5 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Maximum file size is 5MB. Please choose a smaller file.",
+        title: "File Too Large",
+        description: `Your file is ${fileSizeMB} MB. Maximum file size is 5 MB. Please compress or choose a smaller file.`,
         variant: "destructive",
       })
       return

@@ -9,11 +9,11 @@ interface ProgressTrackerProps {
 export default function ProgressTracker({ progress, stage, message }: ProgressTrackerProps) {
   const stages = ["uploading", "parsing", "enhancing", "generating", "compiling"]
   const stageMessages: Record<string, string> = {
-    uploading: "Uploading file...",
-    parsing: "Parsing resume content...",
-    enhancing: "AI Enhancement in progress...",
-    generating: "Generating optimized document...",
-    compiling: "Compiling PDF...",
+    uploading: "Uploading your resume securely...",
+    parsing: "Reading your resume (PDF/DOCX/TXT)...",
+    enhancing: "AI optimizing content for ATS compatibility...",
+    generating: "Creating professional LaTeX PDF...",
+    compiling: "Finalizing your optimized resume...",
   }
 
   const currentStageIndex = stages.indexOf(stage)
