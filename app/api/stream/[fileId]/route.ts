@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { processResume, ProcessingProgress } from "@/lib/resume-processor"
 import { getFileMetadata, fileExists, getUploadFilePath } from "@/lib/file-storage"
 import path from "path"
+import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -11,6 +12,12 @@ export async function GET(
   { params }: { params: Promise<{ fileId: string }> }
 ) {
   const { fileId } = await params
+  if (!isValidFileId(fileId)) {
+    return new Response(
+      JSON.stringify({ error: "Invalid file id" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    )
+  }
 
   // Get file metadata
   const metadata = await getFileMetadata(fileId)

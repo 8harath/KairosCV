@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
+import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
 
 export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await params
+  if (!isValidFileId(fileId)) {
+    return NextResponse.json({ detail: "Invalid file id" }, { status: 400 })
+  }
 
   // WebSocket upgrade handling through Next.js
   if (!request.headers.get("upgrade")) {
@@ -16,7 +20,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
   // 3. Send WebSocket messages with progress updates
   // 4. Simulate or call actual backend services
 
-  return NextResponse.json({ message: "WebSocket endpoint" })
+  return NextResponse.json({ detail: "WebSocket is not supported on this deployment. Use /api/stream/[fileId] SSE endpoint." }, { status: 410 })
 }
 
 // WebSocket handler - simulated for browser compatibility

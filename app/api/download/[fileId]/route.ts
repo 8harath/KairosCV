@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
 import { getGeneratedFilePath, fileExists, getFileMetadata } from "@/lib/file-storage"
 import { readFile } from "fs-extra"
+import { isValidFileId } from "@/lib/security/file-id"
 
 export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await params
+  if (!isValidFileId(fileId)) {
+    return NextResponse.json({ error: "Invalid file id" }, { status: 400 })
+  }
 
   try {
     // Check if this is a preview request (inline) or download request

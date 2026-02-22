@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { loadResumeJSON, resumeJSONExists } from "@/lib/storage/resume-json-storage"
+import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -18,9 +19,9 @@ export async function GET(
   try {
     const { fileId } = await params
 
-    if (!fileId) {
+    if (!fileId || !isValidFileId(fileId)) {
       return NextResponse.json(
-        { error: "File ID is required" },
+        { error: "Valid file ID is required" },
         { status: 400 }
       )
     }

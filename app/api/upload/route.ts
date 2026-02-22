@@ -1,26 +1,25 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
+import { randomUUID } from "crypto"
+import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
+import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
 
 export async function POST(request: NextRequest) {
   try {
+    // Opportunistic garbage collection for stale files.
+    void cleanupExpiredArtifacts().catch((error) => {
+      console.warn("Background cleanup failed:", error)
+    })
+
     const formData = await request.formData()
-    const file = formData.get("file") as File
+    const rawFile = formData.get("file")
+    const file = rawFile instanceof File ? rawFile : null
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ]
-    const fileName = file.name.toLowerCase()
-    const validExtensions = [".pdf", ".docx", ".txt"]
-    const hasValidExtension = validExtensions.some((ext) => fileName.endsWith(ext))
-
-    if (!allowedTypes.includes(file.type) && !hasValidExtension) {
+    const extension = getSafeExtension(file.name)
+    if (!extension || !isAllowedMimeType(file.type)) {
       return NextResponse.json({ detail: "Invalid file type. Allowed: PDF, DOCX, TXT" }, { status: 400 })
     }
 
@@ -29,11 +28,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ detail: "File too large. Maximum size: 5MB" }, { status: 400 })
     }
 
-    // Generate a unique file ID using crypto
-    const fileId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    const fileBuffer = Buffer.from(await file.arrayBuffer())
+    if (!isValidFileSignature(fileBuffer, extension)) {
+      return NextResponse.json({ detail: "Invalid file content for selected type." }, { status: 400 })
+    }
+
+    // Generate a cryptographically secure file identifier.
+    const fileId = randomUUID()
 
     // Save file to filesystem
-    await saveUploadedFile(fileId, file)
+    await saveUploadedFile(fileId, file.name, fileBuffer)
 
     // Save file metadata
     await saveFileMetadata({

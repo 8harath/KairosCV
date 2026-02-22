@@ -1,13 +1,16 @@
 import fs from "fs-extra"
 import path from "path"
+import { getSafeExtension } from "./security/file-validation"
 
 const UPLOADS_DIR = path.join(process.cwd(), "uploads")
 const GENERATED_DIR = path.join(UPLOADS_DIR, "generated")
+const JSON_DIR = path.join(UPLOADS_DIR, "json")
 
 // Ensure directories exist
 export async function ensureUploadDirectories() {
   await fs.ensureDir(UPLOADS_DIR)
   await fs.ensureDir(GENERATED_DIR)
+  await fs.ensureDir(JSON_DIR)
 }
 
 // Get file path for uploaded file
@@ -21,17 +24,14 @@ export function getGeneratedFilePath(fileId: string): string {
 }
 
 // Save uploaded file
-export async function saveUploadedFile(fileId: string, file: File): Promise<string> {
+export async function saveUploadedFile(fileId: string, filename: string, buffer: Buffer): Promise<string> {
   await ensureUploadDirectories()
-  
-  const extension = path.extname(file.name) || ".txt"
+
+  const extension = getSafeExtension(filename) || ".txt"
   const filePath = getUploadFilePath(fileId, extension)
-  
-  const arrayBuffer = await file.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer)
-  
+
   await fs.writeFile(filePath, buffer)
-  
+
   return filePath
 }
 
@@ -66,12 +66,17 @@ export interface FileMetadata {
   filename: string
   size: number
   type: string
+  email?: string
   uploadedAt: Date
 }
 
 // Get metadata file path
 function getMetadataFilePath(fileId: string): string {
   return path.join(UPLOADS_DIR, `${fileId}.meta.json`)
+}
+
+export function getResumeJSONPath(fileId: string): string {
+  return path.join(JSON_DIR, `${fileId}.json`)
 }
 
 // Save file metadata to disk
@@ -96,6 +101,46 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
   } catch (error) {
     console.error('Error reading metadata:', error)
     return null
+  }
+}
+
+export async function cleanupFileArtifacts(fileId: string, originalFilename: string): Promise<void> {
+  const extension = getSafeExtension(originalFilename) || ".txt"
+  const sourcePath = getUploadFilePath(fileId, extension)
+  const generatedPath = getGeneratedFilePath(fileId)
+  const metadataPath = getMetadataFilePath(fileId)
+  const jsonPath = getResumeJSONPath(fileId)
+
+  await Promise.allSettled([
+    fs.remove(sourcePath),
+    fs.remove(generatedPath),
+    fs.remove(metadataPath),
+    fs.remove(jsonPath),
+  ])
+}
+
+export async function cleanupExpiredArtifacts(maxAgeHours = 24): Promise<void> {
+  await ensureUploadDirectories()
+
+  const metadataFiles = await fs.readdir(UPLOADS_DIR)
+  const metadataJsonFiles = metadataFiles.filter((name) => name.endsWith(".meta.json"))
+  const now = Date.now()
+  const maxAgeMs = maxAgeHours * 60 * 60 * 1000
+
+  for (const filename of metadataJsonFiles) {
+    const fileId = filename.replace(".meta.json", "")
+    try {
+      const metadataPath = path.join(UPLOADS_DIR, filename)
+      const metadataRaw = await fs.readFile(metadataPath, "utf-8")
+      const metadata = JSON.parse(metadataRaw) as { uploadedAt?: string; filename?: string }
+
+      const uploadedAt = metadata.uploadedAt ? new Date(metadata.uploadedAt).getTime() : 0
+      if (!uploadedAt || now - uploadedAt > maxAgeMs) {
+        await cleanupFileArtifacts(fileId, metadata.filename || `${fileId}.txt`)
+      }
+    } catch (error) {
+      console.warn(`Failed cleanup for ${fileId}:`, error)
+    }
   }
 }
 
