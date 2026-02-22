@@ -34,7 +34,7 @@ export const ExperienceSchema = z.object({
   location: z.string().optional(),
   startDate: z.string(), // Format: "Jan 2020" or "January 2020"
   endDate: z.string().or(z.literal("Present")), // "Dec 2022" or "Present"
-  bullets: z.array(z.string()).min(1, "At least one bullet point required"),
+  bullets: z.array(z.string()).default([]),
   isEnhanced: z.boolean().default(false), // Track if AI-enhanced
 })
 
@@ -65,10 +65,10 @@ export type Education = z.infer<typeof EducationSchema>
 export const ProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   description: z.string().min(1, "Project description is required"),
-  technologies: z.array(z.string()).min(1, "At least one technology required"),
+  technologies: z.array(z.string()).default([]),
   link: z.string().url("Invalid project URL").optional(),
   github: z.string().url("Invalid GitHub URL").optional(),
-  bullets: z.array(z.string()).min(1, "At least one bullet point required"),
+  bullets: z.array(z.string()).default([]),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
 })
@@ -154,7 +154,7 @@ export const VolunteerSchema = z.object({
   location: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  bullets: z.array(z.string()).min(1, "At least one bullet point required"),
+  bullets: z.array(z.string()).default([]),
 })
 
 export type Volunteer = z.infer<typeof VolunteerSchema>

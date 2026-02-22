@@ -18,6 +18,11 @@ interface UseWebSocketOptions {
 
 export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const wsRef = useRef<WebSocket | null>(null)
+  const optionsRef = useRef(options)
+
+  useEffect(() => {
+    optionsRef.current = options
+  }, [options])
 
   useEffect(() => {
     wsRef.current = new WebSocket(url)
@@ -25,18 +30,18 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     wsRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
-        options.onMessage?.(data)
+        optionsRef.current.onMessage?.(data)
       } catch (error) {
         console.error("Failed to parse WebSocket message:", error)
       }
     }
 
     wsRef.current.onerror = (error) => {
-      options.onError?.(error)
+      optionsRef.current.onError?.(error)
     }
 
     wsRef.current.onclose = () => {
-      options.onClose?.()
+      optionsRef.current.onClose?.()
     }
 
     return () => {
@@ -44,7 +49,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         wsRef.current.close()
       }
     }
-  }, [url, options])
+  }, [url])
 
   return wsRef.current
 }

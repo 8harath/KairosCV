@@ -4,7 +4,7 @@ import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists }
 import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
 import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
-import { safeValidateResumeData, fillDefaults } from "./schemas/resume-schema"
+import { safeValidateResumeData, fillDefaults, type PartialResumeData, type ResumeData as SchemaResumeData } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
 import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-handler"
 import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
@@ -329,7 +329,7 @@ export async function* processResume(
     enhancedData = handleAllEdgeCases(enhancedData, rawText)
 
     // Validate processed data
-    const processedValidation = validateProcessedData(enhancedData as any)
+    const processedValidation = validateProcessedData(enhancedData as SchemaResumeData)
     if (processedValidation.warnings.length > 0) {
       console.warn('⚠️  Data quality warnings:', processedValidation.warnings)
     }
@@ -345,7 +345,11 @@ export async function* processResume(
     if (!validation.success) {
       console.warn('Resume data validation failed:', validation.errors)
       // Fill defaults for missing required fields
-      enhancedData = fillDefaults(enhancedData as any)
+      enhancedData = fillDefaults(enhancedData as PartialResumeData)
+      const postFillValidation = safeValidateResumeData(enhancedData)
+      if (!postFillValidation.success) {
+        throw new Error(`Resume data is invalid after fallback defaults: ${postFillValidation.errors?.join(", ")}`)
+      }
       yield {
         stage: "validating",
         progress: 91,
