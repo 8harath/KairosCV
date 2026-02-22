@@ -13,8 +13,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import fs from "fs-extra"
 import { PDFDocument } from "pdf-lib"
+import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const visionModel = genAI.getGenerativeModel({
   model: "gemini-2.0-flash-exp",
@@ -70,7 +71,7 @@ export async function extractCompleteResumeVisually(
   pdfPath: string,
   rawText: string
 ): Promise<VisualExtractionResult> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     throw new Error("Gemini API key not configured")
   }
 
@@ -275,5 +276,5 @@ Return ONLY the JSON, no markdown, no explanations.`
  * Check if vision extraction is available
  */
 export function isVisualExtractionAvailable(): boolean {
-  return !!process.env.GEMINI_API_KEY
+  return hasGeminiApiKey()
 }

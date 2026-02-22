@@ -9,8 +9,9 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { ResumeData } from "../schemas/resume-schema"
+import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -53,7 +54,7 @@ export async function verifyField(
   rawText: string,
   expectedType: string
 ): Promise<VerificationResult> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return {
       field,
       isValid: true,
@@ -127,7 +128,7 @@ export async function researchMissingField(
   rawText: string,
   attemptNumber: number = 1
 ): Promise<ResearchResult> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return {
       field,
       found: false,
@@ -369,5 +370,5 @@ export async function verifyAndResearchResumeData(
  * Check if Gemini API is configured for verification
  */
 export function isVerificationAvailable(): boolean {
-  return !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== ""
+  return hasGeminiApiKey()
 }

@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -68,7 +69,7 @@ export async function enhanceBulletPoint(
   jobTitle: string,
   company: string
 ): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Returning original bullet point.")
     return bulletPoint
   }
@@ -126,7 +127,7 @@ export async function enhanceBulletPoints(
  * Extract and categorize skills from resume text using Gemini AI
  */
 export async function extractSkills(resumeText: string): Promise<SkillsCategories> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Returning empty skills.")
     return {
       languages: [],
@@ -186,7 +187,7 @@ export async function enhanceSection(
   sectionContent: string[],
   sectionType: "experience" | "education" | "projects"
 ): Promise<string[]> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Returning original content.")
     return sectionContent
   }
@@ -223,7 +224,7 @@ Return ONLY the enhanced content, one item per line.`
  * Generate professional summary from resume data
  */
 export async function generateSummary(resumeText: string): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Returning default summary.")
     return "Experienced professional with a proven track record of success."
   }
@@ -257,7 +258,7 @@ Return ONLY the professional summary, no additional text.`
  * This is the primary extraction method - Gemini does all the heavy lifting
  */
 export async function extractCompleteResumeData(resumeText: string): Promise<any> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Cannot extract resume data.")
     return null
   }
@@ -470,7 +471,7 @@ CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. 
  * Enhance extracted resume data with AI improvements
  */
 export async function enhanceExtractedData(extractedData: any): Promise<any> {
-  if (!process.env.GEMINI_API_KEY || !extractedData) {
+  if (!hasGeminiApiKey() || !extractedData) {
     return extractedData
   }
 
@@ -503,5 +504,5 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
  * Check if Gemini API is configured
  */
 export function isGeminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== ""
+  return hasGeminiApiKey()
 }

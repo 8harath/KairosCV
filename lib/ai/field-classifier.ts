@@ -10,8 +10,9 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -34,7 +35,7 @@ export async function classifyField(
   text: string,
   context?: { section?: string; previousFields?: string[] }
 ): Promise<ClassificationResult> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     console.warn("GEMINI_API_KEY not set. Using fallback classification.")
     return {
       field: "unknown",
@@ -121,7 +122,7 @@ export async function validateFieldPlacement(
   value: string | string[],
   expectedType: string
 ): Promise<{ isCorrect: boolean; suggestedField?: string; confidence: number }> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return { isCorrect: true, confidence: 0.5 }
   }
 
@@ -175,7 +176,7 @@ Return ONLY a JSON object:
 export async function categorizeSkill(
   skill: string
 ): Promise<"language" | "framework" | "tool" | "database" | "other"> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return "other"
   }
 
@@ -226,7 +227,7 @@ export async function categorizeSkillsBatch(
   databases: string[]
   other: string[]
 }> {
-  if (!process.env.GEMINI_API_KEY || skills.length === 0) {
+  if (!hasGeminiApiKey() || skills.length === 0) {
     return { languages: [], frameworks: [], tools: [], databases: [], other: skills }
   }
 
@@ -278,7 +279,7 @@ export async function verifyDataCompleteness(
   rawText: string,
   extractedData: any
 ): Promise<{ complete: boolean; missingContent: string[]; confidence: number }> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return { complete: true, missingContent: [], confidence: 0.5 }
   }
 
