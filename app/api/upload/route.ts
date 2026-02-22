@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
 import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
+import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials/trial-limiter"
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,9 +14,28 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const rawFile = formData.get("file")
     const file = rawFile instanceof File ? rawFile : null
+    const emailValue = formData.get("email")
+    const email = typeof emailValue === "string" ? normalizeEmail(emailValue) : ""
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
+    }
+    if (!email || !isValidEmail(email)) {
+      return NextResponse.json({ detail: "A valid email is required." }, { status: 400 })
+    }
+
+    const trial = await consumeTrial(email)
+    if (!trial.allowed) {
+      return NextResponse.json(
+        {
+          detail: "Free trial limit reached. You can try again after the reset time.",
+          trial: {
+            remaining: trial.remaining,
+            resetAt: trial.resetAt,
+          },
+        },
+        { status: 429 }
+      )
     }
 
     const extension = getSafeExtension(file.name)
@@ -45,6 +65,7 @@ export async function POST(request: NextRequest) {
       filename: file.name,
       size: file.size,
       type: file.type,
+      email,
       uploadedAt: new Date(),
     })
 
@@ -52,6 +73,10 @@ export async function POST(request: NextRequest) {
       file_id: fileId,
       filename: file.name,
       size: file.size,
+      trial: {
+        remaining: trial.remaining,
+        resetAt: trial.resetAt,
+      },
       message: "File uploaded successfully",
     })
   } catch (error) {

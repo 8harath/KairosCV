@@ -49,9 +49,12 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "text/plain",
     ]
+    const validExtensions = [".pdf", ".docx", ".txt"]
+    const lowerName = file.name.toLowerCase()
+    const hasValidExtension = validExtensions.some((extension) => lowerName.endsWith(extension))
     const maxSize = 5 * 1024 * 1024
 
-    if (!allowedTypes.includes(file.type)) {
+    if (!allowedTypes.includes(file.type) && !hasValidExtension) {
       alert("Invalid file type. Please upload PDF, DOCX, or TXT.")
       return
     }

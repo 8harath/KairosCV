@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast"
 export default function Home() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [file, setFile] = useState<File | null>(null)
+  const [email, setEmail] = useState("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
 
@@ -85,6 +86,7 @@ export default function Home() {
       // Upload file
       const formData = new FormData()
       formData.append("file", selectedFile)
+      formData.append("email", normalizedEmail)
 
       const uploadResponse = await fetch("/api/upload", {
         method: "POST",
@@ -102,9 +104,12 @@ export default function Home() {
       // Start processing
       startProcessing(fileId)
 
+      const remainingTrials = uploadData?.trial?.remaining
       toast({
         title: "File uploaded",
-        description: "Your resume is being processed...",
+        description: typeof remainingTrials === "number"
+          ? `Your resume is being processed. ${remainingTrials} free trial(s) remaining in this 12-hour window.`
+          : "Your resume is being processed...",
       })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
@@ -146,7 +151,21 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
         <section aria-labelledby="upload-section">
           {!isProcessing && !pdfUrl && !error ? (
-            <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold">Email (2 free trials every 12 hours)</span>
+                <input
+                  type="email"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </label>
+              <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+            </div>
           ) : isProcessing ? (
             <ProgressTracker progress={progress} stage={stage} message={message} />
           ) : error ? (
@@ -167,3 +186,12 @@ export default function Home() {
     </>
   )
 }
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      toast({
+        title: "Email required",
+        description: "Enter a valid email address to use free trials.",
+        variant: "destructive",
+      })
+      return
+    }
