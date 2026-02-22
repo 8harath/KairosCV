@@ -12,6 +12,7 @@ interface ResultsPanelProps {
 export default function ResultsPanel({ pdfUrl, downloadUrl, fileId, onReset }: ResultsPanelProps) {
   // Use downloadUrl with preview parameter for iframe
   const previewUrl = downloadUrl ? `${downloadUrl}?preview=true` : pdfUrl
+  const showDebugTools = process.env.NEXT_PUBLIC_ENABLE_DEBUG_TOOLS === "true"
 
   return (
     <div className="space-y-6">
@@ -53,8 +54,8 @@ export default function ResultsPanel({ pdfUrl, downloadUrl, fileId, onReset }: R
         )}
       </div>
 
-      {/* Extracted Data Viewer - Developer View */}
-      <ExtractedDataViewer fileId={fileId} />
+      {/* Extracted Data Viewer - Developer-only view */}
+      {showDebugTools && <ExtractedDataViewer fileId={fileId} />}
     </div>
   )
 }

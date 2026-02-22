@@ -130,8 +130,8 @@ export default function Home() {
                 <div className="border-2 border-primary p-6">
                   <h3 className="text-xl font-black mb-3">Privacy First</h3>
                   <p className="text-muted-foreground">
-                    We don't store your data. Your resume is processed and immediately deleted from our
-                    servers.
+                    Resume files are temporary. Data is deleted after download and expired files are
+                    auto-cleaned server-side.
                   </p>
                 </div>
 

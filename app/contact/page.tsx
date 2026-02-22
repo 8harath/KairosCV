@@ -254,7 +254,7 @@ export default function ContactPage() {
               <div className="border-3 border-primary p-4">
                 <h4 className="font-bold mb-2 text-sm uppercase">How do you handle data?</h4>
                 <p className="text-sm text-muted-foreground">
-                  We process your resume and delete all data after download. No storage.
+                  We process your resume with temporary storage and delete data after download, with automatic expiry cleanup.
                 </p>
               </div>
               <div className="border-3 border-primary p-4">

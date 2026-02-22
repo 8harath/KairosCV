@@ -21,7 +21,7 @@ Transform any resume format into ATS-optimized PDFs with intelligent content enh
 - **Real-Time Processing** - Server-Sent Events (SSE) provide live progress updates
 - **ATS-Optimized Output** - Professional templates designed for maximum parsing success
 - **Instant Preview** - View and download your optimized resume immediately
-- **Privacy-First** - All processing happens server-side; files are automatically cleaned up
+- **Privacy-First** - Temporary server-side processing with automatic cleanup after download/expiry
 
 ---
 

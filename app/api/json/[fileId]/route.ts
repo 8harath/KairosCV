@@ -17,6 +17,10 @@ export async function GET(
   { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
+    if (process.env.NODE_ENV === "production" && process.env.ENABLE_DEBUG_JSON !== "true") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 })
+    }
+
     const { fileId } = await params
 
     if (!fileId || !isValidFileId(fileId)) {

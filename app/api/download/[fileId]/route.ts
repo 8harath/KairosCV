@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getGeneratedFilePath, fileExists, getFileMetadata } from "@/lib/file-storage"
+import { cleanupFileArtifacts, getGeneratedFilePath, fileExists, getFileMetadata } from "@/lib/file-storage"
 import { readFile } from "fs-extra"
 import { isValidFileId } from "@/lib/security/file-id"
 
@@ -33,6 +33,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     // Read and return the PDF
     const pdfBuffer = await readFile(pdfPath)
 
+    if (!isPreview) {
+      await cleanupFileArtifacts(fileId, metadata.filename)
+    }
+
     // Set Content-Disposition based on preview mode
     const disposition = isPreview
       ? 'inline'
@@ -43,7 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
         "Content-Type": "application/pdf",
         "Content-Disposition": disposition,
         "Content-Length": pdfBuffer.length.toString(),
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": "private, no-store, max-age=0",
       },
     })
   } catch (error) {
