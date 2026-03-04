@@ -21,6 +21,7 @@ import { PartialResumeData, ResumeData, fillDefaults, safeValidateResumeData } f
 import { saveResumeJSON } from "../storage/resume-json-storage"
 import { extractCompleteResumeVisually, isVisualExtractionAvailable } from "../parsers/visual-extractor-enhanced"
 import { mergeExtractions } from "./intelligent-merger"
+import { isFieldVerificationEnabled, isVisualExtractionEnabled } from "../config/env"
 
 export interface ExtractionResult {
   data: ResumeData
@@ -115,7 +116,7 @@ export async function extractWithVerification(
     onProgress?.("extraction", 45, "🎨 Extracting visual elements (bullets, formatting)...")
 
     // Check if visual extraction is available and file is PDF
-    if (isVisualExtractionAvailable() && filePath.toLowerCase().endsWith('.pdf')) {
+    if (isVisualExtractionEnabled() && isVisualExtractionAvailable() && filePath.toLowerCase().endsWith('.pdf')) {
       try {
         console.log("🎨 Starting comprehensive visual extraction...")
 
@@ -142,9 +143,11 @@ export async function extractWithVerification(
         layers.layer2_5_visual = false
       }
     } else {
-      const reason = !isVisualExtractionAvailable()
-        ? 'Gemini Vision API not configured'
-        : 'Not a PDF file'
+      const reason = !isVisualExtractionEnabled()
+        ? 'Visual extraction disabled'
+        : !isVisualExtractionAvailable()
+          ? 'Gemini Vision API not configured'
+          : 'Not a PDF file'
       console.log(`⏭️  Layer 2.5: Skipped (${reason})`)
       layers.layer2_5_visual = false
     }
@@ -292,7 +295,7 @@ export async function extractWithVerification(
 
     let researchedData = extractedData
 
-    if (isVerificationAvailable()) {
+    if (isFieldVerificationEnabled() && isVerificationAvailable()) {
       console.log("🔍 Starting field verification and research...")
 
       researchedData = await verifyAndResearchResumeData(
@@ -321,8 +324,9 @@ export async function extractWithVerification(
       console.log("✅ Field verification and research complete")
       layers.layer4_5_field_research = true
     } else {
-      console.log("⏭️  Layer 4.5: Skipped (AI unavailable)")
-      onProgress?.("extraction", 85, "Skipping verification (AI unavailable)")
+      const reason = !isFieldVerificationEnabled() ? "disabled" : "AI unavailable"
+      console.log(`⏭️  Layer 4.5: Skipped (${reason})`)
+      onProgress?.("extraction", 85, `Skipping verification (${reason})`)
       layers.layer4_5_field_research = false
     }
 

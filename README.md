@@ -93,6 +93,7 @@ Edit `.env.local` and add your Google Gemini API key:
 # Google Gemini API Configuration
 GOOGLE_GEMINI_API_KEY=your-actual-api-key-here
 GEMINI_MODEL=gemini-1.5-flash
+GEMINI_VISION_MODEL=gemini-1.5-flash
 GEMINI_TEMPERATURE=0.3
 GEMINI_MAX_TOKENS=2048
 
@@ -101,6 +102,16 @@ NODE_ENV=development
 MAX_FILE_SIZE=5242880  # 5MB
 UPLOAD_DIR=uploads
 OUTPUT_DIR=outputs
+
+# Local no-auth mode (recommended for local testing)
+DISABLE_AUTH=true
+NEXT_PUBLIC_DISABLE_AUTH=true
+ENABLE_TRIAL_LIMIT=false
+
+# Optional advanced extraction layers (off by default)
+ENABLE_VISUAL_EXTRACTION=false
+ENABLE_FIELD_VERIFICATION=false
+ENABLE_OCR_CROSS_VERIFY=false
 
 # Puppeteer Configuration
 PUPPETEER_EXECUTABLE_PATH=

@@ -15,6 +15,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [email, setEmail] = useState("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const authBypassed = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DISABLE_AUTH === "true"
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
 
   // Display errors from processing
@@ -50,6 +51,17 @@ export default function Home() {
       setFile(null)
       return
     }
+
+    const typedEmail = email.trim().toLowerCase()
+    if (typedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
+    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
 
     // Validate file
     const validTypes = [
@@ -109,7 +121,9 @@ export default function Home() {
         title: "File uploaded",
         description: typeof remainingTrials === "number"
           ? `Your resume is being processed. ${remainingTrials} free trial(s) remaining in this 12-hour window.`
-          : "Your resume is being processed...",
+          : authBypassed
+            ? "Your resume is being processed (local auth bypass mode)."
+            : "Your resume is being processed...",
       })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
@@ -152,18 +166,20 @@ export default function Home() {
         <section aria-labelledby="upload-section">
           {!isProcessing && !pdfUrl && !error ? (
             <div className="space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold">Email (2 free trials every 12 hours)</span>
-                <input
-                  type="email"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </label>
+              {!authBypassed ? (
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold">Email (2 free trials every 12 hours)</span>
+                  <input
+                    type="email"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+              ) : null}
               <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
             </div>
           ) : isProcessing ? (
@@ -186,12 +202,3 @@ export default function Home() {
     </>
   )
 }
-    const normalizedEmail = email.trim().toLowerCase()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      toast({
-        title: "Email required",
-        description: "Enter a valid email address to use free trials.",
-        variant: "destructive",
-      })
-      return
-    }

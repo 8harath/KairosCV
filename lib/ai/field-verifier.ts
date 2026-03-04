@@ -9,12 +9,13 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { ResumeData } from "../schemas/resume-schema"
-import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
+import { getGeminiApiKey, getGeminiTextModel, hasGeminiApiKey } from "../config/env"
+import { parseModelJson } from "./json-utils"
 
 const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: getGeminiTextModel(),
   generationConfig: {
     temperature: 0.1, // Very low temperature for factual verification
     maxOutputTokens: 2048,
@@ -96,10 +97,15 @@ Return ONLY a JSON object:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{
+      isValid?: boolean
+      confidence?: number
+      correctedValue?: string | null
+      reasoning?: string
+    }>(response.response.text().trim())
+    if (!result) {
+      throw new Error("Invalid JSON verification response")
+    }
 
     return {
       field,
@@ -109,7 +115,7 @@ Return ONLY a JSON object:
       reasoning: result.reasoning || "Verification completed",
     }
   } catch (error) {
-    console.error(`Error verifying field ${field}:`, error)
+    console.warn(`Field verification failed for ${field}. Keeping existing value.`, error)
     return {
       field,
       isValid: true,
@@ -170,10 +176,12 @@ Return ONLY a JSON object:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{ found?: boolean; value?: string | null; confidence?: number }>(
+      response.response.text().trim()
+    )
+    if (!result) {
+      throw new Error("Invalid JSON research response")
+    }
 
     return {
       field,
@@ -183,7 +191,7 @@ Return ONLY a JSON object:
       searchAttempts: attemptNumber,
     }
   } catch (error) {
-    console.error(`Error researching field ${field}:`, error)
+    console.warn(`Field research failed for ${field}.`, error)
     return {
       field,
       found: false,

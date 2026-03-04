@@ -10,6 +10,7 @@ import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-h
 import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
 import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
 import { extractWithVisionAndVerify } from "./parsers/vision-extractor"
+import { isOcrCrossVerificationEnabled } from "./config/env"
 
 export interface ResumeData {
   text: string
@@ -47,6 +48,13 @@ export async function parsePDF(filePath: string): Promise<{ text: string; extrac
   let finalText = result.text
   let extractionMethod = result.method
   let visionInfo = ''
+
+  if (!isOcrCrossVerificationEnabled()) {
+    return {
+      text: finalText,
+      extractionInfo: `Method: ${extractionMethod} | Confidence: ${result.confidence}% | OCR cross-verify: disabled | Features: ${features.length > 0 ? features.join(', ') : 'standard'}`
+    }
+  }
 
   try {
     console.log('🔍 Running vision-based cross-verification...')

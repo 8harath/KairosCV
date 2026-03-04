@@ -12,18 +12,10 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import fs from "fs-extra"
-import { PDFDocument } from "pdf-lib"
-import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
+import { getGeminiApiKey, getGeminiVisionModelCandidates, hasGeminiApiKey } from "../config/env"
+import { parseModelJson } from "../ai/json-utils"
 
 const genAI = new GoogleGenerativeAI(getGeminiApiKey())
-
-const visionModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp",
-  generationConfig: {
-    temperature: 0.1,
-    maxOutputTokens: 8192, // Increased for comprehensive extraction
-  },
-})
 
 export interface VisualExtractionResult {
   fullText: string
@@ -42,26 +34,41 @@ export interface VisualExtractionResult {
   method: "vision-complete"
 }
 
-/**
- * Convert PDF page to high-quality image for vision analysis
- */
-async function pdfPageToImage(pdfPath: string, pageNum: number): Promise<string> {
-  try {
-    // Use sharp to convert PDF to high-DPI PNG
-    const pdfBuffer = await fs.readFile(pdfPath)
+async function generateVisionContent(
+  parts: Array<{ inlineData: { data: string; mimeType: string } } | { text: string }>
+) {
+  const candidates = getGeminiVisionModelCandidates()
+  let lastError: unknown = null
 
-    // Create a temporary PNG file
-    const tempPngPath = `${pdfPath}-page-${pageNum}.png`
+  for (const modelName of candidates) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+        },
+      })
 
-    // For now, we'll use a simpler approach - just read the PDF bytes
-    // In production, you'd use pdf-poppler or similar to convert to image
-    const base64 = pdfBuffer.toString('base64')
+      const response = await model.generateContent(parts)
+      return { response, modelName }
+    } catch (error) {
+      lastError = error
+      const message = error instanceof Error ? error.message : String(error)
+      const shouldTryFallback =
+        message.includes("404") ||
+        message.includes("not found") ||
+        message.includes("not supported")
 
-    return base64
-  } catch (error) {
-    console.error('Error converting PDF to image:', error)
-    throw error
+      if (!shouldTryFallback) {
+        throw error
+      }
+
+      console.warn(`Vision model unavailable: ${modelName}. Trying fallback model...`)
+    }
   }
+
+  throw lastError || new Error("No Gemini vision model is currently available")
 }
 
 /**
@@ -218,7 +225,7 @@ Return ONLY the JSON, no markdown, no explanations.`
 
     console.log("📸 Sending PDF to Gemini Vision for analysis...")
 
-    const result = await visionModel.generateContent([
+    const { response: result, modelName } = await generateVisionContent([
       {
         inlineData: {
           data: base64Data,
@@ -229,15 +236,12 @@ Return ONLY the JSON, no markdown, no explanations.`
     ])
 
     const responseText = result.response.text().trim()
-    console.log("✅ Received vision analysis")
+    console.log(`✅ Received vision analysis from ${modelName}`)
 
-    // Parse the JSON response
-    const cleanText = responseText
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
-      .trim()
-
-    const parsed = JSON.parse(cleanText)
+    const parsed = parseModelJson<any>(responseText)
+    if (!parsed) {
+      throw new Error("Vision model returned invalid JSON")
+    }
 
     // Construct result
     const visualResult: VisualExtractionResult = {

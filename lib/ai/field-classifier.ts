@@ -10,12 +10,13 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
+import { getGeminiApiKey, getGeminiTextModel, hasGeminiApiKey } from "../config/env"
+import { parseModelJson } from "./json-utils"
 
 const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: getGeminiTextModel(),
   generationConfig: {
     temperature: 0.1, // Lower temperature for more consistent classification
     maxOutputTokens: 1024,
@@ -92,12 +93,12 @@ Return ONLY a JSON object in this format:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-
-    // Clean markdown code blocks
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{ field?: string; confidence?: number; reasoning?: string }>(
+      response.response.text().trim()
+    )
+    if (!result) {
+      throw new Error("Invalid JSON classification response")
+    }
 
     return {
       field: result.field || "unknown",
@@ -105,7 +106,7 @@ Return ONLY a JSON object in this format:
       reasoning: result.reasoning,
     }
   } catch (error) {
-    console.error("Error classifying field:", error)
+    console.warn("Field classification failed. Using fallback result.", error)
     return {
       field: "unknown",
       confidence: 0.3,
@@ -153,11 +154,12 @@ Return ONLY a JSON object:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{ isCorrect?: boolean; suggestedField?: string; confidence?: number }>(
+      response.response.text().trim()
+    )
+    if (!result) {
+      throw new Error("Invalid JSON validation response")
+    }
 
     return {
       isCorrect: result.isCorrect ?? true,
@@ -165,7 +167,7 @@ Return ONLY a JSON object:
       confidence: result.confidence || 0.5,
     }
   } catch (error) {
-    console.error("Error validating field placement:", error)
+    console.warn("Field placement validation failed. Keeping existing value.", error)
     return { isCorrect: true, confidence: 0.3 }
   }
 }
@@ -210,7 +212,7 @@ Return ONLY the category name (language/framework/tool/database/other):`
 
     return "other"
   } catch (error) {
-    console.error("Error categorizing skill:", error)
+    console.warn("Skill categorization failed. Falling back to 'other'.", error)
     return "other"
   }
 }
@@ -253,11 +255,16 @@ Return ONLY a JSON object:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{
+      languages?: string[]
+      frameworks?: string[]
+      tools?: string[]
+      databases?: string[]
+      other?: string[]
+    }>(response.response.text().trim())
+    if (!result) {
+      throw new Error("Invalid JSON skills response")
+    }
 
     return {
       languages: result.languages || [],
@@ -267,7 +274,7 @@ Return ONLY a JSON object:
       other: result.other || [],
     }
   } catch (error) {
-    console.error("Error categorizing skills batch:", error)
+    console.warn("Batch skill categorization failed. Preserving original skill list.", error)
     return { languages: [], frameworks: [], tools: [], databases: [], other: skills }
   }
 }
@@ -322,11 +329,12 @@ If everything is captured, return:
 
   try {
     const response = await model.generateContent(prompt)
-    const text = response.response.text().trim()
-
-    const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-    const result = JSON.parse(cleanText)
+    const result = parseModelJson<{ complete?: boolean; missingContent?: string[]; confidence?: number }>(
+      response.response.text().trim()
+    )
+    if (!result) {
+      throw new Error("Invalid JSON completeness response")
+    }
 
     return {
       complete: result.complete ?? true,
@@ -334,7 +342,7 @@ If everything is captured, return:
       confidence: result.confidence || 0.5,
     }
   } catch (error) {
-    console.error("Error verifying completeness:", error)
+    console.warn("Completeness check failed. Continuing with current extraction.", error)
     return { complete: true, missingContent: [], confidence: 0.3 }
   }
 }

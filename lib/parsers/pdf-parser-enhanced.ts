@@ -11,6 +11,8 @@
 import fs from 'fs-extra'
 import { getDocumentProxy } from 'unpdf'
 import { createWorker } from 'tesseract.js'
+import path from "path"
+import { tmpdir } from "os"
 import {
   assessTextQuality,
   cleanExtractedText,
@@ -165,13 +167,14 @@ async function extractWithUnpdf(filePath: string, fileSize: number): Promise<PDF
  */
 async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFExtractionResult> {
   console.log('  📸 Converting PDF to images for OCR...')
+  const tempOutputDir = path.join(tmpdir(), "kairos-ocr")
 
   // Dynamically import pdf-to-png-converter only when OCR is needed
   const { pdfToPng } = await import('pdf-to-png-converter')
 
   // Convert PDF pages to PNG images
   const pngPages = await pdfToPng(filePath, {
-    outputFolder: '/tmp/kairos-ocr',
+    outputFolder: tempOutputDir,
     viewportScale: 2.0, // Higher resolution for better OCR
     pagesToProcess: [1, 2, 3, 4, 5], // Limit to first 5 pages for performance
   })
@@ -209,7 +212,7 @@ async function extractWithOCR(filePath: string, fileSize: number): Promise<PDFEx
 
     // Clean up temp directory
     try {
-      await fs.rmdir('/tmp/kairos-ocr')
+      await fs.rmdir(tempOutputDir)
     } catch (error) {
       // Directory might not be empty or might not exist - ignore
     }

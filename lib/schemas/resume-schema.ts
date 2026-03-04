@@ -66,8 +66,8 @@ export const ProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   description: z.string().min(1, "Project description is required"),
   technologies: z.array(z.string()).default([]),
-  link: z.string().url("Invalid project URL").optional(),
-  github: z.string().url("Invalid GitHub URL").optional(),
+  link: z.string().optional(), // Accept plain text and normalize later
+  github: z.string().optional(), // Accept plain text and normalize later
   bullets: z.array(z.string()).default([]),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
@@ -252,6 +252,30 @@ export const PartialResumeDataSchema = z.object({
 
 export type PartialResumeData = z.infer<typeof PartialResumeDataSchema>
 
+function normalizeOptionalUrl(value?: string): string | undefined {
+  if (!value || typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return undefined
+  }
+
+  // Handle common resume shorthand like "github.com/user" by prepending https.
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+
+  try {
+    const parsed = new URL(withProtocol)
+    if (!parsed.hostname || !parsed.hostname.includes(".")) {
+      return undefined
+    }
+    return parsed.toString()
+  } catch {
+    return undefined
+  }
+}
+
 // ============================================================================
 // Validation Helper Functions
 // ============================================================================
@@ -351,10 +375,10 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
     summary: partial.summary,
     projects: partial.projects?.map(proj => ({
       name: proj.name || 'Unknown Project',
-      description: proj.description || '',
+      description: proj.description?.trim() || 'Project details not provided.',
       technologies: proj.technologies || [],
-      link: proj.link,
-      github: proj.github,
+      link: normalizeOptionalUrl(proj.link),
+      github: normalizeOptionalUrl(proj.github),
       bullets: proj.bullets || [],
       startDate: proj.startDate,
       endDate: proj.endDate,

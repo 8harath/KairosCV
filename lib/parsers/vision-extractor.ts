@@ -6,7 +6,8 @@
  */
 
 import { createWorker } from 'tesseract.js'
-import type { ParsedResume } from './enhanced-parser'
+import path from "path"
+import { tmpdir } from "os"
 
 export interface VisionExtractionResult {
   method: 'vision-ocr'
@@ -43,11 +44,12 @@ export async function extractWithVision(
 
     // Dynamically import pdf-to-png-converter
     const { pdfToPng } = await import('pdf-to-png-converter')
+    const tempOutputDir = path.join(tmpdir(), "kairos-vision")
 
     // Convert PDF to images
     console.log('  📸 Converting PDF pages to images...')
     const pngPages = await pdfToPng(pdfPath, {
-      outputFolder: '/tmp/kairos-vision',
+      outputFolder: tempOutputDir,
       viewportScale: 2.0, // Higher resolution for better OCR
       pagesToProcess: [1, 2, 3], // Process up to 3 pages
     })

@@ -3,6 +3,7 @@ import { randomUUID } from "crypto"
 import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
 import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials/trial-limiter"
+import { isAuthBypassed, isTrialLimitEnabled } from "@/lib/config/env"
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,27 +16,40 @@ export async function POST(request: NextRequest) {
     const rawFile = formData.get("file")
     const file = rawFile instanceof File ? rawFile : null
     const emailValue = formData.get("email")
-    const email = typeof emailValue === "string" ? normalizeEmail(emailValue) : ""
+    const providedEmail = typeof emailValue === "string" ? normalizeEmail(emailValue) : ""
+    const authBypassed = isAuthBypassed()
+    const emailRequired = !authBypassed
+    const email = providedEmail || `guest-${randomUUID()}@kairoscv.local`
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
     }
-    if (!email || !isValidEmail(email)) {
+    if (emailRequired && !isValidEmail(providedEmail)) {
       return NextResponse.json({ detail: "A valid email is required." }, { status: 400 })
     }
 
-    const trial = await consumeTrial(email)
-    if (!trial.allowed) {
-      return NextResponse.json(
-        {
-          detail: "Free trial limit reached. You can try again after the reset time.",
-          trial: {
-            remaining: trial.remaining,
-            resetAt: trial.resetAt,
+    let trial:
+      | {
+          allowed: boolean
+          remaining: number
+          resetAt: string
+        }
+      | undefined
+
+    if (isTrialLimitEnabled()) {
+      trial = await consumeTrial(email)
+      if (!trial.allowed) {
+        return NextResponse.json(
+          {
+            detail: "Free trial limit reached. You can try again after the reset time.",
+            trial: {
+              remaining: trial.remaining,
+              resetAt: trial.resetAt,
+            },
           },
-        },
-        { status: 429 }
-      )
+          { status: 429 }
+        )
+      }
     }
 
     const extension = getSafeExtension(file.name)
@@ -73,10 +87,13 @@ export async function POST(request: NextRequest) {
       file_id: fileId,
       filename: file.name,
       size: file.size,
-      trial: {
-        remaining: trial.remaining,
-        resetAt: trial.resetAt,
-      },
+      trial: trial
+        ? {
+            remaining: trial.remaining,
+            resetAt: trial.resetAt,
+          }
+        : undefined,
+      auth_bypassed: authBypassed,
       message: "File uploaded successfully",
     })
   } catch (error) {

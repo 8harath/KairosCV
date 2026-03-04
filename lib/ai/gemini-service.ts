@@ -1,14 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { getGeminiApiKey, hasGeminiApiKey } from "../config/env"
+import { getGeminiApiKey, getGeminiTextModel, hasGeminiApiKey } from "../config/env"
+import { parseModelJson } from "./json-utils"
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(getGeminiApiKey())
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: getGeminiTextModel(),
   generationConfig: {
     temperature: 0.3,
     maxOutputTokens: 2048,
+  },
+})
+
+const extractionModel = genAI.getGenerativeModel({
+  model: getGeminiTextModel(),
+  generationConfig: {
+    temperature: 0.2,
+    maxOutputTokens: 8192,
   },
 })
 
@@ -29,7 +38,7 @@ export interface EnhancedBulletPoint {
  */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries = 3,
+  maxRetries = 4,
   initialDelay = 1000
 ): Promise<T> {
   let lastError: Error | undefined
@@ -40,13 +49,14 @@ async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
 
-      // Check if it's a 503 Service Unavailable error
+      // Retry transient model errors such as rate limits and temporary overload.
       const errorMessage = lastError.message || ""
-      const is503Error = errorMessage.includes("503") || errorMessage.includes("overloaded")
+      const isTransientError =
+        errorMessage.includes("429") ||
+        errorMessage.includes("503") ||
+        errorMessage.includes("overloaded")
 
-      // For 503 errors, only retry once to fail fast
-      if (is503Error && i >= 1) {
-        console.warn("Gemini API is overloaded, falling back to basic parser...")
+      if (!isTransientError) {
         throw lastError
       }
 
@@ -110,17 +120,48 @@ export async function enhanceBulletPoints(
   jobTitle: string,
   company: string
 ): Promise<EnhancedBulletPoint[]> {
-  const results: EnhancedBulletPoint[] = []
-
-  for (const bullet of bullets) {
-    const enhanced = await enhanceBulletPoint(bullet, jobTitle, company)
-    results.push({
-      original: bullet,
-      enhanced,
-    })
+  if (!hasGeminiApiKey() || bullets.length === 0) {
+    return bullets.map((bullet) => ({ original: bullet, enhanced: bullet }))
   }
 
-  return results
+  const prompt = `You are an expert resume writer specializing in ATS optimization.
+
+Rewrite every bullet using these strict rules:
+1. Start with a strong action verb.
+2. Include specific metrics when possible.
+3. Focus on measurable impact.
+4. Keep each bullet concise (under 150 characters when possible).
+5. Preserve the original meaning.
+
+Job Context: ${jobTitle} at ${company}
+Original Bullets (JSON array):
+${JSON.stringify(bullets)}
+
+Return ONLY valid JSON in this format:
+{
+  "bullets": ["enhanced bullet 1", "enhanced bullet 2"]
+}`
+
+  try {
+    const enhancedBullets = await retryWithBackoff(async () => {
+      const response = await model.generateContent(prompt)
+      const parsed = parseModelJson<{ bullets?: string[] }>(response.response.text().trim())
+
+      if (!parsed?.bullets || !Array.isArray(parsed.bullets)) {
+        throw new Error("Invalid bullet enhancement payload")
+      }
+
+      return parsed.bullets
+    })
+
+    return bullets.map((original, index) => ({
+      original,
+      enhanced: enhancedBullets[index]?.trim() || original,
+    }))
+  } catch (error) {
+    console.warn("Batch bullet enhancement failed, using original bullets:", error)
+    return bullets.map((bullet) => ({ original: bullet, enhanced: bullet }))
+  }
 }
 
 /**
@@ -160,17 +201,21 @@ Output format (JSON only, no markdown):
   try {
     const result = await retryWithBackoff(async () => {
       const response = await model.generateContent(prompt)
-      const text = response.response.text().trim()
-
-      // Remove markdown code blocks if present
-      const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-      return JSON.parse(cleanText)
+      const parsed = parseModelJson<Partial<SkillsCategories>>(response.response.text().trim())
+      if (!parsed) {
+        throw new Error("Invalid skills JSON from model")
+      }
+      return parsed
     })
 
-    return result
+    return {
+      languages: result.languages || [],
+      frameworks: result.frameworks || [],
+      tools: result.tools || [],
+      databases: result.databases || [],
+    }
   } catch (error) {
-    console.error("Error extracting skills:", error)
+    console.warn("Could not extract skills with Gemini. Falling back to empty categories.", error)
     return {
       languages: [],
       frameworks: [],
@@ -215,7 +260,7 @@ Return ONLY the enhanced content, one item per line.`
 
     return result
   } catch (error) {
-    console.error(`Error enhancing ${sectionType} section:`, error)
+    console.warn(`Could not enhance ${sectionType} section. Using original content.`, error)
     return sectionContent // Return original on error
   }
 }
@@ -248,7 +293,7 @@ Return ONLY the professional summary, no additional text.`
 
     return result
   } catch (error) {
-    console.error("Error generating summary:", error)
+    console.warn("Could not generate summary with Gemini. Using default summary.", error)
     return "Experienced professional with a proven track record of success."
   }
 }
@@ -440,13 +485,11 @@ CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. 
 
   try {
     const result = await retryWithBackoff(async () => {
-      const response = await model.generateContent(prompt)
-      const text = response.response.text().trim()
-
-      // Remove markdown code blocks if present
-      const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-
-      const parsed = JSON.parse(cleanText)
+      const response = await extractionModel.generateContent(prompt)
+      const parsed = parseModelJson<any>(response.response.text().trim())
+      if (!parsed) {
+        throw new Error("Invalid resume JSON from model")
+      }
 
       // Validate with Zod (dynamic import to avoid circular dependencies)
       const { validatePartialResumeData } = await import('../schemas/resume-schema')
@@ -462,7 +505,7 @@ CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. 
 
     return result
   } catch (error) {
-    console.error("Error extracting complete resume data:", error)
+    console.warn("Could not parse structured Gemini output. Fallback parser will be used.", error)
     return null
   }
 }
@@ -476,18 +519,39 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
   }
 
   try {
+    const MAX_BULLETS_TO_ENHANCE = 20
+    let enhancedCount = 0
+
     // Enhance all experience bullet points
     if (extractedData.experience && Array.isArray(extractedData.experience)) {
       for (const exp of extractedData.experience) {
         if (exp.bullets && exp.bullets.length > 0) {
-          const enhanced = await enhanceBulletPoints(exp.bullets, exp.title, exp.company)
-          exp.bullets = enhanced.map(e => e.enhanced)
+          const remaining = MAX_BULLETS_TO_ENHANCE - enhancedCount
+          if (remaining <= 0) {
+            break
+          }
+
+          const bulletsToEnhance = exp.bullets.slice(0, remaining)
+          const enhanced = await enhanceBulletPoints(bulletsToEnhance, exp.title, exp.company)
+
+          exp.bullets = [
+            ...enhanced.map((item) => item.enhanced),
+            ...exp.bullets.slice(bulletsToEnhance.length),
+          ]
+          enhancedCount += bulletsToEnhance.length
         }
       }
     }
 
     // Generate professional summary
-    const summaryText = JSON.stringify(extractedData)
+    const summaryPayload = {
+      contact: extractedData.contact,
+      experience: extractedData.experience,
+      education: extractedData.education,
+      skills: extractedData.skills,
+      projects: extractedData.projects,
+    }
+    const summaryText = JSON.stringify(summaryPayload).slice(0, 12000)
     const summary = await generateSummary(summaryText)
 
     return {
@@ -495,7 +559,7 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
       summary
     }
   } catch (error) {
-    console.error("Error enhancing extracted data:", error)
+    console.warn("Could not apply Gemini enhancement. Using extracted data as-is.", error)
     return extractedData
   }
 }
