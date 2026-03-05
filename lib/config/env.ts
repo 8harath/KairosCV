@@ -68,3 +68,11 @@ export function isVisualExtractionEnabled(): boolean {
 export function isFieldVerificationEnabled(): boolean {
   return parseBooleanEnv(process.env.ENABLE_FIELD_VERIFICATION, false)
 }
+
+export function isGeminiLatexPipelineEnabled(): boolean {
+  return parseBooleanEnv(process.env.ENABLE_GEMINI_LATEX_PIPELINE, true)
+}
+
+export function isPdflatexStrictMode(): boolean {
+  return parseBooleanEnv(process.env.REQUIRE_PDFLATEX, false)
+}

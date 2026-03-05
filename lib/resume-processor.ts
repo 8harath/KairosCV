@@ -3,14 +3,16 @@ import path from "path"
 import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
 import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
 import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
+import { extractResumeStage2, validateAndGapFillStage3, type StageResumeData } from "./ai/gemini-stage-parser"
 import { generateResumePDF } from "./pdf/pdf-generator"
+import { generateLatexResumePDF, isLatexPdfGenerationAvailable } from "./pdf/latex-pdf-generator"
 import { safeValidateResumeData, fillDefaults, type PartialResumeData, type ResumeData as SchemaResumeData } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
 import { handleAllEdgeCases, validateProcessedData } from "./parsers/edge-case-handler"
 import { extractPDFEnhanced } from "./parsers/pdf-parser-enhanced"
 import { extractDOCXEnhanced } from "./parsers/docx-parser-enhanced"
 import { extractWithVisionAndVerify } from "./parsers/vision-extractor"
-import { isOcrCrossVerificationEnabled } from "./config/env"
+import { isGeminiLatexPipelineEnabled, isOcrCrossVerificationEnabled, isPdflatexStrictMode } from "./config/env"
 
 export interface ResumeData {
   text: string
@@ -255,6 +257,75 @@ export async function generatePDF(
   }
 }
 
+function mapStageDataToPartialSchema(data: StageResumeData): PartialResumeData {
+  return {
+    contact: {
+      name: data.name || "Unknown",
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      github: data.github || undefined,
+    },
+    education: data.education.map((item) => ({
+      institution: item.institution || "Unknown Institution",
+      degree: item.degree || "Unknown Degree",
+      location: item.location || undefined,
+      startDate: item.duration || undefined,
+      endDate: undefined,
+      gpa: item.cgpa || undefined,
+      relevantCoursework: item.coursework,
+    })),
+    skills: {
+      languages: data.skills.languages,
+      frameworks: data.skills.libraries,
+      tools: data.skills.tools,
+      databases: data.skills.databases,
+    },
+    projects: data.projects.map((project) => ({
+      name: project.title,
+      description: project.bullets[0] || "Project details not provided.",
+      technologies: project.tech_stack,
+      bullets: project.bullets,
+    })),
+    certifications: data.certifications.map((certification) => ({
+      name: certification.name,
+      issuer: certification.issuer || "Unknown Issuer",
+      date: certification.year || "Unknown",
+    })),
+    awards: data.achievements.map((achievement) => ({
+      name: achievement,
+      issuer: "",
+      date: "",
+    })),
+    customSections: data.extracurriculars.length
+      ? [
+          {
+            heading: "Extracurricular Activities",
+            content: data.extracurriculars,
+          },
+        ]
+      : [],
+  }
+}
+
+function mapStageDataToResumeData(data: StageResumeData, rawText: string): ResumeData {
+  return {
+    text: rawText,
+    sections: {
+      projects: data.projects.flatMap((project) => project.bullets),
+      achievements: data.achievements,
+      extracurriculars: data.extracurriculars,
+    },
+    skills: [
+      ...data.skills.languages,
+      ...data.skills.libraries,
+      ...data.skills.databases,
+      ...data.skills.tools,
+    ],
+    experience: data.projects.map((project) => project.title),
+    education: data.education.map((item) => item.institution),
+  }
+}
+
 // Process resume file (main processing pipeline using Gemini for extraction)
 export async function* processResume(
   fileId: string,
@@ -283,6 +354,72 @@ export async function* processResume(
       }
     } else {
       yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
+    }
+
+    // Stage 2-5 pipeline (Gemini structured parsing -> validation -> LaTeX PDF).
+    if (isGeminiLatexPipelineEnabled() && isGeminiConfigured()) {
+      yield {
+        stage: "extraction",
+        progress: 25,
+        message: "Stage 2/5: Extracting structured resume JSON with Gemini...",
+      }
+
+      const stage2Data = await extractResumeStage2(rawText)
+
+      if (stage2Data) {
+        yield {
+          stage: "enhancing",
+          progress: 55,
+          message: "Stage 3/5: Validating fields and filling gaps...",
+        }
+
+        const validatedStageData = await validateAndGapFillStage3(rawText, stage2Data)
+
+        const schemaData = fillDefaults(mapStageDataToPartialSchema(validatedStageData))
+        const confidenceScore = scoreResume(schemaData)
+
+        yield {
+          stage: "scoring",
+          progress: 75,
+          message: `Stage 3/5 quality score: ${confidenceScore.overall}% (${confidenceScore.level})`,
+          confidence: confidenceScore,
+        }
+
+        yield {
+          stage: "generating",
+          progress: 90,
+          message: "Stage 4/5: Rendering Jake's LaTeX resume template...",
+        }
+
+        try {
+          if (!isLatexPdfGenerationAvailable()) {
+            throw new Error("LaTeX toolchain unavailable (python3 and/or pdflatex missing)")
+          }
+
+          const pdfBuffer = await generateLatexResumePDF(fileId, validatedStageData)
+          await saveGeneratedPDF(fileId, pdfBuffer)
+
+          yield { stage: "compiling", progress: 98, message: "Stage 4/5: Compiling LaTeX to PDF..." }
+          yield { stage: "complete", progress: 100, message: "Stage 5/5: Resume PDF ready!" }
+
+          return mapStageDataToResumeData(validatedStageData, rawText)
+        } catch (latexError) {
+          const latexErrorMessage = latexError instanceof Error ? latexError.message : String(latexError)
+
+          if (isPdflatexStrictMode()) {
+            throw new Error(`LaTeX pipeline failed in strict mode: ${latexErrorMessage}`)
+          }
+
+          console.warn("Stage 4 LaTeX pipeline failed, using legacy fallback pipeline:", latexErrorMessage)
+          yield {
+            stage: "generating",
+            progress: 92,
+            message: "LaTeX pipeline unavailable, using fallback PDF generator...",
+          }
+        }
+      } else {
+        console.warn("Stage 2 Gemini structured extraction failed, using fallback pipeline.")
+      }
     }
 
     // Stage 2: Multi-layer extraction with verification (NEW APPROACH)

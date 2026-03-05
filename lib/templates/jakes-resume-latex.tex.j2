@@ -1,0 +1,129 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{8pt}{6pt}
+
+\newcommand{\resumeItem}[1]{
+  \item \small{#1}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\newcommand{\resumeSectionStart}{
+  \begin{itemize}[leftmargin=0.15in, label={}]
+}
+
+\newcommand{\resumeSectionEnd}{
+  \end{itemize}
+}
+
+\begin{document}
+
+\begin{center}
+  {\Huge \textbf{ {{ name | latex_escape }} }} \\[6pt]
+  {% if phone %}{{ phone | latex_escape }}{% endif %}
+  {% if phone and email %} \;|\; {% endif %}
+  {% if email %}\href{mailto:{{ email | latex_escape }}}{{ email | latex_escape }}{% endif %}
+  {% if (phone or email) and github %} \;|\; {% endif %}
+  {% if github %}\href{https://{{ github | latex_escape }}}{{ github | latex_escape }}{% endif %}
+\end{center}
+
+{% if education %}
+\section{Education}
+\resumeSectionStart
+  {% for edu in education %}
+  \resumeSubheading
+    { {{ edu.institution | latex_escape }} }
+    { {{ edu.duration | latex_escape }} }
+    { {{ edu.degree | latex_escape }} }
+    { {% if edu.location %}{{ edu.location | latex_escape }}{% endif %}{% if edu.location and edu.cgpa %} \;|\; {% endif %}{% if edu.cgpa %}CGPA: {{ edu.cgpa | latex_escape }}{% endif %} }
+    {% if edu.coursework %}
+    \begin{itemize}[leftmargin=0.2in]
+      \resumeItem{\textbf{Relevant Coursework:} {{ edu.coursework | join(", ") | latex_escape }}}
+    \end{itemize}
+    {% endif %}
+  {% endfor %}
+\resumeSectionEnd
+{% endif %}
+
+{% if skills.languages or skills.libraries or skills.databases or skills.tools %}
+\section{Skills}
+\resumeSectionStart
+  \item \small{
+    {% if skills.languages %}\textbf{Languages:} {{ skills.languages | join(", ") | latex_escape }}{% endif %}
+    {% if skills.libraries %}\\ \textbf{Libraries:} {{ skills.libraries | join(", ") | latex_escape }}{% endif %}
+    {% if skills.databases %}\\ \textbf{Databases:} {{ skills.databases | join(", ") | latex_escape }}{% endif %}
+    {% if skills.tools %}\\ \textbf{Tools:} {{ skills.tools | join(", ") | latex_escape }}{% endif %}
+  }
+\resumeSectionEnd
+{% endif %}
+
+{% if projects %}
+\section{Projects}
+\resumeSectionStart
+  {% for project in projects %}
+  \resumeSubheading
+    { {{ project.title | latex_escape }} }
+    { }
+    { {{ project.tech_stack | join(", ") | latex_escape }} }
+    { }
+    {% if project.bullets %}
+    \begin{itemize}[leftmargin=0.2in]
+      {% for bullet in project.bullets %}
+      \resumeItem{ {{ bullet | latex_escape }} }
+      {% endfor %}
+    \end{itemize}
+    {% endif %}
+  {% endfor %}
+\resumeSectionEnd
+{% endif %}
+
+{% if certifications %}
+\section{Certifications}
+\resumeSectionStart
+  {% for cert in certifications %}
+  \resumeSubheading
+    { {{ cert.name | latex_escape }} }
+    { {{ cert.year | latex_escape }} }
+    { {{ cert.issuer | latex_escape }} }
+    { }
+  {% endfor %}
+\resumeSectionEnd
+{% endif %}
+
+{% if achievements %}
+\section{Achievements}
+\begin{itemize}[leftmargin=0.2in]
+  {% for achievement in achievements %}
+  \resumeItem{ {{ achievement | latex_escape }} }
+  {% endfor %}
+\end{itemize}
+{% endif %}
+
+{% if extracurriculars %}
+\section{Extracurricular Activities}
+\begin{itemize}[leftmargin=0.2in]
+  {% for activity in extracurriculars %}
+  \resumeItem{ {{ activity | latex_escape }} }
+  {% endfor %}
+\end{itemize}
+{% endif %}
+
+\end{document}

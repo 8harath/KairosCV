@@ -92,7 +92,7 @@ Edit `.env.local` and add your Google Gemini API key:
 ```env
 # Google Gemini API Configuration
 GOOGLE_GEMINI_API_KEY=your-actual-api-key-here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 GEMINI_VISION_MODEL=gemini-1.5-flash
 GEMINI_TEMPERATURE=0.3
 GEMINI_MAX_TOKENS=2048
@@ -113,11 +113,19 @@ ENABLE_VISUAL_EXTRACTION=false
 ENABLE_FIELD_VERIFICATION=false
 ENABLE_OCR_CROSS_VERIFY=false
 
+# Stage 2-5 Gemini + LaTeX pipeline
+ENABLE_GEMINI_LATEX_PIPELINE=true
+REQUIRE_PDFLATEX=false  # true = fail if pdflatex/python unavailable
+
 # Puppeteer Configuration
 PUPPETEER_EXECUTABLE_PATH=
 PUPPETEER_HEADLESS=true
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 ```
+
+If you want strict LaTeX compilation (`pdflatex output.tex -> output.pdf`), install:
+- Python 3 with `jinja2`
+- A TeX distribution that provides `pdflatex` on PATH
 
 ### 4. Run Development Server
 
