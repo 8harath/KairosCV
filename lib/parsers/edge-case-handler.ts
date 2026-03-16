@@ -527,6 +527,12 @@ export function handleAllEdgeCases(resumeData: any, rawText?: string): ResumeDat
           const key = `${cert.name}|${cert.issuer}`.toLowerCase()
           if (seen.has(key)) return false
           seen.add(key)
+          cert.name = cert.name?.trim() || ''
+          cert.issuer = cert.issuer?.trim() || ''
+          cert.date = cert.date?.trim() || ''
+          cert.expirationDate = typeof cert.expirationDate === 'string' && cert.expirationDate.trim() ? cert.expirationDate.trim() : undefined
+          cert.credentialId = typeof cert.credentialId === 'string' && cert.credentialId.trim() ? cert.credentialId.trim() : undefined
+          cert.credentialUrl = typeof cert.credentialUrl === 'string' && cert.credentialUrl.trim() ? cert.credentialUrl.trim() : undefined
           return true
         })
       }

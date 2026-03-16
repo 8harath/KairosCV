@@ -276,6 +276,15 @@ function normalizeOptionalUrl(value?: string): string | undefined {
   }
 }
 
+function normalizeOptionalString(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+  return trimmed ? trimmed : undefined
+}
+
 // ============================================================================
 // Validation Helper Functions
 // ============================================================================
@@ -387,9 +396,9 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       name: cert.name || 'Unknown Certification',
       issuer: cert.issuer || 'Unknown Issuer',
       date: cert.date || 'Unknown',
-      expirationDate: cert.expirationDate,
-      credentialId: cert.credentialId,
-      credentialUrl: cert.credentialUrl,
+      expirationDate: normalizeOptionalString(cert.expirationDate),
+      credentialId: normalizeOptionalString(cert.credentialId),
+      credentialUrl: normalizeOptionalUrl(cert.credentialUrl),
     })),
     // New sections
     awards: partial.awards?.map(award => ({
@@ -403,7 +412,7 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       authors: pub.authors,
       venue: pub.venue,
       date: pub.date,
-      url: pub.url,
+      url: normalizeOptionalUrl(pub.url),
       description: pub.description,
     })),
     languageProficiency: partial.languageProficiency?.map(lang => ({

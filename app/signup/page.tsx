@@ -27,7 +27,7 @@ export default function SignupPage() {
       <Header />
       <main className="page-shell">
         <section className="container py-14 md:py-20">
-          <div className="mx-auto max-w-5xl">
+          <div className="mx-auto max-w-6xl">
             <div className="section-frame grid gap-8 p-8 md:p-10 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div>
                 <div className="section-header-kicker">Create workspace</div>

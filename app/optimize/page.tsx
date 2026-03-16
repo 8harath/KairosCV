@@ -139,7 +139,7 @@ export default function OptimizePage() {
       <Header />
       <main className="page-shell">
         <section className="container py-12 md:py-16">
-          <div className="mx-auto max-w-5xl space-y-6">
+          <div className="mx-auto max-w-6xl space-y-6">
             <div className="section-frame p-6 md:p-8">
               <div className="section-header-kicker">Optimizer</div>
               <h1 className="mt-5 text-balance">Upload a draft and let KairosCV reshape it into a clearer, ATS-ready resume.</h1>
@@ -149,7 +149,7 @@ export default function OptimizePage() {
             </div>
 
             {!isProcessing && !pdfUrl && !error ? (
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="space-y-4">
                   {!authBypassed ? (
                     <label className="input-surface block">

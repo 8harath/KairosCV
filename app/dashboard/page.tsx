@@ -94,7 +94,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="surface-panel-strong p-6 md:p-8">
           <div className="flex items-start justify-between gap-4">
             <div>

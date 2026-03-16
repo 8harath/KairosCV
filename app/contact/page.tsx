@@ -85,7 +85,7 @@ export default function ContactPage() {
       <Header />
       <main className="page-shell">
         <section className="container py-14 md:py-20">
-          <div className="mx-auto max-w-6xl space-y-6">
+          <div className="mx-auto max-w-7xl space-y-6">
             <div className="section-frame p-8 md:p-10">
               <div className="section-header-kicker">Contact</div>
               <h1 className="mt-5 text-balance">Questions, product feedback, and bug reports all belong here.</h1>

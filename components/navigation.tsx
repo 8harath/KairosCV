@@ -2,13 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Compass, LayoutDashboard, Mail, Sparkles } from "lucide-react"
+import { Compass, Mail, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const links = [
   { href: "/", label: "Home", icon: Compass },
   { href: "/optimize", label: "Optimize", icon: Sparkles },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/contact", label: "Contact", icon: Mail },
 ]
 
@@ -24,8 +23,10 @@ export default function Navigation() {
             key={href}
             href={href}
             className={cn(
-              "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-              isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ease-out",
+              isActive
+                ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_rgba(55,53,47,0.04)]"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
             <Icon className="h-4 w-4" />

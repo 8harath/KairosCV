@@ -9,7 +9,7 @@ export default function LoginPage() {
       <Header />
       <main className="page-shell">
         <section className="container py-14 md:py-20">
-          <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
             <div className="section-frame p-8 md:p-10">
               <div className="section-header-kicker">Welcome back</div>
               <h1 className="mt-5 text-balance">Access your resume workspace.</h1>

@@ -11,7 +11,6 @@ const mobileLinks = [
   { href: "/", label: "Home" },
   { href: "/intent", label: "Intent" },
   { href: "/optimize", label: "Optimize" },
-  { href: "/dashboard", label: "Dashboard" },
   { href: "/contact", label: "Contact" },
 ]
 
@@ -55,10 +54,7 @@ export default function Header() {
 
         <Navigation />
 
-        <div className="flex items-center gap-3">
-          <div className="hidden rounded-full border border-border bg-white/90 px-3 py-1 text-xs font-medium text-muted-foreground lg:inline-flex">
-            3 free generations
-          </div>
+        <div className="flex items-center gap-2">
           <AuthButtons />
         </div>
       </div>
