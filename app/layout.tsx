@@ -47,6 +47,16 @@ export const metadata: Metadata = {
   authors: [{ name: "KairosCV" }],
   creator: "KairosCV",
   publisher: "KairosCV",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon.ico"],
+  },
   formatDetection: {
     email: false,
     telephone: false,
@@ -125,9 +135,7 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#000000" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="mask-icon" href="/favicon-32x32.png" color="#000000" />
       </head>
       <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-display antialiased`}>
         {children}
