@@ -31,7 +31,7 @@ export default function LoadingAnimation() {
         {/* Document Icon with Scanning Effect */}
         <div className="relative">
           {/* Main Document */}
-          <div className="w-48 h-64 border-4 border-primary bg-white relative overflow-hidden">
+          <div className="w-48 h-64 border-4 border-primary bg-card relative overflow-hidden">
             {/* Document Header Lines */}
             <div className="absolute top-6 left-6 right-6 space-y-3">
               <div className="h-4 border-2 border-primary bg-primary w-3/4" />
@@ -68,7 +68,7 @@ export default function LoadingAnimation() {
           </div>
 
           {/* Processing Indicator */}
-          <div className="absolute -bottom-4 -right-4 w-12 h-12 border-3 border-primary bg-white flex items-center justify-center animate-spin-slow">
+          <div className="absolute -bottom-4 -right-4 w-12 h-12 border-3 border-primary bg-card flex items-center justify-center animate-spin-slow">
             <div className="w-6 h-6 border-2 border-primary bg-primary" />
           </div>
         </div>

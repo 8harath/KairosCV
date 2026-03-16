@@ -15,7 +15,7 @@ export default function Navigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="hidden items-center gap-1 rounded-2xl border border-border/80 bg-white/80 p-1 backdrop-blur md:flex" aria-label="Primary navigation">
+    <nav className="hidden items-center gap-1 rounded-2xl border border-border/80 bg-card/80 p-1 backdrop-blur md:flex" aria-label="Primary navigation">
       {links.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href
         return (

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Menu } from "lucide-react"
 import Navigation from "@/components/navigation"
 import AuthButtons from "@/components/auth-buttons"
+import ThemeToggle from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
@@ -55,6 +56,7 @@ export default function Header() {
         <Navigation />
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <AuthButtons />
         </div>
       </div>

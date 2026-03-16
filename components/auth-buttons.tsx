@@ -71,7 +71,7 @@ export default function AuthButtons() {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="hidden items-center gap-3 rounded-full border border-border bg-white/90 px-2 py-1.5 md:flex">
+      <div className="hidden items-center gap-3 rounded-full border border-border bg-card/90 px-2 py-1.5 md:flex">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
           {getInitial(user.email)}
         </div>

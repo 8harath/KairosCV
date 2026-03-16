@@ -43,6 +43,15 @@ export default function Home() {
           <div className="section-frame overflow-hidden p-6 md:p-10 lg:p-14">
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_360px] lg:items-center">
               <div>
+                <div className="mb-6 flex items-center gap-4">
+                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[28px] border border-border bg-card text-2xl font-semibold text-foreground shadow-[0_6px_20px_rgba(15,23,42,0.08)] md:h-[88px] md:w-[88px] md:text-3xl">
+                    K
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground md:text-lg">KairosCV</p>
+                    <p className="text-sm text-muted-foreground">ATS resume workspace</p>
+                  </div>
+                </div>
                 <div className="section-header-kicker">KairosCV workspace</div>
                 <h1 className="mt-5 max-w-4xl text-balance">
                   Build ATS-optimized resumes in a workspace that feels quiet, clear, and usable.
@@ -160,8 +169,8 @@ export default function Home() {
               <Link href="/signup" className="btn">
                 Create your workspace
               </Link>
-              <Link href="/dashboard" className="btn-secondary">
-                Open dashboard
+              <Link href="/login" className="btn-secondary">
+                Log in
               </Link>
             </div>
           </div>

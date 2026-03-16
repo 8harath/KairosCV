@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import ThemeToggle from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -114,7 +115,10 @@ export default function WorkspaceShell({
               </div>
             </div>
 
-            <div className={cn("flex items-center gap-3", actions ? "" : "hidden md:flex")}>{actions}</div>
+            <div className={cn("flex items-center gap-3", actions ? "" : "hidden md:flex")}>
+              <ThemeToggle />
+              {actions}
+            </div>
           </div>
         </div>
 

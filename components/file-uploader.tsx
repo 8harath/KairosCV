@@ -98,7 +98,7 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
 
         {fileName ? (
           <div className="mx-auto max-w-md">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-card">
               <CheckCircle2 className="h-7 w-7 text-success" />
             </div>
             <h2 className="mt-5 text-xl">{fileName}</h2>
@@ -107,7 +107,7 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
           </div>
         ) : (
           <div className="mx-auto max-w-md">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-card">
               <UploadCloud className="h-7 w-7 text-foreground" />
             </div>
             <h2 className="mt-5 text-xl">Drop your resume here</h2>

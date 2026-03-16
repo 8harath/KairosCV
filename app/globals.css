@@ -4,25 +4,25 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f7f6f3;
+  --background: #fbfbfa;
   --foreground: #37352f;
   --card: #ffffff;
   --card-foreground: #37352f;
   --popover: #ffffff;
   --popover-foreground: #37352f;
-  --primary: #2f2f2b;
+  --primary: #2f3437;
   --primary-foreground: #f8f8f7;
-  --secondary: #efede8;
+  --secondary: #f1f1ef;
   --secondary-foreground: #37352f;
-  --muted: #f1efeb;
-  --muted-foreground: #78746d;
-  --accent: #eceae4;
+  --muted: #f7f6f3;
+  --muted-foreground: #6b6861;
+  --accent: #f1f1ef;
   --accent-foreground: #2f2f2b;
   --destructive: #d44c47;
   --destructive-foreground: #fffdfb;
   --success: #2f8f5b;
   --success-foreground: #ffffff;
-  --border: #dfdcd5;
+  --border: #e6e4df;
   --input: #ffffff;
   --ring: rgba(55, 53, 47, 0.22);
   --sidebar: rgba(255, 255, 255, 0.78);
@@ -35,18 +35,18 @@
 
 .dark {
   --background: #191919;
-  --foreground: #efede8;
-  --card: #20201f;
-  --card-foreground: #efede8;
-  --popover: #20201f;
-  --popover-foreground: #efede8;
-  --primary: #efede8;
-  --primary-foreground: #1a1a19;
-  --secondary: #262624;
+  --foreground: #eceae5;
+  --card: #202020;
+  --card-foreground: #eceae5;
+  --popover: #202020;
+  --popover-foreground: #eceae5;
+  --primary: #ebebea;
+  --primary-foreground: #181818;
+  --secondary: #252525;
   --secondary-foreground: #efede8;
-  --muted: #242321;
-  --muted-foreground: #a8a39a;
-  --accent: #2a2927;
+  --muted: #232323;
+  --muted-foreground: #9f9b93;
+  --accent: #2a2a2a;
   --accent-foreground: #efede8;
   --destructive: #e26d67;
   --destructive-foreground: #fffdfb;
@@ -105,9 +105,15 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background-image:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 30%),
-      linear-gradient(180deg, #fbfaf8 0%, #f7f6f3 48%, #f2f0eb 100%);
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 30%),
+      linear-gradient(180deg, #ffffff 0%, #fbfbfa 48%, #f5f4f1 100%);
     min-height: 100vh;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 30%),
+      linear-gradient(180deg, #1b1b1b 0%, #191919 48%, #171717 100%);
   }
 
   h1,
@@ -149,7 +155,7 @@
   }
 
   .section-header-kicker {
-    @apply inline-flex items-center rounded-full border border-border bg-white/80 px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase;
+    @apply inline-flex items-center rounded-full border border-border bg-card/80 px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase;
   }
 
   .section-frame {
@@ -201,7 +207,7 @@
   }
 
   .btn-secondary {
-    @apply border-border bg-white px-4 py-2.5 text-foreground;
+    @apply border-border bg-card px-4 py-2.5 text-foreground;
   }
 
   .btn-secondary:hover {
@@ -261,11 +267,11 @@
   }
 
   .workspace-nav-link {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-white hover:text-foreground;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground;
   }
 
   .workspace-nav-link[data-active="true"] {
-    @apply bg-white text-foreground;
+    @apply bg-card text-foreground;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   }
 
@@ -287,7 +293,7 @@
   }
 
   .upload-zone.dragging {
-    @apply border-foreground/40 bg-white;
+    @apply border-foreground/40 bg-card;
   }
 
   .progress-bar {
@@ -299,7 +305,7 @@
   }
 
   .pdf-preview {
-    @apply overflow-hidden rounded-2xl border border-border bg-white;
+    @apply overflow-hidden rounded-2xl border border-border bg-card;
     box-shadow: inset 0 0 0 1px rgba(223, 220, 213, 0.6);
   }
 
@@ -308,7 +314,7 @@
   }
 
   .pill-badge {
-    @apply inline-flex items-center gap-2 rounded-full border border-border bg-white/85 px-3 py-1 text-xs font-medium text-muted-foreground;
+    @apply inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground;
   }
 
   .subtle-divider {
