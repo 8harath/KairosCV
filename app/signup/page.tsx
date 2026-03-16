@@ -1,53 +1,74 @@
 import Link from "next/link"
+import { ArrowRight, CheckCircle2, LayoutDashboard, Sparkles } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
+
+const steps = [
+  {
+    title: "Connect",
+    description: "Use Google sign-in through Supabase Auth for a clean, low-friction account setup.",
+    icon: CheckCircle2,
+  },
+  {
+    title: "Generate",
+    description: "Start with 3 free resume generations in each 24-hour window.",
+    icon: Sparkles,
+  },
+  {
+    title: "Manage",
+    description: "Keep your work organized from a dashboard built for ongoing edits and downloads.",
+    icon: LayoutDashboard,
+  },
+]
 
 export default function SignupPage() {
   return (
     <>
       <Header />
-      <main className="page-shell pt-32 md:pt-40">
-        <section className="container mx-auto px-4 py-16">
-          <div className="surface-panel-strong hero-grid mx-auto max-w-4xl overflow-hidden p-6 md:p-8">
-            <div className="mb-8">
-              <div className="section-header-kicker mb-3">
-                Sign Up
+      <main className="page-shell">
+        <section className="container py-14 md:py-20">
+          <div className="mx-auto max-w-5xl">
+            <div className="section-frame grid gap-8 p-8 md:p-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div>
+                <div className="section-header-kicker">Create workspace</div>
+                <h1 className="mt-5 text-balance">Start using KairosCV with a cleaner account experience.</h1>
+                <p className="mt-4 max-w-2xl text-base">
+                  The product is designed like a lightweight productivity tool: calm surfaces, obvious actions, and enough structure to keep resume work organized.
+                </p>
+
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                  {steps.map(({ title, description, icon: Icon }) => (
+                    <div key={title} className="surface-panel p-5">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                      <h2 className="mt-4 text-lg">{title}</h2>
+                      <p className="mt-2 text-sm">{description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h1 className="text-4xl font-black md:text-5xl">Create your KairosCV account</h1>
-              <p className="mt-4 max-w-2xl text-muted-foreground">
-                Use Google to start generating ATS-optimized resumes, manage your profile, and unlock your trial credits.
-              </p>
+
+              <div className="surface-panel-strong p-6 md:p-8">
+                <p className="text-sm font-medium text-foreground">Start with Google</p>
+                <p className="mt-2 text-sm">We’ll create your account and send you straight into the workspace.</p>
+                <a href="/auth/login" className="btn mt-6 w-full">
+                  Continue with Google
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+
+                <div className="mt-6 rounded-2xl border border-border bg-secondary/50 p-4">
+                  <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">Included</p>
+                  <p className="mt-2 text-sm text-foreground">3 free resume generations per 24 hours and a dashboard ready for history, downloads, and future account settings.</p>
+                </div>
+
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Already have access?{" "}
+                  <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+                    Log in here
+                  </Link>
+                  .
+                </p>
+              </div>
             </div>
-
-            <a
-              href="/auth/login"
-              className="btn inline-flex w-full items-center justify-center text-base md:w-auto"
-            >
-              Sign Up With Google
-            </a>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <div className="surface-panel p-4">
-                <p className="font-black">1</p>
-                <p className="mt-2 text-sm text-muted-foreground">Connect your Google account securely through Supabase Auth.</p>
-              </div>
-              <div className="surface-panel p-4">
-                <p className="font-black">2</p>
-                <p className="mt-2 text-sm text-muted-foreground">Get 3 free generations in each 24-hour window.</p>
-              </div>
-              <div className="surface-panel p-4">
-                <p className="font-black">3</p>
-                <p className="mt-2 text-sm text-muted-foreground">Manage future resumes from your dashboard.</p>
-              </div>
-            </div>
-
-            <p className="mt-6 text-sm text-muted-foreground">
-              Already have access?{" "}
-              <Link href="/login" className="font-bold underline">
-                Log in here
-              </Link>
-              .
-            </p>
           </div>
         </section>
         <Footer />

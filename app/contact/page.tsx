@@ -2,10 +2,14 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import emailjs from "@emailjs/browser"
+import { useForm } from "react-hook-form"
+import { Clock3, Mail, MessageSquareMore } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
-import { useForm } from "react-hook-form"
-import emailjs from "@emailjs/browser"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 
 interface ContactFormData {
@@ -30,19 +34,15 @@ export default function ContactPage() {
     setIsSubmitting(true)
 
     try {
-      // EmailJS configuration
-      // NOTE: Replace these with your actual EmailJS credentials
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID"
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID"
       const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY"
 
-      // For demo purposes, if credentials aren't set, just show success
       if (serviceId === "YOUR_SERVICE_ID") {
-        console.log("Contact form submission:", data)
         setIsSuccess(true)
         toast({
-          title: "Message sent! (Demo mode)",
-          description: "Your message has been logged. Set up EmailJS credentials for real email sending.",
+          title: "Message saved",
+          description: "EmailJS isn’t configured yet, so your message was logged locally for now.",
         })
         reset()
         setIsSubmitting(false)
@@ -57,21 +57,21 @@ export default function ContactPage() {
           from_email: data.email,
           subject: data.subject,
           message: data.message,
-          to_email: "your-email@example.com", // Replace with your email
+          to_email: "your-email@example.com",
         },
-        publicKey
+        publicKey,
       )
 
       setIsSuccess(true)
       toast({
-        title: "Message sent!",
-        description: "Thank you for reaching out. We'll get back to you soon.",
+        title: "Message sent",
+        description: "Thanks for reaching out. We’ll get back to you soon.",
       })
       reset()
     } catch (error) {
       console.error("EmailJS error:", error)
       toast({
-        title: "Failed to send message",
+        title: "Failed to send",
         description: "Please try again or contact us directly via email.",
         variant: "destructive",
       })
@@ -81,200 +81,122 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <>
       <Header />
-
-      <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-3xl mx-auto">
-          {/* Page Title */}
-          <div className="mb-12 animate-in fade-in">
-            <h1 className="mb-4">Contact Us</h1>
-            <div className="w-24 h-1 bg-primary"></div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Contact Info */}
-            <div className="space-y-6">
-              <div className="card">
-                <h3 className="mb-4">Get in Touch</h3>
-                <p className="text-base text-muted-foreground mb-6">
-                  Have questions, feedback, or suggestions? We&apos;d love to hear from you.
-                </p>
-
-                <div className="space-y-4">
-                  <div className="border-l-4 border-primary pl-4">
-                    <h3 className="text-sm font-bold uppercase mb-1">EMAIL</h3>
-                    <a href="mailto:8harath.k@gmail.com" className="text-base hover:text-primary transition-colors">
-                      8harath.k@gmail.com
-                    </a>
-                  </div>
-
-                  <div className="border-l-4 border-primary pl-4">
-                    <h3 className="text-sm font-bold uppercase mb-1">RESPONSE TIME</h3>
-                    <p className="text-base text-muted-foreground">24-48 hours</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-3 border-primary p-6 bg-secondary">
-                <h3 className="text-lg font-bold mb-2 uppercase">QUICK LINKS</h3>
-                <div className="space-y-2">
-                  <Link href="/" className="block text-sm hover:text-primary transition-colors">
-                    → HOME
-                  </Link>
-                  <Link href="/intent" className="block text-sm hover:text-primary transition-colors">
-                    → INTENT
-                  </Link>
-                  <Link href="/optimize" className="block text-sm hover:text-primary transition-colors">
-                    → OPTIMIZE
-                  </Link>
-                </div>
-              </div>
+      <main className="page-shell">
+        <section className="container py-14 md:py-20">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="section-frame p-8 md:p-10">
+              <div className="section-header-kicker">Contact</div>
+              <h1 className="mt-5 text-balance">Questions, product feedback, and bug reports all belong here.</h1>
+              <p className="mt-4 max-w-3xl text-base">
+                The contact flow has been simplified to match the rest of the application: fewer visual interruptions, clearer form fields, and better focus on the message itself.
+              </p>
             </div>
 
-            {/* Contact Form */}
-            <div className="card">
-              <h2 className="text-2xl font-bold mb-6 uppercase">SEND A MESSAGE</h2>
-
-              {isSuccess ? (
-                <div className="border-3 border-primary p-6 bg-primary text-primary-foreground text-center">
-                  <div className="text-5xl mb-4">✓</div>
-                  <h3 className="text-xl font-bold mb-2 uppercase">MESSAGE SENT!</h3>
-                  <p className="mb-4">We&apos;ll get back to you soon.</p>
-                  <button
-                    onClick={() => setIsSuccess(false)}
-                    className="bg-background text-foreground border-2 border-background px-4 py-2 font-bold text-sm uppercase hover:bg-secondary transition-all"
-                  >
-                    SEND ANOTHER
-                  </button>
+            <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+              <aside className="space-y-4">
+                <div className="surface-panel p-5">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm font-medium text-foreground">Email</p>
+                  </div>
+                  <a href="mailto:8harath.k@gmail.com" className="mt-3 block text-sm text-foreground hover:underline">
+                    8harath.k@gmail.com
+                  </a>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {/* Name Field */}
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-bold uppercase mb-2">
-                      NAME *
-                    </label>
-                    <input
-                      id="name"
-                      type="text"
-                      {...register("name", { required: "Name is required" })}
-                      className="w-full border-3 border-primary px-4 py-2 font-mono bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="John Doe"
-                    />
-                    {errors.name && (
-                      <p className="text-destructive text-xs mt-1">{errors.name.message}</p>
-                    )}
+
+                <div className="surface-panel p-5">
+                  <div className="flex items-center gap-3">
+                    <Clock3 className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm font-medium text-foreground">Response time</p>
                   </div>
+                  <p className="mt-3 text-sm">Usually within 24 to 48 hours.</p>
+                </div>
 
-                  {/* Email Field */}
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-bold uppercase mb-2">
-                      EMAIL *
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      {...register("email", {
-                        required: "Email is required",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Invalid email address",
-                        },
-                      })}
-                      className="w-full border-3 border-primary px-4 py-2 font-mono bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="john@example.com"
-                    />
-                    {errors.email && (
-                      <p className="text-destructive text-xs mt-1">{errors.email.message}</p>
-                    )}
+                <div className="surface-panel p-5">
+                  <p className="text-sm font-medium text-foreground">Useful links</p>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <Link href="/" className="soft-link">Home</Link>
+                    <Link href="/intent" className="soft-link">Intent</Link>
+                    <Link href="/optimize" className="soft-link">Optimize</Link>
                   </div>
+                </div>
+              </aside>
 
-                  {/* Subject Field */}
-                  <div>
-                    <label htmlFor="subject" className="block text-sm font-bold uppercase mb-2">
-                      SUBJECT *
-                    </label>
-                    <input
-                      id="subject"
-                      type="text"
-                      {...register("subject", { required: "Subject is required" })}
-                      className="w-full border-3 border-primary px-4 py-2 font-mono bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Feedback about KairosCV"
-                    />
-                    {errors.subject && (
-                      <p className="text-destructive text-xs mt-1">{errors.subject.message}</p>
-                    )}
+              <section className="surface-panel-strong p-6 md:p-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+                    <MessageSquareMore className="h-4 w-4" />
                   </div>
-
-                  {/* Message Field */}
                   <div>
-                    <label htmlFor="message" className="block text-sm font-bold uppercase mb-2">
-                      MESSAGE *
-                    </label>
-                    <textarea
-                      id="message"
-                      rows={5}
-                      {...register("message", { required: "Message is required" })}
-                      className="w-full border-3 border-primary px-4 py-2 font-mono bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                      placeholder="Your message here..."
-                    />
-                    {errors.message && (
-                      <p className="text-destructive text-xs mt-1">{errors.message.message}</p>
-                    )}
+                    <p className="text-sm font-medium text-foreground">Send a message</p>
+                    <p className="text-sm text-muted-foreground">Keep it short and we’ll take it from there.</p>
                   </div>
+                </div>
 
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "SENDING..." : "SEND MESSAGE"}
-                  </button>
+                {isSuccess ? (
+                  <div className="empty-state mt-8">
+                    <h2 className="text-xl">Message sent</h2>
+                    <p className="mx-auto mt-3 max-w-md text-sm">
+                      Thanks for reaching out. If you want to send another message, you can reopen the form below.
+                    </p>
+                    <Button className="mt-6" onClick={() => setIsSuccess(false)}>
+                      Send another
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit(onSubmit)} className="mt-8 grid gap-5">
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div>
+                        <label htmlFor="name" className="field-label">Name</label>
+                        <Input id="name" {...register("name", { required: "Name is required" })} placeholder="John Doe" />
+                        {errors.name ? <p className="mt-2 text-sm text-destructive">{errors.name.message}</p> : null}
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="field-label">Email</label>
+                        <Input
+                          id="email"
+                          type="email"
+                          {...register("email", {
+                            required: "Email is required",
+                            pattern: {
+                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                              message: "Invalid email address",
+                            },
+                          })}
+                          placeholder="john@example.com"
+                        />
+                        {errors.email ? <p className="mt-2 text-sm text-destructive">{errors.email.message}</p> : null}
+                      </div>
+                    </div>
 
-                  <p className="text-xs text-muted-foreground text-center">
-                    * Required fields
-                  </p>
-                </form>
-              )}
+                    <div>
+                      <label htmlFor="subject" className="field-label">Subject</label>
+                      <Input id="subject" {...register("subject", { required: "Subject is required" })} placeholder="Feedback about KairosCV" />
+                      {errors.subject ? <p className="mt-2 text-sm text-destructive">{errors.subject.message}</p> : null}
+                    </div>
+
+                    <div>
+                      <label htmlFor="message" className="field-label">Message</label>
+                      <Textarea id="message" rows={6} {...register("message", { required: "Message is required" })} placeholder="Tell us what’s working, what feels off, or what you want next." />
+                      {errors.message ? <p className="mt-2 text-sm text-destructive">{errors.message.message}</p> : null}
+                    </div>
+
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <p className="text-sm text-muted-foreground">Required fields help us respond with enough context.</p>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Sending..." : "Send message"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </section>
             </div>
           </div>
-
-          {/* Additional Info */}
-          <div className="border-t-3 border-primary pt-8">
-            <h3 className="text-xl font-bold mb-4 uppercase">FREQUENTLY ASKED</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="border-3 border-primary p-4">
-                <h4 className="font-bold mb-2 text-sm uppercase">Is it really free?</h4>
-                <p className="text-sm text-muted-foreground">
-                  Yes! KairosCV is completely free to use, no hidden costs or subscriptions.
-                </p>
-              </div>
-              <div className="border-3 border-primary p-4">
-                <h4 className="font-bold mb-2 text-sm uppercase">How do you handle data?</h4>
-                <p className="text-sm text-muted-foreground">
-                  We process your resume with temporary storage and delete data after download, with automatic expiry cleanup.
-                </p>
-              </div>
-              <div className="border-3 border-primary p-4">
-                <h4 className="font-bold mb-2 text-sm uppercase">Can I suggest features?</h4>
-                <p className="text-sm text-muted-foreground">
-                  Absolutely! Use the form above to share your ideas.
-                </p>
-              </div>
-              <div className="border-3 border-primary p-4">
-                <h4 className="font-bold mb-2 text-sm uppercase">Report bugs?</h4>
-                <p className="text-sm text-muted-foreground">
-                  Please do! We&apos;re in beta and your feedback helps us improve.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-    </main>
+        </section>
+        <Footer />
+      </main>
+    </>
   )
 }

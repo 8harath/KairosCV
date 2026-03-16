@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import Header from "@/components/header"
-import Footer from "@/components/Footer"
+import { Clock3, FileClock, FolderOpen, Sparkles } from "lucide-react"
+import WorkspaceShell from "@/components/workspace-shell"
+import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
@@ -30,81 +31,122 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10)
 
-  return (
-    <>
-      <Header />
-      <main className="page-shell pt-32 md:pt-40">
-        <section className="container mx-auto px-4 py-12">
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="section-header-kicker mb-3">
-                Dashboard
-              </div>
-              <h1 className="text-4xl font-black">
-                {profile?.full_name || user.user_metadata.full_name || "Welcome back"}
-              </h1>
-              <p className="mt-3 text-muted-foreground">
-                Signed in as {profile?.email || user.email}. Your current free plan includes {profile?.trial_limit ?? 3} generations every 24 hours.
-              </p>
-            </div>
+  const displayName = profile?.full_name || user.user_metadata.full_name || "Welcome back"
+  const email = profile?.email || user.email || ""
 
-            <Link
-              href="/optimize"
-              className="btn inline-flex items-center justify-center text-sm"
-            >
-              Generate Resume
+  return (
+    <WorkspaceShell
+      title={displayName}
+      description={`Signed in as ${email}. Your free plan includes ${profile?.trial_limit ?? 3} resume generations every 24 hours.`}
+      userLabel={email}
+      actions={
+        <Link href="/optimize">
+          <Button>
+            <Sparkles className="h-4 w-4" />
+            New resume
+          </Button>
+        </Link>
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="surface-panel p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Plan</p>
+              <p className="text-sm text-muted-foreground">Free workspace</p>
+            </div>
+          </div>
+          <p className="mt-4 text-2xl font-semibold text-foreground">{profile?.trial_limit ?? 3}</p>
+          <p className="mt-1 text-sm">Generations available per 24-hour cycle.</p>
+        </div>
+
+        <div className="surface-panel p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+              <FolderOpen className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Saved resumes</p>
+              <p className="text-sm text-muted-foreground">Recent generation history</p>
+            </div>
+          </div>
+          <p className="mt-4 text-2xl font-semibold text-foreground">{resumes?.length ?? 0}</p>
+          <p className="mt-1 text-sm">Records available in your workspace right now.</p>
+        </div>
+
+        <div className="surface-panel p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+              <Clock3 className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Member since</p>
+              <p className="text-sm text-muted-foreground">Account creation</p>
+            </div>
+          </div>
+          <p className="mt-4 text-lg font-semibold text-foreground">
+            {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "Recently"}
+          </p>
+          <p className="mt-1 text-sm">Google authentication is active through Supabase Auth.</p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <section className="surface-panel-strong p-6 md:p-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">Recent resumes</p>
+              <p className="mt-1 text-sm">Keep track of the latest generated outputs and return to them when needed.</p>
+            </div>
+            <Link href="/optimize" className="soft-link">
+              Start new
             </Link>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="metric-tile">
-              <p className="text-xs font-black uppercase text-muted-foreground">Account</p>
-              <p className="mt-3 text-lg font-black">{profile?.email || user.email}</p>
-              <p className="mt-2 text-sm text-muted-foreground">Google authentication is active through Supabase.</p>
-            </div>
-
-            <div className="metric-tile">
-              <p className="text-xs font-black uppercase text-muted-foreground">Plan</p>
-              <p className="mt-3 text-lg font-black">Free Trial</p>
-              <p className="mt-2 text-sm text-muted-foreground">3 resume generations every 24 hours.</p>
-            </div>
-
-            <div className="metric-tile">
-              <p className="text-xs font-black uppercase text-muted-foreground">Storage</p>
-              <p className="mt-3 text-lg font-black">{resumes?.length ?? 0} saved records</p>
-              <p className="mt-2 text-sm text-muted-foreground">Your generated resume history will appear here as storage cutover completes.</p>
-            </div>
-          </div>
-
-          <div className="surface-panel-strong mt-10 p-6 md:p-8">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black">Recent Resumes</h2>
-              <Link href="/optimize" className="soft-link">
-                Start New
-              </Link>
-            </div>
-
+          <div className="mt-6 space-y-3">
             {resumes && resumes.length > 0 ? (
-              <div className="space-y-4">
-                {resumes.map((resume) => (
-                  <div key={resume.id} className="surface-panel p-4">
-                    <p className="font-black">{resume.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{resume.original_filename}</p>
-                    <p className="mt-1 text-xs uppercase text-muted-foreground">
-                      Created {new Date(resume.created_at).toLocaleString()}
-                    </p>
+              resumes.map((resume) => (
+                <div key={resume.id} className="rounded-2xl border border-border/80 bg-card px-4 py-4">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{resume.title}</p>
+                      <p className="truncate text-sm text-muted-foreground">{resume.original_filename}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{new Date(resume.created_at).toLocaleString()}</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             ) : (
-              <div className="border border-dashed border-border bg-white/70 p-6 text-sm text-muted-foreground">
-                No saved resumes yet. Generate your first ATS-optimized resume from the optimizer.
+              <div className="empty-state">
+                <FileClock className="mx-auto h-10 w-10 text-muted-foreground" />
+                <h2 className="mt-4 text-xl">No resume history yet</h2>
+                <p className="mx-auto mt-2 max-w-md text-sm">
+                  Generate your first ATS-optimized resume to start building a clearer, persistent workspace.
+                </p>
+                <Link href="/optimize" className="btn mt-6">
+                  Create first resume
+                </Link>
               </div>
             )}
           </div>
         </section>
-        <Footer />
-      </main>
-    </>
+
+        <aside className="space-y-4">
+          <div className="surface-panel p-5">
+            <p className="text-sm font-medium text-foreground">Workspace notes</p>
+            <p className="mt-3 text-sm">
+              Supabase-backed trial tracking is active. Storage migration is still being completed, so the dashboard is prepared for fuller history views as persistence expands.
+            </p>
+          </div>
+          <div className="surface-panel p-5">
+            <p className="text-sm font-medium text-foreground">Next best action</p>
+            <p className="mt-3 text-sm">Upload a new resume draft, review the generated PDF, and save the strongest version for future applications.</p>
+          </div>
+        </aside>
+      </div>
+    </WorkspaceShell>
   )
 }

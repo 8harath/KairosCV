@@ -1,91 +1,40 @@
 import Link from "next/link"
 
+const footerLinks = [
+  { href: "/optimize", label: "Optimize" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/intent", label: "Intent" },
+  { href: "/contact", label: "Contact" },
+]
+
 export default function Footer() {
   return (
-    <footer className="border-t-2 border-primary mt-16">
-      <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Brand */}
-          <div>
-            <h3 className="font-black text-2xl mb-2">KairosCV</h3>
-            <p className="text-sm text-muted-foreground">
-              AI-powered resume optimization for job seekers
+    <footer className="border-t border-border/70 bg-background/70 backdrop-blur">
+      <div className="container py-10">
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-md">
+            <div className="text-sm font-semibold text-foreground">KairosCV</div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              A focused workspace for turning raw resume content into ATS-optimized, professionally formatted outputs.
             </p>
           </div>
 
-          {/* Product */}
-          <div>
-            <h4 className="font-bold text-sm uppercase mb-3">Product</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/optimize" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Optimize Resume
-                </Link>
-              </li>
-              <li>
-                <Link href="/intent" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Our Mission
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Trust */}
-          <div>
-            <h4 className="font-bold text-sm uppercase mb-3">Trust</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="font-bold">✓</span> 100% Free
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="font-bold">✓</span> No Data Storage
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="font-bold">✓</span> Privacy First
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="font-bold">✓</span> Open Source
-              </li>
-            </ul>
-          </div>
-
-          {/* Stats */}
-          <div>
-            <h4 className="font-bold text-sm uppercase mb-3">Why Choose Us</h4>
-            <ul className="space-y-2">
-              <li>
-                <div className="font-black text-xl">{"<60s"}</div>
-                <div className="text-xs text-muted-foreground">Processing Time</div>
-              </li>
-              <li className="mt-3">
-                <div className="font-black text-xl">AI</div>
-                <div className="text-xs text-muted-foreground">Powered Enhancement</div>
-              </li>
-            </ul>
+          <div className="flex flex-wrap gap-2">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-xl border border-transparent px-3 py-2 text-sm text-muted-foreground hover:border-border hover:bg-white hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © 2025 KairosCV. Built with purpose.
-          </p>
-          <div className="flex gap-6">
-            <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase">
-              Home
-            </Link>
-            <Link href="/intent" className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase">
-              Intent
-            </Link>
-            <Link href="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase">
-              Contact
-            </Link>
-          </div>
+        <div className="mt-8 flex flex-col gap-3 border-t border-border/70 pt-5 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <p>Designed for clarity, accessibility, and calmer resume workflows.</p>
+          <p>&copy; 2026 KairosCV</p>
         </div>
       </div>
     </footer>

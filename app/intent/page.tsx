@@ -1,124 +1,91 @@
 import Link from "next/link"
+import { ArrowRight, Equal, Hourglass, Shield } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
-import { ArrowRight } from "lucide-react"
+
+const beliefs = [
+  {
+    title: "Skills over formatting games",
+    description: "Job seekers should not lose opportunities because their document misses an arbitrary ATS convention.",
+    icon: Equal,
+  },
+  {
+    title: "Time should go to growth",
+    description: "Formatting should not consume the time people need for learning, interviewing, and building.",
+    icon: Hourglass,
+  },
+  {
+    title: "Access should stay equitable",
+    description: "Professional-looking resumes should not require expensive software or insider knowledge.",
+    icon: Shield,
+  },
+]
 
 export default function IntentPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-background text-foreground pt-28 md:pt-32">
-        <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="max-w-3xl mx-auto">
-          {/* Page Title */}
-          <div className="mb-12">
-            <h1 className="mb-4">Our Intent</h1>
-            <div className="w-24 h-1 bg-primary"></div>
-          </div>
+      <main className="page-shell">
+        <section className="container py-14 md:py-20">
+          <div className="mx-auto max-w-5xl space-y-6">
+            <div className="section-frame p-8 md:p-10">
+              <div className="section-header-kicker">Intent</div>
+              <h1 className="mt-5 text-balance">The goal is to reduce resume friction, not add more software theater around it.</h1>
+              <p className="mt-4 max-w-3xl text-base">
+                KairosCV exists because too much hiring flow is still shaped by formatting rituals instead of substance. We use automation to remove that burden and give users a cleaner path from raw experience to a professional, ATS-friendly resume.
+              </p>
+            </div>
 
-          {/* Philosophy Content */}
-          <div className="space-y-8">
-            {/* Main Philosophy */}
-            <div className="card">
-              <h2 className="mb-6">
-                The Philosophy
-              </h2>
-              <div className="space-y-6">
-                <blockquote className="border-l-4 border-primary pl-6 py-2 text-xl font-bold">
-                  "No one should be judged by a piece of paper."
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="surface-panel-strong p-6 md:p-8">
+                <blockquote className="rounded-2xl border border-border bg-secondary/50 p-5 text-lg font-medium leading-8 text-foreground">
+                  “No one should be judged by a piece of paper. If systems still do it, the software should at least absorb the formatting burden for them.”
                 </blockquote>
-                <p>
-                  The same principle applies to resumes. Your skills, experience, and potential are what truly matter—not how they&apos;re formatted on a page.
-                </p>
-                <p>
-                  Just as we&apos;re taught never to judge a book by its cover, the same holds true for talent. A person&apos;s worth shouldn&apos;t be measured by their ability to satisfy an arbitrary Applicant Tracking System.
-                </p>
-              </div>
-            </div>
 
-            {/* The Problem */}
-            <div className="border-2 border-primary p-6 bg-secondary">
-              <h3 className="mb-4">The Problem</h3>
-              <p className="text-base leading-relaxed">
-                Job seekers spend countless hours tweaking fonts, margins, and keywords—not to showcase their abilities, but to appease automated systems. This is time that could be spent honing skills, building projects, or preparing for interviews.
-              </p>
-            </div>
-
-            {/* Our Solution */}
-            <div className="card">
-              <h3 className="mb-4">Our Solution</h3>
-              <p className="text-base leading-relaxed mb-4">
-                <strong>We automate the formatting game.</strong> KairosCV uses AI to transform any resume into an ATS-optimized format, allowing you to focus on what matters: your actual qualifications and achievements.
-              </p>
-              <p className="text-base leading-relaxed">
-                The real value and insights lie within your experience. Our goal is to ensure those insights shine through, regardless of formatting constraints.
-              </p>
-            </div>
-
-            {/* Vision */}
-            <div className="border-l-4 border-primary pl-6 py-4">
-              <h3 className="mb-4">Our Vision</h3>
-              <p className="text-base leading-relaxed">
-                We&apos;re working toward a future where talent is evaluated on merit alone. While we can&apos;t change hiring systems overnight, we can level the playing field by making ATS optimization accessible to everyone—instantly and for free.
-              </p>
-            </div>
-
-            {/* Core Beliefs */}
-            <div className="grid md:grid-cols-2 gap-6 mt-12">
-              <div className="border-2 border-primary p-6">
-                <div className="text-3xl font-black mb-3">01</div>
-                <h4 className="font-bold mb-2">Skills Over Style</h4>
-                <p className="text-sm text-muted-foreground">
-                  Your abilities and experience should speak for themselves, not your choice of serif font.
-                </p>
+                <div className="mt-6 space-y-4">
+                  <p>
+                    The point is not to make resumes look flashy. It is to make them readable, structured, and accessible enough that automated filters stop becoming the first unfair barrier.
+                  </p>
+                  <p>
+                    That is why the application now leans into a calmer, productivity-oriented interface. The UI should support clear work, not compete with it.
+                  </p>
+                </div>
               </div>
 
-              <div className="border-2 border-primary p-6">
-                <div className="text-3xl font-black mb-3">02</div>
-                <h4 className="font-bold mb-2">Time Well Spent</h4>
-                <p className="text-sm text-muted-foreground">
-                  Every hour spent formatting is an hour not spent learning, building, or growing.
-                </p>
-              </div>
-
-              <div className="border-2 border-primary p-6">
-                <div className="text-3xl font-black mb-3">03</div>
-                <h4 className="font-bold mb-2">Equal Access</h4>
-                <p className="text-sm text-muted-foreground">
-                  Professional resume optimization shouldn&apos;t require expensive tools or expertise.
-                </p>
-              </div>
-
-              <div className="border-2 border-primary p-6">
-                <div className="text-3xl font-black mb-3">04</div>
-                <h4 className="font-bold mb-2">AI for Good</h4>
-                <p className="text-sm text-muted-foreground">
-                  Technology should empower people, not create more barriers to opportunity.
-                </p>
-              </div>
+              <aside className="surface-panel p-5">
+                <p className="text-sm font-medium text-foreground">What the product should feel like</p>
+                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                  <li>Quiet enough to trust on first use.</li>
+                  <li>Clear enough to understand without onboarding.</li>
+                  <li>Responsive enough to work on desktop and tablet.</li>
+                </ul>
+              </aside>
             </div>
 
-            {/* Call to Action */}
-            <div className="card-elevated bg-primary text-primary-foreground mt-12 text-center">
-              <h3 className="text-white mb-4">
-                Ready to Focus on What Matters?
-              </h3>
-              <p className="mb-6 text-base opacity-90">
-                Let KairosCV handle the formatting. You handle the talent.
+            <div className="grid gap-4 md:grid-cols-3">
+              {beliefs.map(({ title, description, icon: Icon }) => (
+                <div key={title} className="card-interactive">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h2 className="mt-5 text-xl">{title}</h2>
+                  <p className="mt-3 text-sm">{description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="section-frame p-8 md:p-10">
+              <h2 className="text-balance">The software handles the structure. The user keeps the voice and the substance.</h2>
+              <p className="mt-4 max-w-2xl text-base">
+                That balance is what we’re aiming for across extraction, editing, and export. The UI redesign is part of that same goal: fewer distractions, better hierarchy, and interfaces that behave like real tools.
               </p>
-              <Link
-                href="/optimize"
-                className="inline-flex items-center gap-2 bg-background text-foreground border-3 border-background px-8 py-3 font-bold uppercase tracking-wide transition-colors duration-200 hover:bg-muted"
-                style={{ boxShadow: "4px 4px 0px rgba(0,0,0,0.2)" }}
-              >
-                Optimize Your Resume
-                <ArrowRight className="w-4 h-4" />
+              <Link href="/optimize" className="btn mt-8">
+                Optimize your resume
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
-        </div>
         </section>
-
         <Footer />
       </main>
     </>

@@ -1,23 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { ArrowRight, Mail } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Mail, Sparkles } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
+import { Input } from "@/components/ui/input"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 import { toast } from "@/hooks/use-toast"
 
-export default function Home() {
+export default function OptimizePage() {
   const [file, setFile] = useState<File | null>(null)
   const [email, setEmail] = useState("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const authBypassed = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DISABLE_AUTH === "true"
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
 
-  // Display errors from processing
   useEffect(() => {
     if (error) {
       toast({
@@ -28,10 +28,8 @@ export default function Home() {
     }
   }, [error])
 
-  // Update PDF URL when download URL is available
   useEffect(() => {
     if (downloadUrl && !isProcessing) {
-      // Set PDF URL for preview when download is ready
       setPdfUrl(downloadUrl)
     }
   }, [downloadUrl, isProcessing])
@@ -51,9 +49,8 @@ export default function Home() {
       })
       return
     }
-    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
 
-    // Validate file
+    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
     const validTypes = [
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -85,7 +82,6 @@ export default function Home() {
     setPdfUrl(null)
 
     try {
-      // Upload file
       const formData = new FormData()
       formData.append("file", selectedFile)
       formData.append("email", normalizedEmail)
@@ -101,23 +97,22 @@ export default function Home() {
       }
 
       const uploadData = await uploadResponse.json()
-      const fileId = uploadData.file_id
+      const uploadedFileId = uploadData.file_id
 
-      // Start processing
-      startProcessing(fileId)
+      startProcessing(uploadedFileId)
 
       const remainingTrials = uploadData?.trial?.remaining
       toast({
-        title: "File uploaded",
-        description: typeof remainingTrials === "number"
-          ? `Your resume is being processed. ${remainingTrials} free trial(s) remaining in this 12-hour window.`
-          : authBypassed
-            ? "Your resume is being processed (local auth bypass mode)."
-            : "Your resume is being processed...",
+        title: "Resume uploaded",
+        description:
+          typeof remainingTrials === "number"
+            ? `Processing started. ${remainingTrials} free trial(s) remaining in this 24-hour window.`
+            : authBypassed
+              ? "Processing started in local auth bypass mode."
+              : "Processing started successfully.",
       })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
-      console.error("[v0] Error:", errorMessage)
       toast({
         title: "Upload failed",
         description: errorMessage,
@@ -142,51 +137,73 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main
-        className="page-shell pt-28 md:pt-32"
-        role="main"
-        itemScope
-        itemType="https://schema.org/WebApplication"
-      >
-        <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
-        <section aria-labelledby="upload-section">
-          {!isProcessing && !pdfUrl && !error ? (
-            <div className="space-y-4">
-              {!authBypassed ? (
-                <label className="block surface-panel p-4">
-                  <span className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Mail className="h-4 w-4" />
-                    Email (3 free resume generations every 24 hours)
-                  </span>
-                  <input
-                    type="email"
-                    className="w-full border border-input bg-background px-3 py-2 text-sm"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    autoComplete="email"
-                    required
-                  />
-                </label>
-              ) : null}
-              <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+      <main className="page-shell">
+        <section className="container py-12 md:py-16">
+          <div className="mx-auto max-w-5xl space-y-6">
+            <div className="section-frame p-6 md:p-8">
+              <div className="section-header-kicker">Optimizer</div>
+              <h1 className="mt-5 text-balance">Upload a draft and let KairosCV reshape it into a clearer, ATS-ready resume.</h1>
+              <p className="mt-4 max-w-3xl text-base">
+                The flow is intentionally simple: add your file, follow the progress states, review the preview, and download the final PDF. No noisy controls, no overexplained interface.
+              </p>
             </div>
-          ) : isProcessing ? (
-            <ProgressTracker progress={progress} stage={stage} message={message} />
-          ) : error ? (
-            <div className="text-center space-y-4">
-              <p className="text-destructive">{error}</p>
-              <button onClick={handleReset} className="btn inline-flex items-center justify-center gap-2">
-                <ArrowRight className="h-4 w-4" />
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
-          )}
-        </section>
-        </div>
 
+            {!isProcessing && !pdfUrl && !error ? (
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+                <div className="space-y-4">
+                  {!authBypassed ? (
+                    <label className="input-surface block">
+                      <span className="field-label flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        Email for trial tracking
+                      </span>
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
+                        required
+                      />
+                      <p className="mt-3 text-sm text-muted-foreground">Each account gets 3 free resume generations in a 24-hour window.</p>
+                    </label>
+                  ) : null}
+                  <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+                </div>
+
+                <aside className="space-y-4">
+                  <div className="surface-panel p-5">
+                    <p className="text-sm font-medium text-foreground">What happens next</p>
+                    <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                      <li>1. Resume content is parsed and normalized.</li>
+                      <li>2. The model improves structure and phrasing.</li>
+                      <li>3. A professional PDF is generated for download.</li>
+                    </ul>
+                  </div>
+                  <div className="surface-panel p-5">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Sparkles className="h-4 w-4" />
+                      <p className="text-sm font-medium">Supported inputs</p>
+                    </div>
+                    <p className="mt-3 text-sm">PDF, DOCX, and plain text up to 5MB.</p>
+                  </div>
+                </aside>
+              </div>
+            ) : isProcessing ? (
+              <ProgressTracker progress={progress} stage={stage} message={message} />
+            ) : error ? (
+              <div className="empty-state">
+                <h2 className="text-xl">Something interrupted processing</h2>
+                <p className="mx-auto mt-3 max-w-md text-sm">{error}</p>
+                <button onClick={handleReset} className="btn mt-6">
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
+            )}
+          </div>
+        </section>
         <Footer />
       </main>
     </>

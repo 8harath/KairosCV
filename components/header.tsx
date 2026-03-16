@@ -1,76 +1,65 @@
 "use client"
 
 import Link from "next/link"
+import { Menu } from "lucide-react"
 import Navigation from "@/components/navigation"
-import { useEffect, useState } from "react"
 import AuthButtons from "@/components/auth-buttons"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+
+const mobileLinks = [
+  { href: "/", label: "Home" },
+  { href: "/intent", label: "Intent" },
+  { href: "/optimize", label: "Optimize" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/contact", label: "Contact" },
+]
 
 export default function Header() {
-  const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-
-      // Show header when scrolling up, hide when scrolling down
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        setIsVisible(true)
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false)
-      }
-
-      setLastScrollY(currentScrollY)
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
-
   return (
-    <header className={`fixed top-0 left-0 right-0 z-40 transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
-      <div className="container mx-auto px-4 pt-3 md:pt-5">
-        <div className="section-frame border-2 px-4 py-3 md:px-5 md:py-4">
-        {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between gap-6">
-          {/* Left: Logo */}
-          <Link href="/" className="group flex-shrink-0 transition-opacity hover:opacity-80">
-            <h2 className="mb-0 text-xl font-black tracking-[-0.04em] lg:text-2xl">
-              KairosCV
-            </h2>
-          </Link>
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/78 backdrop-blur-xl">
+      <div className="container flex h-[72px] items-center justify-between gap-4 py-3">
+        <div className="flex items-center gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden">
+                <Menu className="h-4 w-4" />
+                <span className="sr-only">Open navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[88vw] max-w-xs border-r border-border bg-background p-0">
+              <SheetHeader className="border-b border-border px-5 py-5">
+                <SheetTitle className="text-left text-base">KairosCV</SheetTitle>
+                <p className="text-sm text-muted-foreground">ATS resume optimization with a calmer workspace feel.</p>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Mobile navigation">
+                {mobileLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
 
-          {/* Center: Navigation */}
-          <div className="flex-1 flex items-center justify-center">
-            <Navigation />
-          </div>
-
-          {/* Right: Auth + Badge */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <AuthButtons />
-            <div className="border border-border bg-secondary px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-foreground">
-              Refined beta
+          <Link href="/" className="flex items-center gap-3 rounded-2xl transition-opacity hover:opacity-80">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-card">
+              <span className="text-sm font-semibold text-foreground">K</span>
             </div>
-          </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">KairosCV</div>
+              <div className="text-xs text-muted-foreground">AI resume workspace</div>
+            </div>
+          </Link>
         </div>
 
-        {/* Mobile Layout */}
-        <div className="flex md:hidden items-center justify-between gap-4 relative">
-          <Navigation />
+        <Navigation />
 
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2 transition-opacity hover:opacity-80">
-            <h2 className="mb-0 text-lg font-black tracking-[-0.04em]">
-              KairosCV
-            </h2>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <AuthButtons />
-            <div className="border-2 border-primary px-2 py-1 font-bold text-[10px] uppercase bg-primary text-primary-foreground">
-              BETA
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden rounded-full border border-border bg-white/90 px-3 py-1 text-xs font-medium text-muted-foreground lg:inline-flex">
+            3 free generations
           </div>
-        </div>
+          <AuthButtons />
         </div>
       </div>
     </header>

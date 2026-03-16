@@ -1,18 +1,18 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Space_Mono, JetBrains_Mono } from "next/font/google"
+import { IBM_Plex_Mono, Manrope } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
+const manrope = Manrope({
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-display",
 })
 
-const jetbrainsMono = JetBrains_Mono({
-  weight: ["400", "500", "600", "700"],
+const plexMono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   variable: "--font-mono",
 })
@@ -137,7 +137,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
         <link rel="mask-icon" href="/favicon-32x32.png" color="#000000" />
       </head>
-      <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-display antialiased`}>
+      <body className={`${manrope.variable} ${plexMono.variable} antialiased`}>
         {children}
         <Toaster />
         <Analytics />

@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useRef, useState } from "react"
-import { CheckCircle2, Info, Upload } from "lucide-react"
+import { CheckCircle2, FileText, Info, UploadCloud } from "lucide-react"
 
 interface FileUploaderProps {
   onFileSelect: (file: File | null) => void
@@ -16,31 +16,23 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    if (!disabled) {
-      setIsDragging(true)
-    }
+    if (!disabled) setIsDragging(true)
   }
 
-  const handleDragLeave = () => {
-    setIsDragging(false)
-  }
+  const handleDragLeave = () => setIsDragging(false)
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     if (!disabled) {
       const file = e.dataTransfer.files[0]
-      if (file) {
-        handleFile(file)
-      }
+      if (file) handleFile(file)
     }
   }
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      handleFile(file)
-    }
+    if (file) handleFile(file)
   }
 
   const handleFile = (file: File) => {
@@ -69,14 +61,17 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
   }
 
   return (
-    <div className="card">
-      <div className="mb-6 border-b-2 border-primary pb-4">
-        <h2>Upload Your Resume</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Supports PDF, DOCX, and TXT formats</p>
+    <div className="surface-panel-strong p-6 md:p-8">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-foreground">Resume upload</p>
+          <p className="mt-2 text-sm">Drop in your current draft and KairosCV will handle extraction, cleanup, and formatting.</p>
+        </div>
+        <div className="pill-badge">PDF, DOCX, TXT</div>
       </div>
 
       <div
-        className={`upload-zone ${isDragging ? "dragging" : ""} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+        className={`upload-zone mt-6 ${isDragging ? "dragging" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -102,43 +97,29 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
         />
 
         {fileName ? (
-          <div>
-            <div className="mb-6 flex items-center justify-center gap-3">
-              <div
-                className="flex h-16 w-16 items-center justify-center border-2 border-success bg-white"
-                style={{ boxShadow: "0 10px 22px rgba(0,0,0,0.08)" }}
-              >
-                <CheckCircle2 className="h-8 w-8 text-success" />
-              </div>
+          <div className="mx-auto max-w-md">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
+              <CheckCircle2 className="h-7 w-7 text-success" />
             </div>
-            <h3 className="mb-3 text-xl font-black">{fileName}</h3>
-            <div className="mb-4 inline-flex items-center gap-2 border border-success bg-success/10 px-4 py-2">
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <p className="text-sm font-bold text-success">Ready to optimize</p>
-            </div>
-            {!disabled ? <p className="mt-4 text-xs text-muted-foreground">Click to select a different file</p> : null}
+            <h2 className="mt-5 text-xl">{fileName}</h2>
+            <p className="mt-2 text-sm">Your file is ready to process.</p>
+            {!disabled ? <p className="mt-4 text-sm text-muted-foreground">Click to replace it with a different file.</p> : null}
           </div>
         ) : (
-          <div>
-            <div className="upload-icon mx-auto mb-6 flex items-center justify-center">
-              <div className="flex h-20 w-20 items-center justify-center border-2 border-primary bg-white">
-                <Upload className="h-9 w-9 stroke-[2.2]" />
-              </div>
+          <div className="mx-auto max-w-md">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
+              <UploadCloud className="h-7 w-7 text-foreground" />
             </div>
-            <h3 className="mb-3 text-lg font-bold">Drag & Drop Your Resume</h3>
-            <p className="mb-6 text-sm text-muted-foreground">or click to browse your files</p>
-
-            <div className="mb-6 flex flex-wrap justify-center gap-3">
-              <span className="badge-neutral">PDF</span>
-              <span className="badge-neutral">DOCX</span>
-              <span className="badge-neutral">TXT</span>
+            <h2 className="mt-5 text-xl">Drop your resume here</h2>
+            <p className="mt-2 text-sm">Or click to browse files from your device.</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> PDF</span>
+              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> DOCX</span>
+              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> TXT</span>
             </div>
-
-            <div className="mt-6 border-t-2 border-dashed border-gray-30 pt-6">
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Info className="h-4 w-4" />
-                <span>Maximum file size: 5MB</span>
-              </div>
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Info className="h-4 w-4" />
+              Maximum file size: 5MB
             </div>
           </div>
         )}
