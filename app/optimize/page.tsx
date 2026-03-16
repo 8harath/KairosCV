@@ -168,7 +168,7 @@ export default function Home() {
             <div className="space-y-4">
               {!authBypassed ? (
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold">Email (2 free trials every 12 hours)</span>
+                  <span className="mb-2 block text-sm font-semibold">Email (3 free resume generations every 24 hours)</span>
                   <input
                     type="email"
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"

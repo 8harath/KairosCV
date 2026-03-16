@@ -21,7 +21,7 @@ Transform any resume format into ATS-optimized PDFs with intelligent content enh
 - **Real-Time Processing** - Server-Sent Events (SSE) provide live progress updates
 - **ATS-Optimized Output** - Professional templates designed for maximum parsing success
 - **Instant Preview** - View and download your optimized resume immediately
-- **Fair Usage** - 2 free trials per email every rolling 12 hours
+- **Fair Usage** - 3 free resume generations per user every rolling 24 hours
 - **Privacy-First** - Temporary server-side processing with automatic cleanup after download/expiry
 
 ---
@@ -107,6 +107,18 @@ OUTPUT_DIR=outputs
 DISABLE_AUTH=true
 NEXT_PUBLIC_DISABLE_AUTH=true
 ENABLE_TRIAL_LIMIT=false
+TRIAL_LIMIT=3
+TRIAL_WINDOW_HOURS=24
+USE_SUPABASE_STORAGE=false
+USE_SUPABASE_TRIALS=false
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_INPUT_BUCKET=resume-inputs
+SUPABASE_OUTPUT_BUCKET=resume-outputs
+SUPABASE_JSON_BUCKET=resume-json
 
 # Optional advanced extraction layers (off by default)
 ENABLE_VISUAL_EXTRACTION=false
