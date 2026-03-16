@@ -1,17 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ArrowRight, Mail } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
-import LoadingAnimation from "@/components/loading-animation"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 import { toast } from "@/hooks/use-toast"
 
 export default function Home() {
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [file, setFile] = useState<File | null>(null)
   const [email, setEmail] = useState("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
@@ -36,15 +35,6 @@ export default function Home() {
       setPdfUrl(downloadUrl)
     }
   }, [downloadUrl, isProcessing])
-
-  useEffect(() => {
-    // Show loading animation for 1.5 seconds on initial mount
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   const handleFileSelect = async (selectedFile: File | null) => {
     if (!selectedFile) {
@@ -149,15 +139,11 @@ export default function Home() {
     }
   }, [cleanup])
 
-  if (isInitialLoading) {
-    return <LoadingAnimation />
-  }
-
   return (
     <>
       <Header />
       <main
-        className="min-h-screen bg-background text-foreground pt-28 md:pt-32"
+        className="page-shell pt-28 md:pt-32"
         role="main"
         itemScope
         itemType="https://schema.org/WebApplication"
@@ -167,11 +153,14 @@ export default function Home() {
           {!isProcessing && !pdfUrl && !error ? (
             <div className="space-y-4">
               {!authBypassed ? (
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold">Email (3 free resume generations every 24 hours)</span>
+                <label className="block surface-panel p-4">
+                  <span className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <Mail className="h-4 w-4" />
+                    Email (3 free resume generations every 24 hours)
+                  </span>
                   <input
                     type="email"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="w-full border border-input bg-background px-3 py-2 text-sm"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -187,7 +176,8 @@ export default function Home() {
           ) : error ? (
             <div className="text-center space-y-4">
               <p className="text-destructive">{error}</p>
-              <button onClick={handleReset} className="btn">
+              <button onClick={handleReset} className="btn inline-flex items-center justify-center gap-2">
+                <ArrowRight className="h-4 w-4" />
                 Try Again
               </button>
             </div>

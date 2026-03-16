@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckIcon } from "@/components/icons"
+import { CheckCircle2, CircleDashed, FileOutput, FileText, Sparkles, WandSparkles } from "lucide-react"
 
 interface ProgressTrackerProps {
   progress: number
@@ -24,119 +24,78 @@ export default function ProgressTracker({ progress, stage, message }: ProgressTr
     generating: "Generating optimized document...",
     compiling: "Compiling final PDF...",
   }
+  const stageIcons = [FileText, Sparkles, WandSparkles, FileOutput, CircleDashed]
 
   const currentStageIndex = stages.indexOf(stage)
 
   return (
-    <div className="card animate-in fade-in">
+    <div className="card">
       <div className="mb-6 border-b-2 border-primary pb-4">
         <h2>Processing Your Resume</h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          This usually takes less than 60 seconds
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">This usually takes less than 60 seconds</p>
       </div>
 
-      {/* Processing indicator */}
-      <div className="mb-8 relative">
-        <div className="flex items-center justify-center gap-3 py-4">
-          {/* Animated processing dots */}
-          <div className="flex gap-2">
-            <div className="w-3 h-3 bg-primary border-2 border-primary animate-processing-dot" />
-            <div className="w-3 h-3 bg-primary border-2 border-primary animate-processing-dot" style={{ animationDelay: "0.2s" }} />
-            <div className="w-3 h-3 bg-primary border-2 border-primary animate-processing-dot" style={{ animationDelay: "0.4s" }} />
+      <div className="mb-8 border border-border bg-white/70 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">Current stage</p>
+            <p className="mt-2 text-base font-black">{stageLabels[stage] || "Working"}</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-black">
+            <CircleDashed className="h-4 w-4" />
+            {Math.round(progress)}%
           </div>
         </div>
       </div>
 
-      <div className="space-y-5 mb-8">
+      <div className="mb-8 space-y-5">
         {stages.map((s, idx) => {
           const isCompleted = currentStageIndex > idx
           const isActive = stage === s
           const isPending = currentStageIndex < idx
+          const Icon = stageIcons[idx]
 
           return (
-            <div
-              key={s}
-              className={`flex items-start gap-4 transition-all duration-300 ${
-                isActive ? "scale-105" : ""
-              }`}
-            >
-              {/* Stage Dot */}
+            <div key={s} className="flex items-start gap-4">
               <div
-                className={`stage-dot ${isCompleted ? "completed" : isActive ? "active" : ""}`}
+                className={`flex h-11 w-11 items-center justify-center border-2 ${
+                  isCompleted
+                    ? "border-success bg-white text-success"
+                    : isActive
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-white text-muted-foreground"
+                }`}
               >
-                {isCompleted ? (
-                  <CheckIcon className="w-5 h-5 animate-in zoom-in" />
-                ) : isActive ? (
-                  <span className="text-sm font-black animate-processing-pulse">{idx + 1}</span>
-                ) : (
-                  <span className="text-sm font-black">{idx + 1}</span>
-                )}
+                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
               </div>
 
-              {/* Stage Info */}
               <div className="flex-1 pt-2">
-                <p className={`font-bold text-sm transition-colors duration-200 ${
-                  isPending ? "text-muted-foreground" : isActive ? "text-primary" : ""
-                }`}>
+                <p
+                  className={`text-sm font-bold ${
+                    isPending ? "text-muted-foreground" : isActive ? "text-primary" : ""
+                  }`}
+                >
                   {stageLabels[s]}
                 </p>
-                {isActive && (
-                  <p className="text-muted-foreground text-xs mt-1 animate-in fade-in">
-                    {stageMessages[s]}
-                  </p>
-                )}
-                {isCompleted && (
-                  <p className="text-xs mt-1 text-success font-semibold animate-in fade-in">
-                    ✓ Complete
-                  </p>
-                )}
+                {isActive ? <p className="mt-1 text-xs text-muted-foreground">{stageMessages[s]}</p> : null}
+                {isCompleted ? <p className="mt-1 text-xs font-semibold text-success">Complete</p> : null}
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* Enhanced Progress Bar */}
-      <div className="mt-8 p-6 bg-secondary border-2 border-primary">
-        <div className="flex justify-between items-center mb-4">
+      <div className="mt-8 border-2 border-primary bg-secondary p-6">
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm font-bold">Overall Progress</p>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-success animate-pulse" />
-            <p className="text-sm font-black">{Math.round(progress)}%</p>
-          </div>
+          <p className="text-sm font-black">{Math.round(progress)}%</p>
         </div>
-        <div className="h-4 border-3 border-primary bg-white overflow-hidden relative">
-          <div
-            className="h-full bg-primary transition-all duration-500 ease-out relative"
-            style={{ width: `${progress}%` }}
-          >
-            {/* Animated stripe overlay */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer" />
-            </div>
-            {/* Diagonal stripes for texture */}
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: `repeating-linear-gradient(
-                  45deg,
-                  transparent,
-                  transparent 10px,
-                  rgba(255, 255, 255, 0.5) 10px,
-                  rgba(255, 255, 255, 0.5) 20px
-                )`
-              }}
-            />
-          </div>
+        <div className="relative h-4 overflow-hidden border-3 border-primary bg-white">
+          <div className="relative h-full bg-primary transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {message && (
-        <p className="text-center text-muted-foreground text-sm mt-6 animate-in fade-in font-medium">
-          {message}
-        </p>
-      )}
+      {message ? <p className="mt-6 text-center text-sm font-medium text-muted-foreground">{message}</p> : null}
     </div>
   )
 }

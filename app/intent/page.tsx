@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
-import { ArrowRightIcon } from "@/components/icons"
+import { ArrowRight } from "lucide-react"
 
 export default function IntentPage() {
   return (
@@ -11,7 +11,7 @@ export default function IntentPage() {
         <section className="container mx-auto px-4 py-12 md:py-20">
         <div className="max-w-3xl mx-auto">
           {/* Page Title */}
-          <div className="mb-12 animate-in fade-in">
+          <div className="mb-12">
             <h1 className="mb-4">Our Intent</h1>
             <div className="w-24 h-1 bg-primary"></div>
           </div>
@@ -19,7 +19,7 @@ export default function IntentPage() {
           {/* Philosophy Content */}
           <div className="space-y-8">
             {/* Main Philosophy */}
-            <div className="card animate-in fade-in delay-100">
+            <div className="card">
               <h2 className="mb-6">
                 The Philosophy
               </h2>
@@ -37,7 +37,7 @@ export default function IntentPage() {
             </div>
 
             {/* The Problem */}
-            <div className="border-2 border-primary p-6 bg-secondary animate-in fade-in delay-200">
+            <div className="border-2 border-primary p-6 bg-secondary">
               <h3 className="mb-4">The Problem</h3>
               <p className="text-base leading-relaxed">
                 Job seekers spend countless hours tweaking fonts, margins, and keywords—not to showcase their abilities, but to appease automated systems. This is time that could be spent honing skills, building projects, or preparing for interviews.
@@ -45,7 +45,7 @@ export default function IntentPage() {
             </div>
 
             {/* Our Solution */}
-            <div className="card animate-in fade-in delay-300">
+            <div className="card">
               <h3 className="mb-4">Our Solution</h3>
               <p className="text-base leading-relaxed mb-4">
                 <strong>We automate the formatting game.</strong> KairosCV uses AI to transform any resume into an ATS-optimized format, allowing you to focus on what matters: your actual qualifications and achievements.
@@ -56,7 +56,7 @@ export default function IntentPage() {
             </div>
 
             {/* Vision */}
-            <div className="border-l-4 border-primary pl-6 py-4 animate-in fade-in delay-100">
+            <div className="border-l-4 border-primary pl-6 py-4">
               <h3 className="mb-4">Our Vision</h3>
               <p className="text-base leading-relaxed">
                 We&apos;re working toward a future where talent is evaluated on merit alone. While we can&apos;t change hiring systems overnight, we can level the playing field by making ATS optimization accessible to everyone—instantly and for free.
@@ -65,7 +65,7 @@ export default function IntentPage() {
 
             {/* Core Beliefs */}
             <div className="grid md:grid-cols-2 gap-6 mt-12">
-              <div className="border-2 border-primary p-6 hover:translate-y-[-4px] transition-transform">
+              <div className="border-2 border-primary p-6">
                 <div className="text-3xl font-black mb-3">01</div>
                 <h4 className="font-bold mb-2">Skills Over Style</h4>
                 <p className="text-sm text-muted-foreground">
@@ -73,7 +73,7 @@ export default function IntentPage() {
                 </p>
               </div>
 
-              <div className="border-2 border-primary p-6 hover:translate-y-[-4px] transition-transform">
+              <div className="border-2 border-primary p-6">
                 <div className="text-3xl font-black mb-3">02</div>
                 <h4 className="font-bold mb-2">Time Well Spent</h4>
                 <p className="text-sm text-muted-foreground">
@@ -81,7 +81,7 @@ export default function IntentPage() {
                 </p>
               </div>
 
-              <div className="border-2 border-primary p-6 hover:translate-y-[-4px] transition-transform">
+              <div className="border-2 border-primary p-6">
                 <div className="text-3xl font-black mb-3">03</div>
                 <h4 className="font-bold mb-2">Equal Access</h4>
                 <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ export default function IntentPage() {
                 </p>
               </div>
 
-              <div className="border-2 border-primary p-6 hover:translate-y-[-4px] transition-transform">
+              <div className="border-2 border-primary p-6">
                 <div className="text-3xl font-black mb-3">04</div>
                 <h4 className="font-bold mb-2">AI for Good</h4>
                 <p className="text-sm text-muted-foreground">
@@ -108,11 +108,11 @@ export default function IntentPage() {
               </p>
               <Link
                 href="/optimize"
-                className="inline-flex items-center gap-2 bg-background text-foreground border-3 border-background px-8 py-3 font-bold uppercase tracking-wide hover:translate-y-[-2px] transition-all duration-200"
+                className="inline-flex items-center gap-2 bg-background text-foreground border-3 border-background px-8 py-3 font-bold uppercase tracking-wide transition-colors duration-200 hover:bg-muted"
                 style={{ boxShadow: "4px 4px 0px rgba(0,0,0,0.2)" }}
               >
                 Optimize Your Resume
-                <ArrowRightIcon className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

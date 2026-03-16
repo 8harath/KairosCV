@@ -1,26 +1,9 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import Link from "next/link"
+import { ArrowRight, CircleCheckBig, FileText, ShieldCheck } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
-import LoadingAnimation from "@/components/loading-animation"
 
 export default function Home() {
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  if (isInitialLoading) {
-    return <LoadingAnimation />
-  }
-
   return (
     <>
       <Header />
@@ -38,11 +21,13 @@ export default function Home() {
                     KairosCV turns messy source resumes into sharp, ATS-optimized outputs with AI-assisted structure, stronger phrasing, and a cleaner final layout.
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <Link href="/optimize" className="btn-hero inline-flex items-center justify-center">
+                    <Link href="/optimize" className="btn-hero inline-flex items-center justify-center gap-2">
+                      <FileText className="h-5 w-5" />
                       Optimize Your Resume
                     </Link>
-                    <Link href="/signup" className="btn-secondary inline-flex items-center justify-center">
+                    <Link href="/signup" className="btn-secondary inline-flex items-center justify-center gap-2">
                       Sign Up Free
+                      <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
@@ -55,15 +40,15 @@ export default function Home() {
                   <div className="space-y-4">
                     <div className="metric-tile">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">Input</p>
-                      <p className="mt-2 text-sm text-foreground">PDF, DOCX, or raw text uploads with inconsistent formatting.</p>
+                      <p className="mt-2 flex items-start gap-2 text-sm text-foreground"><FileText className="mt-0.5 h-4 w-4 shrink-0" />PDF, DOCX, or raw text uploads with inconsistent formatting.</p>
                     </div>
                     <div className="metric-tile">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">Processing</p>
-                      <p className="mt-2 text-sm text-foreground">LLM extraction, content cleanup, structured sections, and ATS-safe formatting.</p>
+                      <p className="mt-2 flex items-start gap-2 text-sm text-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />LLM extraction, content cleanup, structured sections, and ATS-safe formatting.</p>
                     </div>
                     <div className="metric-tile">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">Output</p>
-                      <p className="mt-2 text-sm text-foreground">Professional PDF output with a calmer, account-backed workflow across devices.</p>
+                      <p className="mt-2 flex items-start gap-2 text-sm text-foreground"><CircleCheckBig className="mt-0.5 h-4 w-4 shrink-0" />Professional PDF output with a calmer, account-backed workflow across devices.</p>
                     </div>
                   </div>
                 </div>
@@ -167,11 +152,13 @@ export default function Home() {
                 Sign in, upload your draft, and turn scattered experience into a sharper resume that reads well on every screen.
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Link href="/optimize" className="btn inline-flex items-center justify-center">
+                <Link href="/optimize" className="btn inline-flex items-center justify-center gap-2">
+                  <FileText className="h-4 w-4" />
                   Get Started Now
                 </Link>
-                <Link href="/dashboard" className="btn-secondary inline-flex items-center justify-center">
+                <Link href="/dashboard" className="btn-secondary inline-flex items-center justify-center gap-2">
                   Open Dashboard
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
