@@ -1,5 +1,7 @@
+import { createServerClient, type CookieMethodsServer } from "@supabase/ssr"
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import {
+  getSupabaseAnonKey,
   getSupabaseServiceRoleKey,
   getSupabaseUrl,
   isSupabaseConfigured,
@@ -22,4 +24,14 @@ export function getSupabaseServiceRoleClient(): SupabaseClient {
   }
 
   return serviceRoleClient
+}
+
+export function createSupabaseServerClient(cookieMethods: CookieMethodsServer) {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY.")
+  }
+
+  return createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+    cookies: cookieMethods,
+  })
 }

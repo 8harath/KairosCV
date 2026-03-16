@@ -3,6 +3,7 @@
 import Link from "next/link"
 import Navigation from "@/components/navigation"
 import { useEffect, useState } from "react"
+import AuthButtons from "@/components/auth-buttons"
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true)
@@ -43,9 +44,12 @@ export default function Header() {
             <Navigation />
           </div>
 
-          {/* Right: Beta Badge */}
-          <div className="border-2 border-primary px-3 py-1.5 font-black text-xs uppercase bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all flex-shrink-0">
-            BETA
+          {/* Right: Auth + Badge */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <AuthButtons />
+            <div className="border-2 border-primary px-3 py-1.5 font-black text-xs uppercase bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+              BETA
+            </div>
           </div>
         </div>
 
@@ -59,8 +63,11 @@ export default function Header() {
             </h2>
           </Link>
 
-          <div className="border-2 border-primary px-2 py-1 font-bold text-[10px] uppercase bg-primary text-primary-foreground">
-            BETA
+          <div className="flex items-center gap-2">
+            <AuthButtons />
+            <div className="border-2 border-primary px-2 py-1 font-bold text-[10px] uppercase bg-primary text-primary-foreground">
+              BETA
+            </div>
           </div>
         </div>
       </div>

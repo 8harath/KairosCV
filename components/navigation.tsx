@@ -12,6 +12,7 @@ export default function Navigation() {
     { href: "/", label: "Home" },
     { href: "/intent", label: "Intent" },
     { href: "/optimize", label: "Optimize" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/contact", label: "Contact" },
   ]
 

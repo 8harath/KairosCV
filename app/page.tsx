@@ -47,10 +47,10 @@ export default function Home() {
                   Optimize Your Resume
                 </Link>
                 <Link
-                  href="/intent"
+                  href="/signup"
                   className="border-4 border-primary px-8 py-4 font-black text-lg uppercase bg-background text-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
                 >
-                  Learn More
+                  Sign Up Free
                 </Link>
               </div>
             </div>
