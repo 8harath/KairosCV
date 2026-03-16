@@ -11,9 +11,10 @@
 import fs from "fs-extra"
 import path from "path"
 import { ResumeData } from "../schemas/resume-schema"
+import { getUploadsBaseDir } from "@/lib/file-storage"
 
 // Storage directory for JSON files
-const JSON_STORAGE_DIR = path.join(process.cwd(), "uploads", "json")
+const JSON_STORAGE_DIR = path.join(getUploadsBaseDir(), "json")
 
 /**
  * Initialize JSON storage directory

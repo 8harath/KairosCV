@@ -1,8 +1,17 @@
 import fs from "fs-extra"
+import os from "os"
 import path from "path"
 import { getSafeExtension } from "./security/file-validation"
 
-const UPLOADS_DIR = path.join(process.cwd(), "uploads")
+export function getUploadsBaseDir(): string {
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    return path.join(os.tmpdir(), "kairoscv", "uploads")
+  }
+
+  return path.join(process.cwd(), "uploads")
+}
+
+const UPLOADS_DIR = getUploadsBaseDir()
 const GENERATED_DIR = path.join(UPLOADS_DIR, "generated")
 const JSON_DIR = path.join(UPLOADS_DIR, "json")
 

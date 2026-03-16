@@ -2,8 +2,9 @@ import fs from "fs-extra"
 import path from "path"
 import { createHash } from "crypto"
 import { getTrialLimit, getTrialWindowHours } from "@/lib/config/env"
+import { getUploadsBaseDir } from "@/lib/file-storage"
 
-const TRIALS_DIR = path.join(process.cwd(), "uploads", "trials")
+const TRIALS_DIR = path.join(getUploadsBaseDir(), "trials")
 
 interface TrialRecord {
   email: string
