@@ -2,8 +2,12 @@ import { type NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
 import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
-import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials/trial-limiter"
-import { isAuthBypassed, isTrialLimitEnabled } from "@/lib/config/env"
+import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials"
+import { isAuthBypassed, isTrialLimitEnabled, shouldUseSupabaseStorage } from "@/lib/config/env"
+import { saveUploadedFileToSupabase } from "@/lib/storage/supabase-storage"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,11 +73,21 @@ export async function POST(request: NextRequest) {
 
     // Generate a cryptographically secure file identifier.
     const fileId = randomUUID()
+    const usingSupabaseStorage = shouldUseSupabaseStorage()
+    let storage:
+      | {
+          bucket: string
+          path: string
+        }
+      | undefined
 
-    // Save file to filesystem
-    await saveUploadedFile(fileId, file.name, fileBuffer)
+    if (usingSupabaseStorage) {
+      storage = await saveUploadedFileToSupabase(fileId, file.name, fileBuffer, file.type)
+    } else {
+      // Save file to filesystem until the full processing pipeline is migrated.
+      await saveUploadedFile(fileId, file.name, fileBuffer)
+    }
 
-    // Save file metadata
     await saveFileMetadata({
       fileId,
       filename: file.name,
@@ -81,6 +95,7 @@ export async function POST(request: NextRequest) {
       type: file.type,
       email,
       uploadedAt: new Date(),
+      storage,
     })
 
     return NextResponse.json({
@@ -94,6 +109,7 @@ export async function POST(request: NextRequest) {
           }
         : undefined,
       auth_bypassed: authBypassed,
+      storage_mode: usingSupabaseStorage ? "supabase" : "local",
       message: "File uploaded successfully",
     })
   } catch (error) {

@@ -68,6 +68,10 @@ export interface FileMetadata {
   type: string
   email?: string
   uploadedAt: Date
+  storage?: {
+    bucket: string
+    path: string
+  }
 }
 
 // Get metadata file path
