@@ -12,10 +12,10 @@ interface AuthState {
 
 function actionButtonClassName(isPrimary: boolean): string {
   return [
-    "border-2 border-primary px-4 py-2 font-bold text-xs uppercase transition-all",
+    "inline-flex items-center justify-center border px-3 py-2 font-bold text-[11px] uppercase tracking-[0.14em] transition-all",
     isPrimary
-      ? "bg-primary text-primary-foreground hover:translate-x-[-2px] hover:translate-y-[-2px]"
-      : "bg-background text-foreground hover:translate-x-[-2px] hover:translate-y-[-2px]",
+      ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(0,0,0,0.16)] hover:translate-y-[-1px]"
+      : "border-border bg-white/90 text-foreground hover:bg-secondary hover:translate-y-[-1px]",
   ].join(" ")
 }
 
@@ -53,12 +53,12 @@ export default function AuthButtons() {
   }, [router])
 
   if (loading) {
-    return <div className="text-xs font-bold uppercase text-muted-foreground">Auth loading</div>
+    return <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Auth</div>
   }
 
   if (!user) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
         {pathname !== "/login" ? (
           <Link href="/login" className={actionButtonClassName(false)}>
             Log In
@@ -74,7 +74,7 @@ export default function AuthButtons() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
       <Link href="/dashboard" className={actionButtonClassName(false)}>
         Dashboard
       </Link>

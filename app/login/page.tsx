@@ -6,31 +6,39 @@ export default function LoginPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-background text-foreground pt-32 md:pt-40">
+      <main className="page-shell pt-32 md:pt-40">
         <section className="container mx-auto px-4 py-16">
-          <div className="mx-auto max-w-2xl border-4 border-primary bg-background p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="surface-panel-strong hero-grid mx-auto max-w-4xl overflow-hidden p-6 md:p-8">
             <div className="mb-8">
-              <div className="mb-3 inline-block border-2 border-primary bg-primary px-3 py-1 text-xs font-black uppercase text-primary-foreground">
+              <div className="section-header-kicker mb-3">
                 Login
               </div>
-              <h1 className="text-4xl font-black">Access Your Resume Dashboard</h1>
-              <p className="mt-4 text-muted-foreground">
+              <h1 className="text-4xl font-black md:text-5xl">Access your resume workspace</h1>
+              <p className="mt-4 max-w-2xl text-muted-foreground">
                 Sign in with Google to save generated resumes, track your free credits, and access your dashboard from any device.
               </p>
             </div>
 
             <a
               href="/auth/login"
-              className="inline-flex w-full items-center justify-center border-4 border-primary bg-primary px-6 py-4 text-lg font-black uppercase text-primary-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+              className="btn inline-flex w-full items-center justify-center text-base md:w-auto"
             >
               Continue With Google
             </a>
 
-            <div className="mt-6 border-2 border-primary p-4 text-sm">
-              <p className="font-bold uppercase">What you get</p>
-              <p className="mt-2 text-muted-foreground">
-                3 free resume generations every 24 hours, plus a persistent dashboard for download history once storage migration is completed.
-              </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="surface-panel p-4 text-sm">
+                <p className="font-bold uppercase tracking-[0.12em]">What you get</p>
+                <p className="mt-2 text-muted-foreground">
+                  3 free resume generations every 24 hours, plus a persistent dashboard for download history once storage migration is completed.
+                </p>
+              </div>
+              <div className="surface-panel p-4 text-sm">
+                <p className="font-bold uppercase tracking-[0.12em]">Why sign in</p>
+                <p className="mt-2 text-muted-foreground">
+                  Keep the experience synced across devices and build toward stored resume history and reusable profile context.
+                </p>
+              </div>
             </div>
 
             <p className="mt-6 text-sm text-muted-foreground">

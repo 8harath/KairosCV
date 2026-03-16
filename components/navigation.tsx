@@ -19,7 +19,7 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex gap-4" aria-label="Main navigation">
+      <nav className="hidden md:flex items-center gap-2 border border-border bg-white/75 p-1 shadow-[0_8px_24px_rgba(0,0,0,0.06)] backdrop-blur" aria-label="Main navigation">
         {links.map((link) => {
           const isActive = pathname === link.href
           return (
@@ -27,29 +27,14 @@ export default function Navigation() {
               key={link.href}
               href={link.href}
               className={`
-                border-2 border-primary px-6 py-2 font-bold text-sm uppercase
+                border px-4 py-2 font-bold text-xs uppercase tracking-[0.14em]
                 transition-all duration-200
                 ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-foreground hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                    ? "border-primary bg-primary text-primary-foreground shadow-[0_10px_20px_rgba(0,0,0,0.16)]"
+                    : "border-transparent bg-transparent text-foreground hover:border-border hover:bg-white"
                 }
               `}
-              style={{
-                boxShadow: isActive
-                  ? "0px 0px 0px currentColor"
-                  : "0px 0px 0px currentColor",
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.boxShadow = "4px 4px 0px var(--foreground)"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.boxShadow = "0px 0px 0px currentColor"
-                }
-              }}
             >
               {link.label}
             </Link>
@@ -61,7 +46,7 @@ export default function Navigation() {
       <div className="md:hidden">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="border-2 border-primary px-4 py-2 font-bold text-sm uppercase bg-background"
+          className="border border-border bg-white/92 px-4 py-2 font-bold text-xs uppercase tracking-[0.14em] shadow-[0_8px_20px_rgba(0,0,0,0.08)] backdrop-blur"
           aria-label="Toggle mobile menu"
           aria-expanded={isMobileMenuOpen}
         >
@@ -69,7 +54,7 @@ export default function Navigation() {
         </button>
 
         {isMobileMenuOpen && (
-          <div className="absolute left-0 right-0 top-full mt-2 bg-background border-2 border-primary z-50 animate-in fade-in slide-in-from-bottom-3">
+          <div className="absolute left-0 right-0 top-full mt-3 overflow-hidden border border-border bg-white/96 shadow-[0_18px_40px_rgba(0,0,0,0.12)] backdrop-blur z-50 animate-in fade-in slide-in-from-bottom-3">
             <nav className="flex flex-col" aria-label="Mobile navigation">
               {links.map((link) => {
                 const isActive = pathname === link.href
@@ -79,12 +64,12 @@ export default function Navigation() {
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`
-                      border-b-2 border-primary px-6 py-4 font-bold text-sm uppercase
+                      border-b border-border px-5 py-4 font-bold text-xs uppercase tracking-[0.16em]
                       transition-all duration-200
                       ${
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "bg-background text-foreground hover:bg-secondary"
+                          : "bg-transparent text-foreground hover:bg-secondary"
                       }
                     `}
                   >

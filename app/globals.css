@@ -789,3 +789,103 @@ textarea:focus-visible {
 .delay-300 {
   animation-delay: 300ms;
 }
+
+/* 2026 refinement layer: calmer, Notion-inspired surfaces while preserving the bold monochrome core */
+:root {
+  --background: #fcfcf9;
+  --card: rgba(255, 255, 255, 0.9);
+  --popover: rgba(255, 255, 255, 0.96);
+  --secondary: #f1efe8;
+  --muted: #f4f2ec;
+  --muted-foreground: #5c584f;
+  --accent: #1f1d19;
+  --border: #171614;
+  --input: rgba(255, 255, 255, 0.9);
+  --paper-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
+  --paper-shadow-strong: 0 1px 0 rgba(0, 0, 0, 0.05), 0 20px 48px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background-image:
+    radial-gradient(circle at top, rgba(0, 0, 0, 0.03), transparent 26%),
+    linear-gradient(180deg, #fffefb 0%, #fbfaf6 52%, #f4f2ea 100%);
+  background-attachment: fixed;
+}
+
+.btn,
+.btn-hero {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 12px 26px rgba(0, 0, 0, 0.14);
+}
+
+.btn:hover,
+.btn-hero:hover {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 16px 32px rgba(0, 0, 0, 0.18);
+}
+
+.btn-secondary,
+.card,
+.card-interactive,
+.card-elevated {
+  box-shadow: var(--paper-shadow);
+}
+
+.card:hover,
+.card-interactive:hover,
+.card-elevated:hover,
+.btn-secondary:hover {
+  box-shadow: var(--paper-shadow-strong);
+}
+
+.page-shell {
+  @apply min-h-screen text-foreground;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.section-frame {
+  @apply border border-border bg-card;
+  box-shadow: var(--paper-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.surface-panel {
+  @apply border border-border bg-card;
+  box-shadow: var(--paper-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.surface-panel-strong {
+  @apply border-2 border-border bg-card;
+  box-shadow: var(--paper-shadow-strong);
+  backdrop-filter: blur(10px);
+}
+
+.hero-grid {
+  background-image:
+    radial-gradient(circle at 12% 24%, rgba(0, 0, 0, 0.05), transparent 16%),
+    radial-gradient(circle at 88% 16%, rgba(0, 0, 0, 0.04), transparent 20%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: auto, auto, 24px 24px, 24px 24px;
+}
+
+.section-header-kicker {
+  @apply inline-flex items-center border border-border bg-secondary px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-foreground;
+}
+
+.metric-tile {
+  @apply border border-border bg-white/80 p-5;
+  box-shadow: var(--paper-shadow);
+}
+
+.soft-link {
+  @apply text-sm font-black uppercase tracking-[0.14em] text-foreground underline-offset-4 transition-opacity hover:opacity-70 hover:underline;
+}
+
+@media (max-width: 768px) {
+  .page-shell {
+    background-size: 18px 18px;
+  }
+}

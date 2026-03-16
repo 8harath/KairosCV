@@ -28,13 +28,14 @@ export default function Header() {
   }, [lastScrollY])
 
   return (
-    <header className={`border-b-2 border-primary py-4 md:py-6 fixed top-0 left-0 right-0 bg-background z-40 transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
-      <div className="container mx-auto px-4">
+    <header className={`fixed top-0 left-0 right-0 z-40 transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+      <div className="container mx-auto px-4 pt-3 md:pt-5">
+        <div className="section-frame border-2 px-4 py-3 md:px-5 md:py-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between gap-6">
           {/* Left: Logo */}
-          <Link href="/" className="hover:opacity-80 transition-opacity group flex-shrink-0">
-            <h2 className="text-xl lg:text-2xl font-black mb-0 group-hover:translate-x-[-2px] transition-transform">
+          <Link href="/" className="group flex-shrink-0 transition-opacity hover:opacity-80">
+            <h2 className="mb-0 text-xl font-black tracking-[-0.04em] lg:text-2xl">
               KairosCV
             </h2>
           </Link>
@@ -47,8 +48,8 @@ export default function Header() {
           {/* Right: Auth + Badge */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <AuthButtons />
-            <div className="border-2 border-primary px-3 py-1.5 font-black text-xs uppercase bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
-              BETA
+            <div className="border border-border bg-secondary px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-foreground">
+              Refined beta
             </div>
           </div>
         </div>
@@ -57,8 +58,8 @@ export default function Header() {
         <div className="flex md:hidden items-center justify-between gap-4 relative">
           <Navigation />
 
-          <Link href="/" className="hover:opacity-80 transition-opacity group absolute left-1/2 -translate-x-1/2">
-            <h2 className="text-xl font-black mb-0 group-hover:translate-x-[-2px] transition-transform">
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 transition-opacity hover:opacity-80">
+            <h2 className="mb-0 text-lg font-black tracking-[-0.04em]">
               KairosCV
             </h2>
           </Link>
@@ -69,6 +70,7 @@ export default function Header() {
               BETA
             </div>
           </div>
+        </div>
         </div>
       </div>
     </header>
