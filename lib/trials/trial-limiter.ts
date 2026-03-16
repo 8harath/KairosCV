@@ -1,9 +1,8 @@
 import fs from "fs-extra"
 import path from "path"
 import { createHash } from "crypto"
+import { getTrialLimit, getTrialWindowHours } from "@/lib/config/env"
 
-const TRIAL_LIMIT = 2
-const TRIAL_WINDOW_MS = 12 * 60 * 60 * 1000
 const TRIALS_DIR = path.join(process.cwd(), "uploads", "trials")
 
 interface TrialRecord {
@@ -51,17 +50,19 @@ async function saveRecord(record: TrialRecord): Promise<void> {
 }
 
 export async function consumeTrial(email: string): Promise<TrialResult> {
+  const trialLimit = getTrialLimit()
+  const trialWindowMs = getTrialWindowHours() * 60 * 60 * 1000
   const normalized = normalizeEmail(email)
   const now = Date.now()
   const record = await loadRecord(normalized)
-  const recentAttempts = record.attempts.filter((timestamp) => now - timestamp < TRIAL_WINDOW_MS)
+  const recentAttempts = record.attempts.filter((timestamp) => now - timestamp < trialWindowMs)
 
-  if (recentAttempts.length >= TRIAL_LIMIT) {
+  if (recentAttempts.length >= trialLimit) {
     const oldest = Math.min(...recentAttempts)
     return {
       allowed: false,
       remaining: 0,
-      resetAt: new Date(oldest + TRIAL_WINDOW_MS).toISOString(),
+      resetAt: new Date(oldest + trialWindowMs).toISOString(),
     }
   }
 
@@ -71,7 +72,7 @@ export async function consumeTrial(email: string): Promise<TrialResult> {
   const resetBase = Math.min(...recentAttempts)
   return {
     allowed: true,
-    remaining: Math.max(TRIAL_LIMIT - recentAttempts.length, 0),
-    resetAt: new Date(resetBase + TRIAL_WINDOW_MS).toISOString(),
+    remaining: Math.max(trialLimit - recentAttempts.length, 0),
+    resetAt: new Date(resetBase + trialWindowMs).toISOString(),
   }
 }
