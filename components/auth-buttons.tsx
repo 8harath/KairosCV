@@ -1,9 +1,9 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { ChevronDown, LogOut, UserRound } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowRight, ChevronDown, LogOut, UserRound } from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 import { signOutWithSupabase } from "@/lib/supabase/auth"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,6 @@ function getInitial(email: string): string {
 }
 
 export default function AuthButtons() {
-  const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<AuthState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,20 +51,12 @@ export default function AuthButtons() {
 
   if (!user) {
     return (
-      <div className="flex items-center gap-2">
-        {pathname !== "/login" ? (
-          <Link href="/login">
-            <Button variant="ghost" className="hidden sm:inline-flex">
-              Log in
-            </Button>
-          </Link>
-        ) : null}
-        {pathname !== "/signup" ? (
-          <Link href="/signup">
-            <Button>Get started</Button>
-          </Link>
-        ) : null}
-      </div>
+      <a href="/auth/login">
+        <Button className="min-w-[190px]">
+          Continue with Google
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </a>
     )
   }
 
