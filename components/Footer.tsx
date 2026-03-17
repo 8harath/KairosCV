@@ -2,9 +2,7 @@ import Link from "next/link"
 
 const footerLinks = [
   { href: "/optimize", label: "Optimize" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/intent", label: "Intent" },
-  { href: "/contact", label: "Contact" },
+  { href: "/login", label: "Login" },
 ]
 
 export default function Footer() {
@@ -15,7 +13,7 @@ export default function Footer() {
           <div className="max-w-md">
             <div className="text-sm font-semibold text-foreground">KairosCV</div>
             <p className="mt-3 text-sm text-muted-foreground">
-              A focused workspace for turning raw resume content into ATS-optimized, professionally formatted outputs.
+              ATS-focused resume optimization with secure Google sign-in and downloadable PDF output.
             </p>
           </div>
 
@@ -33,7 +31,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 border-t border-border/70 pt-5 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>Designed for clarity, accessibility, and calmer resume workflows.</p>
+          <p>Built for a simple, production-ready resume workflow.</p>
           <p>&copy; 2026 KairosCV</p>
         </div>
       </div>
