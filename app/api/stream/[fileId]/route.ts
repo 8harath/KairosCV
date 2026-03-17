@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server"
 import { processResume, ProcessingProgress } from "@/lib/resume-processor"
-import { getFileMetadata, fileExists, getUploadFilePath } from "@/lib/file-storage"
-import path from "path"
+import { getFileMetadata, resolveUploadedFile } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
@@ -41,9 +40,14 @@ export async function GET(
       }
 
       try {
-        // Check if file exists
-        const filePath = getUploadFilePath(fileId, path.extname(metadata.filename) || ".txt")
-        if (!(await fileExists(filePath))) {
+        try {
+          const resolvedUpload = await resolveUploadedFile(fileId, metadata.filename, metadata.storage)
+          if (resolvedUpload.cleanup) {
+            await resolvedUpload.cleanup().catch((error) => {
+              console.warn("Failed to clean up temporary upload during preflight:", error)
+            })
+          }
+        } catch {
           send({ stage: "error", progress: 0, message: "File not found", error: "File was not uploaded correctly" })
           controller.close()
           return

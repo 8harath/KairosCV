@@ -2,6 +2,7 @@ import fs from "fs-extra"
 import os from "os"
 import path from "path"
 import { getSafeExtension } from "./security/file-validation"
+import { downloadUploadedFileFromSupabase } from "./storage/supabase-storage"
 
 export function getUploadsBaseDir(): string {
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION) {
@@ -115,6 +116,25 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
     console.error('Error reading metadata:', error)
     return null
   }
+}
+
+export async function resolveUploadedFile(
+  fileId: string,
+  originalFilename: string,
+  storage?: FileMetadata["storage"]
+): Promise<{ filePath: string; cleanup?: () => Promise<void> }> {
+  const extension = getSafeExtension(originalFilename) || ".txt"
+  const localPath = getUploadFilePath(fileId, extension)
+
+  if (await fileExists(localPath)) {
+    return { filePath: localPath }
+  }
+
+  if (storage?.bucket && storage?.path) {
+    return downloadUploadedFileFromSupabase(storage.bucket, storage.path, fileId, extension)
+  }
+
+  throw new Error("Uploaded file not found in local or remote storage")
 }
 
 export async function cleanupFileArtifacts(fileId: string, originalFilename: string): Promise<void> {
