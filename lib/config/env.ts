@@ -1,6 +1,8 @@
 const geminiApiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 const DEFAULT_TRIAL_LIMIT = 3
 const DEFAULT_TRIAL_WINDOW_HOURS = 24
+const DEFAULT_CHROMIUM_BINARY_URL =
+  "https://github.com/Sparticuz/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.x64.tar"
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on"])
 const FALSE_VALUES = new Set(["0", "false", "no", "off"])
@@ -28,6 +30,10 @@ function normalizeModelName(value: string | undefined, fallback: string): string
 
 export function getGeminiApiKey(): string {
   return geminiApiKey
+}
+
+export function getChromiumBinaryUrl(): string {
+  return process.env.CHROMIUM_BINARY_URL?.trim() || DEFAULT_CHROMIUM_BINARY_URL
 }
 
 export function hasGeminiApiKey(): boolean {
