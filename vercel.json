@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/stream/[fileId]/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
