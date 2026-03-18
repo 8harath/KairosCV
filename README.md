@@ -129,6 +129,11 @@ ENABLE_OCR_CROSS_VERIFY=false
 PUPPETEER_EXECUTABLE_PATH=
 PUPPETEER_HEADLESS=true
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+
+# Vercel PDF generation
+# Recommended for production on this branch when using Vercel Functions.
+# If omitted, the app falls back to the public Sparticuz v143 x64 release pack.
+CHROMIUM_BINARY_URL=
 ```
 
 ### 4. Run Development Server
@@ -311,6 +316,17 @@ This project is optimized for deployment on Render.com's free tier.
    PUPPETEER_EXECUTABLE_PATH=/opt/render/.cache/puppeteer/chrome
    ```
 5. **Deploy** - Render will automatically build and deploy
+
+### Deploy to Vercel
+
+This branch includes a Vercel-compatible PDF path built on `puppeteer-core` and serverless Chromium.
+
+1. Set the Vercel project to **Node.js 20 or 22**
+2. Set `CHROMIUM_BINARY_URL` to a hosted Sparticuz Chromium pack URL
+3. Keep `PUPPETEER_EXECUTABLE_PATH` empty on Vercel
+4. Deploy the `codex/vercel-pdf-runtime` branch
+
+If `CHROMIUM_BINARY_URL` is not provided, the branch falls back to the public Sparticuz v143 x64 pack URL.
 
 #### Performance on Free Tier
 - Cold start: ~10-15 seconds
