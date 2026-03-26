@@ -171,7 +171,7 @@ ${content}
 }
 
 /**
- * Generate education entry HTML
+ * Generate education entry HTML — Jake's format
  */
 function generateEducationHTML(entry: EducationEntry): string {
   if (!entry) {
@@ -182,6 +182,15 @@ function generateEducationHTML(entry: EducationEntry): string {
     ? `${entry.degree} in ${entry.field}`
     : entry.degree || entry.field || "Degree"
 
+  // Build extra details line (GPA, honors, coursework) — Jake's style keeps it compact
+  const details: string[] = []
+  if (entry.gpa) details.push(`GPA: ${entry.gpa}`)
+  if (entry.honors && entry.honors.length > 0) details.push(entry.honors.join(", "))
+  const coursework = (entry as any).relevantCoursework as string[] | undefined
+  if (coursework && coursework.length > 0) {
+    details.push(`Coursework: ${coursework.join(", ")}`)
+  }
+
   return `  <div class="entry">
     <div class="entry-header">
       <span class="entry-title">${escapeHtml(entry.institution)}</span>
@@ -191,12 +200,12 @@ function generateEducationHTML(entry: EducationEntry): string {
       <span class="entry-company">${escapeHtml(degree)}</span>
       ${entry.location ? `<span class="entry-location">${escapeHtml(entry.location)}</span>` : ""}
     </div>
-    ${entry.gpa ? `<div class="bullets"><div class="bullet">GPA: ${escapeHtml(entry.gpa)}</div></div>` : ""}
+    ${details.length > 0 ? `<div class="bullets"><div class="bullet">${escapeHtml(details.join(" | "))}</div></div>` : ""}
   </div>`
 }
 
 /**
- * Generate project entry HTML
+ * Generate project entry HTML — Jake's format: Name | Tech Stack on one line
  */
 function generateProjectHTML(entry: ProjectEntry): string {
   if (!entry || !entry.bullets) {
@@ -209,17 +218,23 @@ function generateProjectHTML(entry: ProjectEntry): string {
     .join("\n")
 
   const techStack = entry.technologies && entry.technologies.length > 0
-    ? `<div class="bullet"><strong>Technologies:</strong> ${entry.technologies.filter(t => t).map(escapeHtml).join(", ")}</div>`
+    ? entry.technologies.filter(t => t).map(escapeHtml).join(", ")
     : ""
 
+  const links: string[] = []
+  if (entry.github) links.push(`<a href="${escapeHtml(entry.github)}">GitHub</a>`)
+
+  const dateStr = entry.startDate && entry.endDate
+    ? `${escapeHtml(entry.startDate)} – ${escapeHtml(entry.endDate)}`
+    : entry.startDate ? escapeHtml(entry.startDate) : ""
+
   return `  <div class="entry">
-    <div class="entry-header">
-      <span class="entry-title">${escapeHtml(entry.name)}</span>
+    <div class="project-header">
+      <span class="project-title-line"><span class="project-name">${escapeHtml(entry.name)}</span>${techStack ? ` <span class="project-tech">| ${techStack}</span>` : ""}</span>
+      ${dateStr ? `<span class="project-date">${dateStr}</span>` : ""}${links.length > 0 ? `<span class="project-links">${links.join(" ")}</span>` : ""}
     </div>
-    ${entry.description ? `<div class="entry-subtitle"><span class="entry-company">${escapeHtml(entry.description)}</span></div>` : ""}
     <div class="bullets">
 ${bullets}
-${techStack ? "    " + techStack : ""}
     </div>
   </div>`
 }

@@ -126,22 +126,22 @@ export class PDFGenerator {
     const page: Page = await this.browser.newPage()
 
     try {
-      // Set content
+      // Set content — wait for font imports to complete
       await page.setContent(html, {
-        waitUntil: "networkidle0",
+        waitUntil: ["networkidle0", "domcontentloaded"],
       })
 
-      // Generate PDF
+      // Generate PDF — use CSS @page margins, no additional Puppeteer margins
       const pdfBuffer = await page.pdf({
         format: options.format || "letter",
         printBackground: options.printBackground !== false,
         margin: options.margin || {
-          top: "0.5in",
-          right: "0.5in",
-          bottom: "0.5in",
-          left: "0.5in",
+          top: "0",
+          right: "0",
+          bottom: "0",
+          left: "0",
         },
-        preferCSSPageSize: false,
+        preferCSSPageSize: true,
       })
 
       return Buffer.from(pdfBuffer)
