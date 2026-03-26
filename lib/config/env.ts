@@ -125,6 +125,23 @@ export function getSupabaseJsonBucket(): string {
   return process.env.SUPABASE_JSON_BUCKET?.trim() || "resume-json"
 }
 
+// Groq API configuration
+export function getGroqApiKey(): string {
+  return process.env.GROQ_API_KEY?.trim() || ""
+}
+
+export function hasGroqApiKey(): boolean {
+  return getGroqApiKey().length > 0
+}
+
+export function getGroqModel(): string {
+  return normalizeModelName(process.env.GROQ_MODEL, "llama-3.3-70b-versatile")
+}
+
+export function getGroqFastModel(): string {
+  return normalizeModelName(process.env.GROQ_FAST_MODEL, "llama-3.1-8b-instant")
+}
+
 export function isOcrCrossVerificationEnabled(): boolean {
   return parseBooleanEnv(process.env.ENABLE_OCR_CROSS_VERIFY, false)
 }
