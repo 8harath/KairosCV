@@ -1,27 +1,12 @@
 /**
  * LLM-Based Field Classification and Validation
  *
- * Uses Gemini to intelligently classify extracted text into correct fields:
- * - Name vs Job Title
- * - Company vs Institution
- * - Work Experience vs Projects vs Volunteer Work
- * - Skills categorization (languages vs frameworks vs tools)
- * - Date validation and normalization
+ * Uses the unified LLM client (Groq or Gemini) to intelligently classify
+ * extracted text into correct fields.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai"
-import { getGeminiApiKey, getGeminiTextModel, hasGeminiApiKey } from "../config/env"
+import { llmGenerate, isLLMConfigured } from "./llm-client"
 import { parseModelJson } from "./json-utils"
-
-const genAI = new GoogleGenerativeAI(getGeminiApiKey())
-
-const model = genAI.getGenerativeModel({
-  model: getGeminiTextModel(),
-  generationConfig: {
-    temperature: 0.1, // Lower temperature for more consistent classification
-    maxOutputTokens: 1024,
-  },
-})
 
 export interface ClassificationResult {
   field: string
@@ -36,13 +21,8 @@ export async function classifyField(
   text: string,
   context?: { section?: string; previousFields?: string[] }
 ): Promise<ClassificationResult> {
-  if (!hasGeminiApiKey()) {
-    console.warn("GEMINI_API_KEY not set. Using fallback classification.")
-    return {
-      field: "unknown",
-      confidence: 0.5,
-      reasoning: "API key not configured",
-    }
+  if (!isLLMConfigured()) {
+    return { field: "unknown", confidence: 0.5, reasoning: "API key not configured" }
   }
 
   const prompt = `You are an expert resume parser. Classify this text into the correct resume field.
@@ -92,10 +72,8 @@ Return ONLY a JSON object in this format:
 }`
 
   try {
-    const response = await model.generateContent(prompt)
-    const result = parseModelJson<{ field?: string; confidence?: number; reasoning?: string }>(
-      response.response.text().trim()
-    )
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 256, jsonMode: true, fast: true })
+    const result = parseModelJson<{ field?: string; confidence?: number; reasoning?: string }>(raw)
     if (!result) {
       throw new Error("Invalid JSON classification response")
     }
@@ -107,11 +85,7 @@ Return ONLY a JSON object in this format:
     }
   } catch (error) {
     console.warn("Field classification failed. Using fallback result.", error)
-    return {
-      field: "unknown",
-      confidence: 0.3,
-      reasoning: "Classification failed",
-    }
+    return { field: "unknown", confidence: 0.3, reasoning: "Classification failed" }
   }
 }
 
@@ -123,7 +97,7 @@ export async function validateFieldPlacement(
   value: string | string[],
   expectedType: string
 ): Promise<{ isCorrect: boolean; suggestedField?: string; confidence: number }> {
-  if (!hasGeminiApiKey()) {
+  if (!isLLMConfigured()) {
     return { isCorrect: true, confidence: 0.5 }
   }
 
@@ -142,21 +116,17 @@ EXAMPLES OF CORRECT PLACEMENT:
 - Field "name", Expected "person's full name", Value "Software Engineer" → INCORRECT (this is a job title)
 - Field "company", Expected "company name", Value "Google" → CORRECT
 - Field "company", Expected "company name", Value "Bachelor of Science" → INCORRECT (this is a degree)
-- Field "title", Expected "job title", Value "Senior Developer" → CORRECT
-- Field "title", Expected "job title", Value "John Doe" → INCORRECT (this is a name)
 
 Return ONLY a JSON object:
 {
-  "isCorrect": true/false,
-  "suggestedField": "correct_field_name" (only if isCorrect is false),
+  "isCorrect": true,
+  "suggestedField": "correct_field_name",
   "confidence": 0.95
 }`
 
   try {
-    const response = await model.generateContent(prompt)
-    const result = parseModelJson<{ isCorrect?: boolean; suggestedField?: string; confidence?: number }>(
-      response.response.text().trim()
-    )
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 256, jsonMode: true, fast: true })
+    const result = parseModelJson<{ isCorrect?: boolean; suggestedField?: string; confidence?: number }>(raw)
     if (!result) {
       throw new Error("Invalid JSON validation response")
     }
@@ -178,7 +148,7 @@ Return ONLY a JSON object:
 export async function categorizeSkill(
   skill: string
 ): Promise<"language" | "framework" | "tool" | "database" | "other"> {
-  if (!hasGeminiApiKey()) {
+  if (!isLLMConfigured()) {
     return "other"
   }
 
@@ -193,18 +163,11 @@ CATEGORIES:
 - database: Databases (PostgreSQL, MongoDB, MySQL, Redis, Cassandra, etc.)
 - other: Anything else
 
-EXAMPLES:
-- "Python" → language
-- "React" → framework
-- "Docker" → tool
-- "PostgreSQL" → database
-- "Machine Learning" → other (too broad)
-
 Return ONLY the category name (language/framework/tool/database/other):`
 
   try {
-    const response = await model.generateContent(prompt)
-    const category = response.response.text().trim().toLowerCase()
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 32, fast: true })
+    const category = raw.trim().toLowerCase()
 
     if (["language", "framework", "tool", "database", "other"].includes(category)) {
       return category as "language" | "framework" | "tool" | "database" | "other"
@@ -229,7 +192,7 @@ export async function categorizeSkillsBatch(
   databases: string[]
   other: string[]
 }> {
-  if (!hasGeminiApiKey() || skills.length === 0) {
+  if (!isLLMConfigured() || skills.length === 0) {
     return { languages: [], frameworks: [], tools: [], databases: [], other: skills }
   }
 
@@ -254,14 +217,14 @@ Return ONLY a JSON object:
 }`
 
   try {
-    const response = await model.generateContent(prompt)
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 1024, jsonMode: true, fast: true })
     const result = parseModelJson<{
       languages?: string[]
       frameworks?: string[]
       tools?: string[]
       databases?: string[]
       other?: string[]
-    }>(response.response.text().trim())
+    }>(raw)
     if (!result) {
       throw new Error("Invalid JSON skills response")
     }
@@ -286,7 +249,7 @@ export async function verifyDataCompleteness(
   rawText: string,
   extractedData: any
 ): Promise<{ complete: boolean; missingContent: string[]; confidence: number }> {
-  if (!hasGeminiApiKey()) {
+  if (!isLLMConfigured()) {
     return { complete: true, missingContent: [], confidence: 0.5 }
   }
 
@@ -315,23 +278,14 @@ LOOK FOR:
 
 Return ONLY a JSON object:
 {
-  "complete": true/false,
-  "missingContent": ["description of missing item 1", "description of missing item 2"],
-  "confidence": 0.95
-}
-
-If everything is captured, return:
-{
   "complete": true,
-  "missingContent": [],
-  "confidence": 0.99
+  "missingContent": ["description of missing item 1"],
+  "confidence": 0.95
 }`
 
   try {
-    const response = await model.generateContent(prompt)
-    const result = parseModelJson<{ complete?: boolean; missingContent?: string[]; confidence?: number }>(
-      response.response.text().trim()
-    )
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 2048, jsonMode: true })
+    const result = parseModelJson<{ complete?: boolean; missingContent?: string[]; confidence?: number }>(raw)
     if (!result) {
       throw new Error("Invalid JSON completeness response")
     }

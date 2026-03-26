@@ -1,6 +1,22 @@
-import puppeteer, { Browser, Page } from "puppeteer"
+import fs from "fs-extra"
+import chromium from "@sparticuz/chromium-min"
+import puppeteer, { Browser, Page, type LaunchOptions } from "puppeteer-core"
+import { getChromiumBinaryUrl } from "../config/env"
 import type { ParsedResume } from "../parsers/enhanced-parser"
 import { renderJakesResume } from "../templates/template-renderer"
+
+const COMMON_LOCAL_CHROME_PATHS = [
+  process.env.PUPPETEER_EXECUTABLE_PATH,
+  process.env.CHROME_EXECUTABLE_PATH,
+  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files\\Chromium\\Application\\chrome.exe",
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  "/usr/bin/google-chrome",
+  "/usr/bin/chromium-browser",
+  "/usr/bin/chromium",
+].filter((value): value is string => Boolean(value))
 
 /**
  * PDF Generation Options
@@ -22,21 +38,65 @@ export interface PDFGenerationOptions {
 export class PDFGenerator {
   private browser: Browser | null = null
 
+  private async resolveLocalExecutablePath(): Promise<string> {
+    for (const candidate of COMMON_LOCAL_CHROME_PATHS) {
+      if (await fs.pathExists(candidate)) {
+        return candidate
+      }
+    }
+
+    try {
+      const installedPuppeteer = await import("puppeteer")
+      const candidate = installedPuppeteer.executablePath()
+      if (candidate && await fs.pathExists(candidate)) {
+        return candidate
+      }
+    } catch {
+      // Fall through to the explicit error below.
+    }
+
+    throw new Error(
+      "No Chrome/Chromium executable was found. Set PUPPETEER_EXECUTABLE_PATH locally or configure CHROMIUM_BINARY_URL for Vercel."
+    )
+  }
+
+  private async getLaunchOptions(): Promise<LaunchOptions> {
+    if (process.env.VERCEL) {
+      chromium.setGraphicsMode = false
+
+      const executablePath = await chromium.executablePath(getChromiumBinaryUrl())
+
+      return {
+        args: puppeteer.defaultArgs({
+          args: chromium.args,
+          headless: "shell",
+        }),
+        executablePath,
+        headless: "shell",
+      }
+    }
+
+    const executablePath = await this.resolveLocalExecutablePath()
+
+    return {
+      headless: true,
+      executablePath,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+    }
+  }
+
   /**
    * Initialize browser instance
    */
   async initialize(): Promise<void> {
     if (!this.browser) {
-      this.browser = await puppeteer.launch({
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-        ],
-      })
+      const launchOptions = await this.getLaunchOptions()
+      this.browser = await puppeteer.launch(launchOptions)
     }
   }
 

@@ -1,8 +1,8 @@
 import fs from "fs-extra"
 import path from "path"
-import { getUploadFilePath, getGeneratedFilePath, saveGeneratedPDF, fileExists } from "./file-storage"
-import { parseResumeEnhanced, type ParsedResume } from "./parsers/enhanced-parser"
-import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, extractCompleteResumeData, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
+import { getFileMetadata, resolveUploadedFile, saveGeneratedPDF } from "./file-storage"
+import { type ParsedResume } from "./parsers/enhanced-parser"
+import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, enhanceExtractedData, type SkillsCategories } from "./ai/groq-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
 import { safeValidateResumeData, fillDefaults, type PartialResumeData, type ResumeData as SchemaResumeData } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
@@ -222,20 +222,6 @@ export async function enhanceWithAI(
   }
 }
 
-// Generate LaTeX content (placeholder)
-export function generateLaTeX(resumeData: ResumeData): string {
-  // TODO: Implement LaTeX template generation
-  // For now, return a simple structure
-  const sections = Object.entries(resumeData.sections)
-    .map(([name, content]) => `\\section{${name}}\n${content.join("\n")}`)
-    .join("\n\n")
-  
-  return `\\documentclass{article}
-\\begin{document}
-${sections}
-\\end{document}`
-}
-
 // Generate PDF from parsed resume data using Puppeteer and Jake's template
 export async function generatePDF(
   parsedResume: ParsedResume,
@@ -261,21 +247,28 @@ export async function* processResume(
   fileType: string,
   originalFilename: string
 ): AsyncGenerator<ProcessingProgress, ResumeData, unknown> {
+  let resolvedUpload: Awaited<ReturnType<typeof resolveUploadedFile>> | undefined
+
   try {
     // Stage 1: Parse file to extract raw text
     yield { stage: "parsing", progress: 10, message: "Reading resume file..." }
 
-    const filePath = getUploadFilePath(fileId, path.extname(originalFilename) || ".txt")
-
-    if (!(await fileExists(filePath))) {
-      throw new Error("Uploaded file not found")
+    const metadata = await getFileMetadata(fileId)
+    if (!metadata) {
+      throw new Error("Uploaded file metadata not found")
     }
 
-    const parseResult = await parseResume(filePath, fileType)
-    const rawText = parseResult.text
+    resolvedUpload = await resolveUploadedFile(fileId, originalFilename, metadata.storage)
+    const filePath = resolvedUpload.filePath
+
+    let rawText = ""
+    let parseResult: Awaited<ReturnType<typeof parseResume>> | null = null
+
+    parseResult = await parseResume(filePath, fileType)
+    rawText = parseResult.text
 
     // Show extraction details in progress
-    if (parseResult.extractionInfo) {
+    if (parseResult?.extractionInfo) {
       yield {
         stage: "parsing",
         progress: 20,
@@ -451,6 +444,12 @@ export async function* processResume(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
     throw new Error(`Processing failed: ${errorMessage}`)
+  } finally {
+    if (typeof resolvedUpload !== "undefined" && resolvedUpload.cleanup) {
+      await resolvedUpload.cleanup().catch((error) => {
+        console.warn("Failed to clean up temporary uploaded file:", error)
+      })
+    }
   }
 }
 

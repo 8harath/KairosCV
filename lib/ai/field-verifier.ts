@@ -1,26 +1,15 @@
 /**
  * Field Verification and Research
  *
- * Uses Gemini AI to:
+ * Uses the unified LLM client (Groq or Gemini) to:
  * 1. Cross-verify extracted fields are correct
  * 2. Research raw text for missing information
  * 3. Continue searching until all critical fields are found
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { ResumeData } from "../schemas/resume-schema"
-import { getGeminiApiKey, getGeminiTextModel, hasGeminiApiKey } from "../config/env"
+import { llmGenerate, isLLMConfigured } from "./llm-client"
 import { parseModelJson } from "./json-utils"
-
-const genAI = new GoogleGenerativeAI(getGeminiApiKey())
-
-const model = genAI.getGenerativeModel({
-  model: getGeminiTextModel(),
-  generationConfig: {
-    temperature: 0.1, // Very low temperature for factual verification
-    maxOutputTokens: 2048,
-  },
-})
 
 export interface VerificationResult {
   field: string
@@ -55,7 +44,7 @@ export async function verifyField(
   rawText: string,
   expectedType: string
 ): Promise<VerificationResult> {
-  if (!hasGeminiApiKey()) {
+  if (!isLLMConfigured()) {
     return {
       field,
       isValid: true,
@@ -81,28 +70,22 @@ VERIFICATION RULES:
 3. If the value is wrong or not found, provide the CORRECT value from the text
 4. Be strict - if you're not confident, mark as invalid
 
-EXAMPLES:
-- Field: "location", Value: "New York, NY", Raw text contains "New York, NY" → VALID
-- Field: "location", Value: "Google Inc", Raw text shows "Google Inc" is a company → INVALID (wrong type)
-- Field: "email", Value: "john@test.com", Raw text contains "john@example.com" → INVALID (different email)
-- Field: "name", Value: "Software Engineer", Raw text shows this is a job title → INVALID (wrong field)
-
 Return ONLY a JSON object:
 {
-  "isValid": true/false,
+  "isValid": true,
   "confidence": 0.95,
   "correctedValue": "correct value if isValid is false, otherwise null",
   "reasoning": "Brief explanation of why valid/invalid"
 }`
 
   try {
-    const response = await model.generateContent(prompt)
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 512, jsonMode: true, fast: true })
     const result = parseModelJson<{
       isValid?: boolean
       confidence?: number
       correctedValue?: string | null
       reasoning?: string
-    }>(response.response.text().trim())
+    }>(raw)
     if (!result) {
       throw new Error("Invalid JSON verification response")
     }
@@ -134,13 +117,8 @@ export async function researchMissingField(
   rawText: string,
   attemptNumber: number = 1
 ): Promise<ResearchResult> {
-  if (!hasGeminiApiKey()) {
-    return {
-      field,
-      found: false,
-      confidence: 0,
-      searchAttempts: attemptNumber,
-    }
+  if (!isLLMConfigured()) {
+    return { field, found: false, confidence: 0, searchAttempts: attemptNumber }
   }
 
   const prompt = `You are researching a resume to find missing information.
@@ -160,25 +138,17 @@ SEARCH STRATEGIES (try all):
 3. Infer from context: header information, contact section, footer
 4. Look in less obvious places: signatures, addresses, links
 
-EXAMPLES:
-- Field: "phone", Type: "phone number" → Search for (123) 456-7890, +1-234-567-8901, etc.
-- Field: "location", Type: "city, state" → Search for "San Francisco, CA", "New York, NY", etc.
-- Field: "linkedin", Type: "LinkedIn URL" → Search for linkedin.com/in/username
-- Field: "website", Type: "personal website" → Search for portfolio URLs, personal domains
-
 Return ONLY a JSON object:
 {
-  "found": true/false,
+  "found": true,
   "value": "the extracted value if found, null if not found",
   "confidence": 0.95,
   "reasoning": "where/how you found it or why not found"
 }`
 
   try {
-    const response = await model.generateContent(prompt)
-    const result = parseModelJson<{ found?: boolean; value?: string | null; confidence?: number }>(
-      response.response.text().trim()
-    )
+    const raw = await llmGenerate(prompt, { temperature: 0.1, maxTokens: 512, jsonMode: true, fast: true })
+    const result = parseModelJson<{ found?: boolean; value?: string | null; confidence?: number }>(raw)
     if (!result) {
       throw new Error("Invalid JSON research response")
     }
@@ -192,12 +162,7 @@ Return ONLY a JSON object:
     }
   } catch (error) {
     console.warn(`Field research failed for ${field}.`, error)
-    return {
-      field,
-      found: false,
-      confidence: 0,
-      searchAttempts: attemptNumber,
-    }
+    return { field, found: false, confidence: 0, searchAttempts: attemptNumber }
   }
 }
 
@@ -209,7 +174,7 @@ export async function verifyAndResearchResumeData(
   rawText: string,
   onProgress?: (progress: VerificationProgress) => void
 ): Promise<ResumeData> {
-  console.log("🔍 Starting field verification and research...")
+  console.log("Starting field verification and research...")
 
   const criticalFields = [
     { key: "contact.name", type: "person's full name", required: true },
@@ -224,14 +189,12 @@ export async function verifyAndResearchResumeData(
   let totalFields = criticalFields.length
   let processedFields = 0
 
-  // Clone the data to modify
   const verifiedData = JSON.parse(JSON.stringify(extractedData)) as ResumeData
 
   for (const fieldConfig of criticalFields) {
     const { key, type, required } = fieldConfig
     const [section, field] = key.split(".")
 
-    // Get current value
     const currentValue = (verifiedData as any)[section]?.[field]
 
     processedFields++
@@ -249,14 +212,14 @@ export async function verifyAndResearchResumeData(
 
       const verification = await verifyField(key, currentValue, rawText, type)
 
-      console.log(`✓ Verified ${key}:`, {
+      console.log(`Verified ${key}:`, {
         isValid: verification.isValid,
         confidence: verification.confidence,
         reasoning: verification.reasoning,
       })
 
       if (!verification.isValid) {
-        console.warn(`⚠️  ${key} is INVALID: ${verification.reasoning}`)
+        console.warn(`${key} is INVALID: ${verification.reasoning}`)
 
         onProgress?.({
           stage: "verification",
@@ -266,44 +229,38 @@ export async function verifyAndResearchResumeData(
           progress: baseProgress - 5,
         })
 
-        // Use corrected value if provided
         if (verification.correctedValue) {
           if (verifiedData && verifiedData[section as keyof typeof verifiedData]) {
             const sectionData = verifiedData[section as keyof typeof verifiedData] as any
             sectionData[field] = verification.correctedValue
           }
-          console.log(`✅ Corrected ${key} to: ${verification.correctedValue}`)
+          console.log(`Corrected ${key} to: ${verification.correctedValue}`)
 
-          if (onProgress) {
-            onProgress({
-              stage: "verification",
-              field: key,
-              status: "found",
-              message: `Found correct ${field}: "${verification.correctedValue}"`,
-              progress: baseProgress,
-            })
-          }
+          onProgress?.({
+            stage: "verification",
+            field: key,
+            status: "found",
+            message: `Found correct ${field}: "${verification.correctedValue}"`,
+            progress: baseProgress,
+          })
 
           continue
         }
-
-        // Otherwise, research for correct value
       } else {
         onProgress?.({
           stage: "verification",
           field: key,
           status: "valid",
-          message: `${field} verified ✓`,
+          message: `${field} verified`,
           progress: baseProgress,
         })
 
-        continue // Value is valid, move to next field
+        continue
       }
     }
 
     // Step 2: Research missing or invalid field
     if (required || currentValue) {
-      // Only research if required or if we had an invalid value
       onProgress?.({
         stage: "research",
         field: key,
@@ -314,47 +271,39 @@ export async function verifyAndResearchResumeData(
 
       let maxAttempts = 2
       let found = false
-      let foundValue = ""
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`🔎 Research attempt ${attempt}/${maxAttempts} for ${key}...`)
+        console.log(`Research attempt ${attempt}/${maxAttempts} for ${key}...`)
 
         const research = await researchMissingField(key, type, rawText, attempt)
 
         if (research.found && research.value) {
-          foundValue = research.value
           found = true
-          console.log(`✅ Found ${key}: ${foundValue}`)
+          console.log(`Found ${key}: ${research.value}`)
 
-          if (onProgress) {
-            onProgress({
-              stage: "research",
-              field: key,
-              status: "found",
-              message: `Found ${field}: "${foundValue}"`,
-              progress: baseProgress,
-            })
-          }
+          onProgress?.({
+            stage: "research",
+            field: key,
+            status: "found",
+            message: `Found ${field}: "${research.value}"`,
+            progress: baseProgress,
+          })
 
-          // Update the data
           if (verifiedData && verifiedData[section as keyof typeof verifiedData]) {
             const sectionData = verifiedData[section as keyof typeof verifiedData] as any
-            sectionData[field] = foundValue
+            sectionData[field] = research.value
           }
           break
-        } else {
-          console.log(`❌ Attempt ${attempt} failed for ${key}: ${research.confidence}`)
         }
       }
 
       if (!found && required) {
-        console.warn(`⚠️  CRITICAL: Could not find required field ${key}`)
-
+        console.warn(`CRITICAL: Could not find required field ${key}`)
         onProgress?.({
           stage: "research",
           field: key,
           status: "not_found",
-          message: `⚠️ ${field} not found after ${maxAttempts} attempts`,
+          message: `${field} not found after ${maxAttempts} attempts`,
           progress: baseProgress,
         })
       } else if (!found) {
@@ -369,14 +318,14 @@ export async function verifyAndResearchResumeData(
     }
   }
 
-  console.log("✅ Verification and research complete!")
+  console.log("Verification and research complete!")
 
   return verifiedData
 }
 
 /**
- * Check if Gemini API is configured for verification
+ * Check if LLM is configured for verification
  */
 export function isVerificationAvailable(): boolean {
-  return hasGeminiApiKey()
+  return isLLMConfigured()
 }

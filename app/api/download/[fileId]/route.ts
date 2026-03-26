@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
-import { cleanupFileArtifacts, getGeneratedFilePath, fileExists, getFileMetadata } from "@/lib/file-storage"
-import { readFile } from "fs-extra"
+import { cleanupFileArtifacts, getFileMetadata, downloadGeneratedPDF, getGeneratedFilePath, fileExists } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await params
@@ -20,18 +22,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
       return NextResponse.json({ error: "File not found" }, { status: 404 })
     }
 
-    // Check if generated PDF exists
-    const pdfPath = getGeneratedFilePath(fileId)
+    let pdfBuffer: Buffer
 
-    if (!(await fileExists(pdfPath))) {
-      return NextResponse.json(
-        { error: "Generated PDF not found. The file may still be processing." },
-        { status: 404 }
-      )
+    // Try Supabase storage first (if output location is set), then local filesystem
+    if (metadata.output?.bucket && metadata.output?.path) {
+      pdfBuffer = await downloadGeneratedPDF(fileId, metadata.output)
+    } else {
+      // Local filesystem fallback
+      const pdfPath = getGeneratedFilePath(fileId)
+      if (!(await fileExists(pdfPath))) {
+        return NextResponse.json(
+          { error: "Generated PDF not found. The file may still be processing." },
+          { status: 404 }
+        )
+      }
+      const { readFile } = await import("fs-extra")
+      pdfBuffer = await readFile(pdfPath)
     }
-
-    // Read and return the PDF
-    const pdfBuffer = await readFile(pdfPath)
 
     if (!isPreview) {
       await cleanupFileArtifacts(fileId, metadata.filename)
@@ -42,7 +49,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
       ? 'inline'
       : `attachment; filename="optimized_resume_${fileId}.pdf"`
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": disposition,

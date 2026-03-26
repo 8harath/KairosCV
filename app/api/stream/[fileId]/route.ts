@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server"
 import { processResume, ProcessingProgress } from "@/lib/resume-processor"
-import { getFileMetadata, fileExists, getUploadFilePath } from "@/lib/file-storage"
-import path from "path"
+import { getFileMetadata, resolveUploadedFile, updateJobStatus } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
+export const maxDuration = 60
 
 export async function GET(
   request: NextRequest,
@@ -41,13 +41,21 @@ export async function GET(
       }
 
       try {
-        // Check if file exists
-        const filePath = getUploadFilePath(fileId, path.extname(metadata.filename) || ".txt")
-        if (!(await fileExists(filePath))) {
+        try {
+          const resolvedUpload = await resolveUploadedFile(fileId, metadata.filename, metadata.storage)
+          if (resolvedUpload.cleanup) {
+            await resolvedUpload.cleanup().catch((error) => {
+              console.warn("Failed to clean up temporary upload during preflight:", error)
+            })
+          }
+        } catch {
           send({ stage: "error", progress: 0, message: "File not found", error: "File was not uploaded correctly" })
           controller.close()
           return
         }
+
+        // Mark job as processing
+        await updateJobStatus(fileId, "processing", "processing", 0)
 
         // Capture confidence score from progress updates
         let confidenceScore: ProcessingProgress["confidence"] = undefined
@@ -79,6 +87,7 @@ export async function GET(
         controller.close()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error"
+        await updateJobStatus(fileId, "failed", "error", 0, errorMessage)
         send({
           stage: "error",
           progress: 0,
