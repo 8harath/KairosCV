@@ -3,17 +3,16 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowRight, ChevronDown, LogOut, UserRound } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 import { signOutWithSupabase } from "@/lib/supabase/auth"
+import { AvatarDisplay } from "@/components/avatar"
 import { Button } from "@/components/ui/button"
 
 interface AuthState {
   email: string
-}
-
-function getInitial(email: string): string {
-  return email.charAt(0).toUpperCase()
+  name?: string
+  avatarUrl?: string
 }
 
 export default function AuthButtons() {
@@ -25,16 +24,41 @@ export default function AuthButtons() {
     const supabase = createSupabaseBrowserClient()
     let isMounted = true
 
-    void supabase.auth.getUser().then(({ data }) => {
-      if (!isMounted) return
-      setUser(data.user?.email ? { email: data.user.email } : null)
-      setLoading(false)
-    })
+    void (async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!isMounted || !authUser?.email) {
+        if (isMounted) setLoading(false)
+        return
+      }
+
+      // Fetch profile for avatar
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", authUser.id)
+        .maybeSingle()
+
+      if (isMounted) {
+        setUser({
+          email: authUser.email,
+          name: profile?.full_name || authUser.user_metadata?.full_name || "",
+          avatarUrl: profile?.avatar_url || null,
+        })
+        setLoading(false)
+      }
+    })()
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user?.email ? { email: session.user.email } : null)
+      if (session?.user?.email) {
+        setUser({
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || "",
+        })
+      } else {
+        setUser(null)
+      }
       setLoading(false)
       router.refresh()
     })
@@ -46,49 +70,37 @@ export default function AuthButtons() {
   }, [router])
 
   if (loading) {
-    return <div className="hidden text-sm text-muted-foreground md:block">Loading...</div>
+    return <div className="h-7 w-7 animate-pulse rounded-full bg-secondary" />
   }
 
   if (!user) {
     return (
-      <a href="/auth/login">
-        <Button className="min-w-[190px]">
-          Continue with Google
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      </a>
+      <Link href="/auth/login" className="btn text-sm">
+        Sign in
+      </Link>
     )
   }
 
   return (
     <div className="flex items-center gap-2">
-      <div className="hidden items-center gap-3 rounded-full border border-border bg-card/90 px-2 py-1.5 md:flex">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
-          {getInitial(user.email)}
-        </div>
-        <div className="max-w-[180px] truncate text-sm text-foreground">{user.email}</div>
-        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-      </div>
+      <Link href="/dashboard" className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-secondary md:flex">
+        <AvatarDisplay avatarUrl={user.avatarUrl} email={user.email} name={user.name} size="sm" />
+        <span className="max-w-[140px] truncate text-sm text-foreground">{user.name || user.email}</span>
+      </Link>
 
       <Button
         variant="ghost"
         size="icon"
+        className="h-7 w-7"
         onClick={async () => {
           await signOutWithSupabase()
           router.push("/")
           router.refresh()
         }}
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-3.5 w-3.5" />
         <span className="sr-only">Sign out</span>
       </Button>
-
-      <Link href="/dashboard" className="md:hidden">
-        <Button variant="outline" size="icon">
-          <UserRound className="h-4 w-4" />
-          <span className="sr-only">Open dashboard</span>
-        </Button>
-      </Link>
     </div>
   )
 }

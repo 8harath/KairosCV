@@ -3,17 +3,16 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Menu } from "lucide-react"
-import Navigation from "@/components/navigation"
 import AuthButtons from "@/components/auth-buttons"
 import ThemeToggle from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 
-const mobileLinks = [
-  { href: "/", label: "Home" },
+const navLinks = [
   { href: "/optimize", label: "Optimize" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/contact", label: "Contact" },
 ]
 
 export default function Header() {
@@ -41,25 +40,24 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/78 backdrop-blur-xl">
-      <div className="container flex h-[72px] items-center justify-between gap-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
+      <div className="container flex h-14 items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="md:hidden">
                   <Menu className="h-4 w-4" />
-                  <span className="sr-only">Open navigation menu</span>
+                  <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[88vw] max-w-xs border-r border-border bg-background p-0">
-                <SheetHeader className="border-b border-border px-5 py-5">
-                  <SheetTitle className="text-left text-base">KairosCV</SheetTitle>
-                  <p className="text-sm text-muted-foreground">Resume optimization workspace.</p>
+              <SheetContent side="left" className="w-[260px] border-r border-border bg-background p-0">
+                <SheetHeader className="border-b border-border px-5 py-4">
+                  <SheetTitle className="text-left text-sm font-semibold">KairosCV</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Mobile navigation">
-                  {mobileLinks.map((link) => (
-                    <Link key={link.href} href={link.href} className="rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
+                  {navLinks.map((link) => (
+                    <Link key={link.href} href={link.href} className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">
                       {link.label}
                     </Link>
                   ))}
@@ -68,18 +66,27 @@ export default function Header() {
             </Sheet>
           ) : null}
 
-          <Link href="/" className="flex items-center gap-3 rounded-2xl transition-opacity hover:opacity-80">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-card">
-              <span className="text-sm font-semibold text-foreground">K</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-xs font-semibold text-foreground">
+              K
             </div>
-            <div>
-              <div className="text-sm font-semibold text-foreground">KairosCV</div>
-              <div className="text-xs text-muted-foreground">Resume optimization workspace</div>
-            </div>
+            <span className="text-sm font-semibold text-foreground">KairosCV</span>
           </Link>
         </div>
 
-        {isAuthenticated ? <Navigation /> : <div className="hidden md:block" />}
+        {isAuthenticated ? (
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
