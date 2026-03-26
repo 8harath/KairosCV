@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useRef, useState } from "react"
-import { CheckCircle2, FileText, Info, UploadCloud } from "lucide-react"
+import { CheckCircle2, UploadCloud } from "lucide-react"
 
 interface FileUploaderProps {
   onFileSelect: (file: File | null) => void
@@ -61,69 +61,45 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
   }
 
   return (
-    <div className="surface-panel-strong p-6 md:p-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-foreground">Resume upload</p>
-          <p className="mt-2 text-sm">Drop in your current draft and KairosCV will handle extraction, cleanup, and formatting.</p>
+    <div
+      className={`upload-zone ${isDragging ? "dragging" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={() => !disabled && fileInputRef.current?.click()}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-label="Upload resume file"
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault()
+          fileInputRef.current?.click()
+        }
+      }}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.docx,.txt"
+        onChange={handleFileInput}
+        className="sr-only"
+        disabled={disabled}
+        aria-label="Choose file"
+      />
+
+      {fileName ? (
+        <div className="mx-auto max-w-sm">
+          <CheckCircle2 className="mx-auto h-8 w-8 text-success" />
+          <p className="mt-3 text-sm font-medium text-foreground">{fileName}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Ready to process. Click to replace.</p>
         </div>
-        <div className="pill-badge">PDF, DOCX, TXT</div>
-      </div>
-
-      <div
-        className={`upload-zone mt-6 ${isDragging ? "dragging" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => !disabled && fileInputRef.current?.click()}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-label="Upload resume file"
-        onKeyDown={(e) => {
-          if (!disabled && (e.key === "Enter" || e.key === " ")) {
-            e.preventDefault()
-            fileInputRef.current?.click()
-          }
-        }}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.docx,.txt"
-          onChange={handleFileInput}
-          className="sr-only"
-          disabled={disabled}
-          aria-label="Choose file"
-        />
-
-        {fileName ? (
-          <div className="mx-auto max-w-md">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-card">
-              <CheckCircle2 className="h-7 w-7 text-success" />
-            </div>
-            <h2 className="mt-5 text-xl">{fileName}</h2>
-            <p className="mt-2 text-sm">Your file is ready to process.</p>
-            {!disabled ? <p className="mt-4 text-sm text-muted-foreground">Click to replace it with a different file.</p> : null}
-          </div>
-        ) : (
-          <div className="mx-auto max-w-md">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-card">
-              <UploadCloud className="h-7 w-7 text-foreground" />
-            </div>
-            <h2 className="mt-5 text-xl">Drop your resume here</h2>
-            <p className="mt-2 text-sm">Or click to browse files from your device.</p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> PDF</span>
-              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> DOCX</span>
-              <span className="pill-badge"><FileText className="h-3.5 w-3.5" /> TXT</span>
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Info className="h-4 w-4" />
-              Maximum file size: 5MB
-            </div>
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="mx-auto max-w-sm">
+          <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-3 text-sm font-medium text-foreground">Drop your resume here</p>
+          <p className="mt-1 text-xs text-muted-foreground">or click to browse. PDF, DOCX, TXT up to 5MB.</p>
+        </div>
+      )}
     </div>
   )
 }
