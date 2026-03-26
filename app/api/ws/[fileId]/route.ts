@@ -35,7 +35,7 @@ export async function websocketHandler(socket: any, fileId: string) {
     { stage: "parsing", progress: 45, message: "Extracting sections..." },
     { stage: "enhancing", progress: 55, message: "Enhancing content with AI..." },
     { stage: "enhancing", progress: 65, message: "Optimizing bullet points..." },
-    { stage: "generating", progress: 75, message: "Generating LaTeX document..." },
+    { stage: "generating", progress: 75, message: "Generating PDF document..." },
     { stage: "compiling", progress: 85, message: "Compiling PDF..." },
     { stage: "compiling", progress: 95, message: "Finalizing..." },
   ]
