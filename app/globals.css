@@ -28,7 +28,7 @@
   --sidebar: rgba(255, 255, 255, 0.78);
   --sidebar-foreground: #37352f;
   --sidebar-border: rgba(55, 53, 47, 0.08);
-  --radius: 14px;
+  --radius: 10px;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px rgba(15, 23, 42, 0.06);
   --shadow-elevated: 0 1px 2px rgba(15, 23, 42, 0.06), 0 18px 42px rgba(15, 23, 42, 0.1);
 }
@@ -104,16 +104,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-image:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 30%),
-      linear-gradient(180deg, #ffffff 0%, #fbfbfa 48%, #f5f4f1 100%);
     min-height: 100vh;
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 30%),
-      linear-gradient(180deg, #1b1b1b 0%, #191919 48%, #171717 100%);
   }
 
   h1,
@@ -155,64 +146,56 @@
   }
 
   .section-header-kicker {
-    @apply inline-flex items-center rounded-full border border-border bg-card/80 px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase;
+    @apply text-xs font-medium tracking-wide text-muted-foreground uppercase;
   }
 
   .section-frame {
-    @apply rounded-[28px] border border-border/80 bg-card/90;
-    box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(18px);
+    @apply rounded-xl border border-border bg-card;
   }
 
   .surface-panel {
-    @apply rounded-2xl border border-border/80 bg-card/95;
-    box-shadow: var(--shadow-soft);
+    @apply rounded-xl border border-border bg-card;
   }
 
   .surface-panel-strong {
-    @apply rounded-[28px] border border-border bg-card;
-    box-shadow: var(--shadow-elevated);
+    @apply rounded-xl border border-border bg-card;
   }
 
   .card,
   .card-interactive,
   .card-elevated {
-    @apply rounded-2xl border border-border/80 bg-card p-6;
-    box-shadow: var(--shadow-soft);
+    @apply rounded-xl border border-border bg-card p-6;
   }
 
   .card-interactive {
-    @apply transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-border hover:shadow-[0_1px_2px_rgba(15,23,42,0.06),0_16px_36px_rgba(15,23,42,0.09)];
+    @apply transition-[background-color,border-color] duration-150 ease-out hover:bg-secondary/50;
   }
 
   .card-elevated {
-    box-shadow: var(--shadow-elevated);
+    box-shadow: var(--shadow-soft);
   }
 
   .btn,
   .btn-secondary,
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-[background-color,border-color,color,transform,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
-    min-height: 40px;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border text-sm font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    min-height: 36px;
   }
 
   .btn {
-    @apply border-primary bg-primary px-4 py-2.5 text-primary-foreground;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    @apply border-primary bg-primary px-4 py-2 text-primary-foreground;
   }
 
   .btn:hover {
-    @apply bg-[#252522];
-    transform: translateY(-1px);
+    @apply opacity-90;
   }
 
   .btn-secondary {
-    @apply border-border bg-card px-4 py-2.5 text-foreground;
+    @apply border-border bg-card px-4 py-2 text-foreground;
   }
 
   .btn-secondary:hover {
-    @apply bg-accent;
-    transform: translateY(-1px);
+    @apply bg-secondary;
   }
 
   .btn-ghost {
@@ -220,22 +203,20 @@
   }
 
   .btn-ghost:hover {
-    @apply border-border bg-accent text-foreground;
+    @apply bg-secondary text-foreground;
   }
 
   .btn-hero {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-5 py-3 text-[15px] font-medium text-primary-foreground transition-[background-color,border-color,color,transform,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
-    min-height: 40px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-5 py-2.5 text-[15px] font-medium text-primary-foreground transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+    min-height: 36px;
   }
 
   .btn-hero:hover {
-    @apply bg-[#252522];
-    transform: translateY(-1px);
+    @apply opacity-90;
   }
 
   .metric-tile {
-    @apply rounded-2xl border border-border/80 bg-card px-5 py-4;
+    @apply rounded-lg border border-border bg-secondary/30 px-4 py-3;
   }
 
   .soft-link {
@@ -247,7 +228,7 @@
   }
 
   .workspace-sidebar {
-    @apply hidden border-r border-sidebar-border/90 bg-sidebar/80 px-4 py-6 backdrop-blur-xl lg:flex lg:flex-col;
+    @apply hidden border-r border-sidebar-border bg-sidebar px-4 py-5 lg:flex lg:flex-col;
   }
 
   .workspace-main {
@@ -255,7 +236,7 @@
   }
 
   .workspace-topbar {
-    @apply sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl;
+    @apply sticky top-0 z-30 border-b border-border bg-background;
   }
 
   .workspace-content {
@@ -267,12 +248,11 @@
   }
 
   .workspace-nav-link {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground;
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground;
   }
 
   .workspace-nav-link[data-active="true"] {
-    @apply bg-card text-foreground;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    @apply bg-secondary text-foreground;
   }
 
   .field-label {
@@ -280,20 +260,19 @@
   }
 
   .input-surface {
-    @apply rounded-2xl border border-border/80 bg-card p-4;
-    box-shadow: var(--shadow-soft);
+    @apply rounded-lg border border-border bg-card p-4;
   }
 
   .upload-zone {
-    @apply rounded-[24px] border border-dashed border-border bg-secondary/40 p-8 text-center transition-colors duration-150;
+    @apply rounded-lg border-2 border-dashed border-border bg-secondary/30 p-8 text-center transition-colors duration-150;
   }
 
   .upload-zone:hover {
-    @apply border-muted-foreground/40 bg-accent/60;
+    @apply border-muted-foreground/30 bg-secondary/50;
   }
 
   .upload-zone.dragging {
-    @apply border-foreground/40 bg-card;
+    @apply border-primary/40 bg-secondary/60;
   }
 
   .progress-bar {
@@ -305,16 +284,15 @@
   }
 
   .pdf-preview {
-    @apply overflow-hidden rounded-2xl border border-border bg-card;
-    box-shadow: inset 0 0 0 1px rgba(223, 220, 213, 0.6);
+    @apply overflow-hidden rounded-lg border border-border bg-card;
   }
 
   .empty-state {
-    @apply rounded-2xl border border-dashed border-border bg-muted/50 p-8 text-center;
+    @apply rounded-lg border border-dashed border-border bg-secondary/20 p-8 text-center;
   }
 
   .pill-badge {
-    @apply inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground;
+    @apply inline-flex items-center gap-1.5 rounded-md border border-border bg-secondary/50 px-2 py-0.5 text-xs font-medium text-muted-foreground;
   }
 
   .subtle-divider {
@@ -331,10 +309,5 @@
 @media (max-width: 768px) {
   .container {
     @apply px-4;
-  }
-
-  .section-frame,
-  .surface-panel-strong {
-    @apply rounded-3xl;
   }
 }
