@@ -14,6 +14,10 @@ const nextConfig = {
     'sharp',
     'canvas'
   ],
+  // Ensure HTML templates are included in Vercel serverless function bundles
+  outputFileTracingIncludes: {
+    '/api/stream/*': ['./lib/templates/**/*.html'],
+  },
 }
 
 export default nextConfig
