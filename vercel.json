@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "NODE_VERSION": "22"
+    }
+  },
   "functions": {
     "app/api/stream/[fileId]/route.ts": {
       "maxDuration": 60
