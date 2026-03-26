@@ -2,7 +2,7 @@ import fs from "fs-extra"
 import path from "path"
 import { getFileMetadata, resolveUploadedFile, saveGeneratedPDF } from "./file-storage"
 import { type ParsedResume } from "./parsers/enhanced-parser"
-import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, enhanceExtractedData, type SkillsCategories } from "./ai/gemini-service"
+import { extractSkills, enhanceBulletPoints, generateSummary, isGeminiConfigured, enhanceExtractedData, type SkillsCategories } from "./ai/groq-service"
 import { generateResumePDF } from "./pdf/pdf-generator"
 import { safeValidateResumeData, fillDefaults, type PartialResumeData, type ResumeData as SchemaResumeData } from "./schemas/resume-schema"
 import { scoreResume, type ResumeConfidence } from "./validation/confidence-scorer"
@@ -220,20 +220,6 @@ export async function enhanceWithAI(
     console.error("Error in AI enhancement:", error)
     return { enhancedData: resumeData, enhancedSkills: null, summary: null }
   }
-}
-
-// Generate LaTeX content (placeholder)
-export function generateLaTeX(resumeData: ResumeData): string {
-  // TODO: Implement LaTeX template generation
-  // For now, return a simple structure
-  const sections = Object.entries(resumeData.sections)
-    .map(([name, content]) => `\\section{${name}}\n${content.join("\n")}`)
-    .join("\n\n")
-  
-  return `\\documentclass{article}
-\\begin{document}
-${sections}
-\\end{document}`
 }
 
 // Generate PDF from parsed resume data using Puppeteer and Jake's template

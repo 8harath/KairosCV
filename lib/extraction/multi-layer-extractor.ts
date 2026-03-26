@@ -11,7 +11,7 @@
  * Layer 5: Data normalization and cleanup
  */
 
-import { extractCompleteResumeData } from "../ai/gemini-service"
+import { extractCompleteResumeData } from "../ai/groq-service"
 import {
   verifyDataCompleteness,
   validateFieldPlacement,
