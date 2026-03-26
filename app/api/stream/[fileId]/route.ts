@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { processResume, ProcessingProgress } from "@/lib/resume-processor"
-import { getFileMetadata, resolveUploadedFile } from "@/lib/file-storage"
+import { getFileMetadata, resolveUploadedFile, updateJobStatus } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
 
 export const runtime = "nodejs"
@@ -54,6 +54,9 @@ export async function GET(
           return
         }
 
+        // Mark job as processing
+        await updateJobStatus(fileId, "processing", "processing", 0)
+
         // Capture confidence score from progress updates
         let confidenceScore: ProcessingProgress["confidence"] = undefined
 
@@ -84,6 +87,7 @@ export async function GET(
         controller.close()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error"
+        await updateJobStatus(fileId, "failed", "error", 0, errorMessage)
         send({
           stage: "error",
           progress: 0,
