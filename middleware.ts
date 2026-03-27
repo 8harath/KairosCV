@@ -1,26 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
-const PROTECTED_PATHS = ["/dashboard", "/settings"]
+const PROTECTED_PATHS = ["/dashboard", "/settings", "/optimize"]
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Only check protected routes
-  const isProtected = PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
-  if (!isProtected) return NextResponse.next()
-
-  // Skip auth check if auth is disabled (local dev)
-  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "true") {
-    return NextResponse.next()
-  }
-
-  // Check for Supabase config
+function createSupabaseMiddlewareClient(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.next()
-  }
+  if (!supabaseUrl || !supabaseAnonKey) return null
 
   let response = NextResponse.next({ request })
 
@@ -41,16 +27,42 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const { data: { user } } = await supabase.auth.getUser()
+  return { supabase, getResponse: () => response }
+}
 
-  if (!user) {
-    const loginUrl = new URL("/login", request.url)
-    return NextResponse.redirect(loginUrl)
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip auth check if auth is disabled (local dev)
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "true") {
+    return NextResponse.next()
   }
 
-  return response
+  const client = createSupabaseMiddlewareClient(request)
+  if (!client) return NextResponse.next()
+
+  const { supabase, getResponse } = client
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Redirect authenticated users from landing page to dashboard
+  if (pathname === "/" && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
+
+  // Redirect authenticated users from login to dashboard
+  if (pathname === "/login" && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
+
+  // Protect routes — redirect unauthenticated users to login
+  const isProtected = PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
+  if (isProtected && !user) {
+    return NextResponse.redirect(new URL("/login", request.url))
+  }
+
+  return getResponse()
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/settings/:path*"],
+  matcher: ["/", "/login", "/dashboard/:path*", "/settings/:path*", "/optimize/:path*"],
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Mail } from "lucide-react"
+import { Loader2, Mail } from "lucide-react"
 import Header from "@/components/header"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
@@ -14,20 +14,30 @@ export default function OptimizePage() {
   const [file, setFile] = useState<File | null>(null)
   const [email, setEmail] = useState("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const authBypassed = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DISABLE_AUTH === "true"
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
 
   useEffect(() => {
     if (error) {
       toast({ title: "Processing error", description: error, variant: "destructive" })
+      setIsUploading(false)
     }
   }, [error])
 
   useEffect(() => {
     if (downloadUrl && !isProcessing) {
       setPdfUrl(downloadUrl)
+      setIsUploading(false)
     }
   }, [downloadUrl, isProcessing])
+
+  // Clear uploading state once SSE stream starts
+  useEffect(() => {
+    if (isProcessing && stage) {
+      setIsUploading(false)
+    }
+  }, [isProcessing, stage])
 
   const handleFileSelect = async (selectedFile: File | null) => {
     if (!selectedFile) {
@@ -63,6 +73,7 @@ export default function OptimizePage() {
 
     setFile(selectedFile)
     setPdfUrl(null)
+    setIsUploading(true)
 
     try {
       const formData = new FormData()
@@ -91,12 +102,14 @@ export default function OptimizePage() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
       toast({ title: "Upload failed", description: errorMessage, variant: "destructive" })
       setFile(null)
+      setIsUploading(false)
     }
   }
 
   const handleReset = () => {
     setFile(null)
     setPdfUrl(null)
+    setIsUploading(false)
     cleanup()
   }
 
@@ -104,13 +117,15 @@ export default function OptimizePage() {
     return () => { cleanup() }
   }, [cleanup])
 
+  const showUploadForm = !isUploading && !isProcessing && !pdfUrl && !error
+
   return (
     <>
       <Header />
       <main className="page-shell">
         <section className="container py-10 md:py-14">
           <div className="mx-auto max-w-3xl">
-            {!isProcessing && !pdfUrl && !error ? (
+            {showUploadForm ? (
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-semibold text-foreground md:text-3xl">Optimize your resume</h1>
@@ -135,7 +150,13 @@ export default function OptimizePage() {
                   </div>
                 ) : null}
 
-                <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+                <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing || isUploading} />
+              </div>
+            ) : isUploading && !isProcessing ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="mt-4 text-sm font-medium text-foreground">Uploading your resume...</p>
+                <p className="mt-1 text-xs text-muted-foreground">This usually takes a few seconds.</p>
               </div>
             ) : isProcessing ? (
               <ProgressTracker progress={progress} stage={stage} message={message} />
