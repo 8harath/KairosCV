@@ -156,10 +156,11 @@ export class PDFGenerator {
   async generateFromParsedResume(
     parsedResume: ParsedResume,
     summary?: string,
-    options: PDFGenerationOptions = {}
+    options: PDFGenerationOptions = {},
+    templateId?: string | null
   ): Promise<Buffer> {
     // Render HTML from template
-    const html = renderJakesResume(parsedResume, summary)
+    const html = renderJakesResume(parsedResume, summary, templateId)
 
     // Generate PDF from HTML
     return await this.generateFromHTML(html, options)
@@ -187,10 +188,11 @@ export function getPDFGenerator(): PDFGenerator {
 export async function generateResumePDF(
   parsedResume: ParsedResume,
   summary?: string,
-  options: PDFGenerationOptions = {}
+  options: PDFGenerationOptions = {},
+  templateId?: string | null
 ): Promise<Buffer> {
   const generator = getPDFGenerator()
-  return await generator.generateFromParsedResume(parsedResume, summary, options)
+  return await generator.generateFromParsedResume(parsedResume, summary, options, templateId)
 }
 
 /**

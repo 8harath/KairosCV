@@ -1,5 +1,10 @@
 import { ArrowRight } from "lucide-react"
 
+export const metadata = {
+  title: "Sign In | KairosCV",
+  description: "Sign in to KairosCV with Google",
+}
+
 interface LoginPageProps {
   searchParams?: Promise<{
     error?: string

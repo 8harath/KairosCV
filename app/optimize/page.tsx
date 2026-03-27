@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Mail } from "lucide-react"
+import { ArrowRight, ChevronDown, ChevronUp, Loader2, X } from "lucide-react"
 import Header from "@/components/header"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
@@ -13,6 +13,9 @@ import { toast } from "@/hooks/use-toast"
 export default function OptimizePage() {
   const [file, setFile] = useState<File | null>(null)
   const [email, setEmail] = useState("")
+  const [jobDescription, setJobDescription] = useState("")
+  const [showJD, setShowJD] = useState(false)
+  const [templateId, setTemplateId] = useState("professional")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const authBypassed = process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_DISABLE_AUTH === "true"
@@ -39,19 +42,13 @@ export default function OptimizePage() {
     }
   }, [isProcessing, stage])
 
-  const handleFileSelect = async (selectedFile: File | null) => {
+  // File selection only — no upload yet
+  const handleFileSelect = (selectedFile: File | null) => {
     if (!selectedFile) {
       setFile(null)
       return
     }
 
-    const typedEmail = email.trim().toLowerCase()
-    if (typedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
-      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" })
-      return
-    }
-
-    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
     const validTypes = [
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -72,19 +69,39 @@ export default function OptimizePage() {
     }
 
     setFile(selectedFile)
+  }
+
+  // Upload + process — triggered by button click
+  const handleOptimize = async () => {
+    if (!file) return
+
+    const typedEmail = email.trim().toLowerCase()
+    if (!authBypassed && typedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" })
+      return
+    }
+
+    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
+
     setPdfUrl(null)
     setIsUploading(true)
 
     try {
       const formData = new FormData()
-      formData.append("file", selectedFile)
+      formData.append("file", file)
       formData.append("email", normalizedEmail)
+      if (jobDescription.trim()) {
+        formData.append("jobDescription", jobDescription.trim())
+      }
+      if (templateId !== "professional") {
+        formData.append("templateId", templateId)
+      }
 
       const uploadResponse = await fetch("/api/upload", { method: "POST", body: formData })
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json()
-        throw new Error(errorData.detail || "Upload failed")
+        throw new Error(errorData.detail || errorData.error || "Upload failed")
       }
 
       const uploadData = await uploadResponse.json()
@@ -101,7 +118,6 @@ export default function OptimizePage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
       toast({ title: "Upload failed", description: errorMessage, variant: "destructive" })
-      setFile(null)
       setIsUploading(false)
     }
   }
@@ -150,7 +166,80 @@ export default function OptimizePage() {
                   </div>
                 ) : null}
 
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowJD(!showJD)}
+                    className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showJD ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    Paste a job description to tailor your resume (optional)
+                  </button>
+                  {showJD && (
+                    <textarea
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder="Paste the job description here. We'll tailor your resume to match the role's keywords and requirements."
+                      rows={5}
+                      className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">Template</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "professional", name: "Professional", desc: "LaTeX-style serif" },
+                      { id: "modern", name: "Modern", desc: "Clean sans-serif" },
+                      { id: "classic", name: "Classic", desc: "Traditional formal" },
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTemplateId(t.id)}
+                        className={`rounded-md border px-3 py-2.5 text-left transition-colors ${
+                          templateId === t.id
+                            ? "border-foreground bg-muted"
+                            : "border-border hover:border-foreground/40"
+                        }`}
+                      >
+                        <p className="text-sm font-medium text-foreground">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <FileUploader onFileSelect={handleFileSelect} disabled={isProcessing || isUploading} />
+
+                {file && (
+                  <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(file.size / 1024).toFixed(0)} KB
+                        {jobDescription.trim() ? " · Job description attached" : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4 shrink-0">
+                      <button
+                        onClick={() => setFile(null)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        aria-label="Remove file"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={handleOptimize}
+                        className="btn inline-flex items-center gap-2"
+                      >
+                        Optimize
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : isUploading && !isProcessing ? (
               <div className="flex flex-col items-center justify-center py-20">

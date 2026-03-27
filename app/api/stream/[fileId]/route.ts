@@ -2,6 +2,9 @@ import { NextRequest } from "next/server"
 import { processResume, ProcessingProgress } from "@/lib/resume-processor"
 import { getFileMetadata, resolveUploadedFile, updateJobStatus } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
+import { isAuthBypassed, shouldUseSupabaseStorage, isSupabaseConfigured } from "@/lib/config/env"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -17,6 +20,20 @@ export async function GET(
       JSON.stringify({ error: "Invalid file id" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     )
+  }
+
+  // Auth check — capture userId for generated_resumes insert
+  let authenticatedUserId: string | null = null
+  if (!isAuthBypassed()) {
+    const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      )
+    }
+    authenticatedUserId = user.id
   }
 
   // Get file metadata
@@ -79,8 +96,32 @@ export async function GET(
           progress: 100,
           message: "Resume optimization complete!",
           download_url: `/api/download/${fileId}`,
-          confidence: confidenceScore, // Include confidence score in final message
+          confidence: confidenceScore,
         })
+
+        // Insert into generated_resumes for authenticated users
+        if (authenticatedUserId && shouldUseSupabaseStorage() && isSupabaseConfigured()) {
+          try {
+            const { getSupabaseServiceRoleClient } = await import("@/lib/supabase/server")
+            const serviceClient = getSupabaseServiceRoleClient()
+
+            // Re-fetch metadata to get output location set by saveGeneratedPDF
+            const updatedMeta = await getFileMetadata(fileId)
+            const pdfBucket = updatedMeta?.output?.bucket || "resume-outputs"
+            const pdfPath = updatedMeta?.output?.path || `generated/${fileId}.pdf`
+
+            await serviceClient.from("generated_resumes").insert({
+              user_id: authenticatedUserId,
+              job_id: fileId,
+              title: metadata.filename.replace(/\.[^.]+$/, ""),
+              original_filename: metadata.filename,
+              pdf_bucket: pdfBucket,
+              pdf_path: pdfPath,
+            })
+          } catch (insertError) {
+            console.warn("Failed to insert into generated_resumes:", insertError)
+          }
+        }
 
         // Small delay to ensure message is sent before closing
         await new Promise(resolve => setTimeout(resolve, 100))

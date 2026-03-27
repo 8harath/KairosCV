@@ -256,24 +256,48 @@ function escapeHtml(text: string | undefined | null): string {
   return text.replace(/[&<>"']/g, (m) => map[m])
 }
 
+export interface TemplateInfo {
+  id: string
+  name: string
+  description: string
+}
+
+const TEMPLATES: TemplateInfo[] = [
+  { id: "professional", name: "Professional", description: "LaTeX-inspired layout with serif font. Clean, traditional academic style." },
+  { id: "modern", name: "Modern", description: "Clean sans-serif design with blue accents. Contemporary and minimal." },
+  { id: "classic", name: "Classic", description: "Traditional serif layout with horizontal rules. Conservative and formal." },
+]
+
+const TEMPLATE_FILES: Record<string, string> = {
+  professional: "jakes-resume-improved.html",
+  modern: "modern.html",
+  classic: "classic.html",
+}
+
+export function getAvailableTemplates(): TemplateInfo[] {
+  return TEMPLATES
+}
+
+function resolveTemplateFile(templateId?: string | null): string {
+  const file = TEMPLATE_FILES[templateId || "professional"] || TEMPLATE_FILES["professional"]
+  return path.join(process.cwd(), "lib", "templates", file)
+}
+
 /**
- * Render Jake's Resume template with parsed data
+ * Render resume template with parsed data
  */
-export function renderJakesResume(parsedResume: ParsedResume, summary?: string): string {
+export function renderJakesResume(parsedResume: ParsedResume, summary?: string, templateId?: string | null): string {
   // Fail-safe validation (last line of defense before rendering)
   try {
     const { isValidResumeData } = require('../schemas/resume-schema')
     if (!isValidResumeData(parsedResume)) {
       console.warn('⚠️  Invalid resume data passed to template renderer - continuing anyway')
-      // Don't throw - we want to render what we can
     }
   } catch (error) {
-    // If validation import fails, just log and continue
     console.warn('Could not validate resume data in renderer:', error)
   }
 
-  // Use process.cwd() to get the project root, then navigate to the improved template
-  const templatePath = path.join(process.cwd(), "lib", "templates", "jakes-resume-improved.html")
+  const templatePath = resolveTemplateFile(templateId)
   const renderer = new TemplateRenderer(templatePath)
 
   // Generate experience items

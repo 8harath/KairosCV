@@ -43,6 +43,8 @@ create table if not exists public.processing_jobs (
   status text not null check (status in ('queued', 'processing', 'completed', 'failed', 'expired')),
   stage text not null default 'queued',
   progress int not null default 0 check (progress >= 0 and progress <= 100),
+  job_description text null,
+  template_id text null,
   confidence jsonb null,
   error_message text null,
   created_at timestamptz not null default now(),
@@ -241,6 +243,20 @@ drop policy if exists "generated_resumes_select_own" on public.generated_resumes
 create policy "generated_resumes_select_own"
   on public.generated_resumes
   for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+drop policy if exists "generated_resumes_insert_own" on public.generated_resumes;
+create policy "generated_resumes_insert_own"
+  on public.generated_resumes
+  for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+drop policy if exists "generated_resumes_delete_own" on public.generated_resumes;
+create policy "generated_resumes_delete_own"
+  on public.generated_resumes
+  for delete
   to authenticated
   using (auth.uid() = user_id);
 

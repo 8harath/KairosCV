@@ -3,6 +3,11 @@ import { ArrowRight } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/Footer"
 
+export const metadata = {
+  title: "About | KairosCV",
+  description: "Why KairosCV exists and our approach to resume optimization",
+}
+
 export default function IntentPage() {
   return (
     <>

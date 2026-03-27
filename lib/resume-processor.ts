@@ -175,6 +175,25 @@ export function extractSections(text: string): ResumeData {
   }
 }
 
+// Generate PDF from parsed resume data using Puppeteer and selected template
+export async function generatePDF(
+  parsedResume: ParsedResume,
+  summary?: string,
+  templateId?: string | null
+): Promise<Buffer> {
+  try {
+    const pdfBuffer = await generateResumePDF(parsedResume, summary, {
+      format: "letter",
+      printBackground: true,
+    }, templateId)
+
+    return pdfBuffer
+  } catch (error) {
+    console.error("Error generating PDF:", error)
+    throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : "Unknown error"}`)
+  }
+}
+
 // Enhance resume with AI using Gemini
 export async function enhanceWithAI(
   resumeData: ResumeData,
@@ -219,25 +238,6 @@ export async function enhanceWithAI(
   } catch (error) {
     console.error("Error in AI enhancement:", error)
     return { enhancedData: resumeData, enhancedSkills: null, summary: null }
-  }
-}
-
-// Generate PDF from parsed resume data using Puppeteer and Jake's template
-export async function generatePDF(
-  parsedResume: ParsedResume,
-  summary?: string
-): Promise<Buffer> {
-  try {
-    // Generate PDF using Puppeteer and Jake's Resume template
-    const pdfBuffer = await generateResumePDF(parsedResume, summary, {
-      format: "letter",
-      printBackground: true,
-    })
-
-    return pdfBuffer
-  } catch (error) {
-    console.error("Error generating PDF:", error)
-    throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : "Unknown error"}`)
   }
 }
 
@@ -318,10 +318,17 @@ export async function* processResume(
       }
     }
 
-    yield { stage: "enhancing", progress: 78, message: "Enhancing content for ATS optimization..." }
+    // Read job description from metadata for targeted optimization
+    const jobDescription = metadata.jobDescription || null
+
+    yield {
+      stage: "enhancing",
+      progress: 78,
+      message: jobDescription ? "Tailoring content to job description..." : "Enhancing content for ATS optimization...",
+    }
 
     // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
-    let enhancedData = await enhanceExtractedData(extractedData)
+    let enhancedData = await enhanceExtractedData(extractedData, jobDescription)
 
     yield { stage: "enhancing", progress: 85, message: "Optimizing bullet points..." }
 
@@ -418,7 +425,8 @@ export async function* processResume(
     yield { stage: "generating", progress: 96, message: "Generating optimized PDF..." }
 
     // Stage 5: Generate PDF using Puppeteer and Jake's template
-    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary)
+    const templateId = metadata.templateId || null
+    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary, templateId)
 
     // Save generated PDF
     await saveGeneratedPDF(fileId, pdfBuffer)

@@ -62,13 +62,18 @@ Rewrite this experience bullet point following these strict rules:
 export async function enhanceBulletPoints(
   bullets: string[],
   jobTitle: string,
-  company: string
+  company: string,
+  jobDescription?: string | null
 ): Promise<EnhancedBulletPoint[]> {
   if (!isLLMConfigured() || bullets.length === 0) {
     return bullets.map((bullet) => ({ original: bullet, enhanced: bullet }))
   }
 
-  const prompt = `Job Context: ${jobTitle} at ${company}
+  const jdContext = jobDescription
+    ? `\n\nTarget Job Description:\n${jobDescription.slice(0, 2000)}\n\nIMPORTANT: Tailor bullets to emphasize skills and experience relevant to this job description. Incorporate keywords from the JD naturally.`
+    : ""
+
+  const prompt = `Job Context: ${jobTitle} at ${company}${jdContext}
 Original Bullets (JSON array):
 ${JSON.stringify(bullets)}
 
@@ -83,7 +88,7 @@ Rewrite every bullet using these strict rules:
 2. Include specific metrics when possible.
 3. Focus on measurable impact.
 4. Keep each bullet concise (under 150 characters when possible).
-5. Preserve the original meaning.`
+5. Preserve the original meaning.${jobDescription ? "\n6. Align language and keywords with the target job description." : ""}`
 
   try {
     const enhancedBullets = await retryWithBackoff(async () => {
@@ -198,16 +203,20 @@ Return ONLY the enhanced content, one item per line.`
 /**
  * Generate professional summary from resume data
  */
-export async function generateSummary(resumeText: string): Promise<string> {
+export async function generateSummary(resumeText: string, jobDescription?: string | null): Promise<string> {
   if (!isLLMConfigured()) {
     return "Experienced professional with a proven track record of success."
   }
+
+  const jdInstruction = jobDescription
+    ? `\n5. Tailor the summary to align with this target job description:\n${jobDescription.slice(0, 2000)}\n6. Incorporate relevant keywords from the job description naturally.`
+    : ""
 
   const prompt = `Based on this resume, write a compelling 2-3 sentence professional summary that:
 1. Highlights key strengths and expertise
 2. Includes years of experience (if mentioned)
 3. Mentions most relevant technical skills
-4. Focuses on value and impact
+4. Focuses on value and impact${jdInstruction}
 
 Resume:
 ${resumeText}
@@ -429,7 +438,7 @@ CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. 
 /**
  * Enhance extracted resume data with AI improvements
  */
-export async function enhanceExtractedData(extractedData: any): Promise<any> {
+export async function enhanceExtractedData(extractedData: any, jobDescription?: string | null): Promise<any> {
   if (!isLLMConfigured() || !extractedData) {
     return extractedData
   }
@@ -446,7 +455,7 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
           if (remaining <= 0) break
 
           const bulletsToEnhance = exp.bullets.slice(0, remaining)
-          const enhanced = await enhanceBulletPoints(bulletsToEnhance, exp.title, exp.company)
+          const enhanced = await enhanceBulletPoints(bulletsToEnhance, exp.title, exp.company, jobDescription)
 
           exp.bullets = [
             ...enhanced.map((item) => item.enhanced),
@@ -466,7 +475,7 @@ export async function enhanceExtractedData(extractedData: any): Promise<any> {
       projects: extractedData.projects,
     }
     const summaryText = JSON.stringify(summaryPayload).slice(0, 12000)
-    const summary = await generateSummary(summaryText)
+    const summary = await generateSummary(summaryText, jobDescription)
 
     return {
       ...extractedData,

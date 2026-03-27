@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useRef, useState } from "react"
-import { CheckCircle2, UploadCloud } from "lucide-react"
+import { useRef } from "react"
+import { UploadCloud } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 
 interface FileUploaderProps {
   onFileSelect: (file: File | null) => void
@@ -10,20 +11,14 @@ interface FileUploaderProps {
 }
 
 export default function FileUploader({ onFileSelect, disabled }: FileUploaderProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [fileName, setFileName] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    if (!disabled) setIsDragging(true)
   }
-
-  const handleDragLeave = () => setIsDragging(false)
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    setIsDragging(false)
     if (!disabled) {
       const file = e.dataTransfer.files[0]
       if (file) handleFile(file)
@@ -33,6 +28,8 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) handleFile(file)
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const handleFile = (file: File) => {
@@ -47,24 +44,23 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
     const maxSize = 5 * 1024 * 1024
 
     if (!allowedTypes.includes(file.type) && !hasValidExtension) {
-      alert("Invalid file type. Please upload PDF, DOCX, or TXT.")
+      toast({ title: "Invalid file type", description: "Please upload a PDF, DOCX, or TXT file.", variant: "destructive" })
       return
     }
 
     if (file.size > maxSize) {
-      alert("File too large. Maximum size is 5MB.")
+      toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" })
       return
     }
 
-    setFileName(file.name)
     onFileSelect(file)
   }
 
   return (
     <div
-      className={`upload-zone ${isDragging ? "dragging" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+      className={`upload-zone ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+      onDragLeave={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onClick={() => !disabled && fileInputRef.current?.click()}
       role="button"
@@ -87,19 +83,11 @@ export default function FileUploader({ onFileSelect, disabled }: FileUploaderPro
         aria-label="Choose file"
       />
 
-      {fileName ? (
-        <div className="mx-auto max-w-sm">
-          <CheckCircle2 className="mx-auto h-8 w-8 text-success" />
-          <p className="mt-3 text-sm font-medium text-foreground">{fileName}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Ready to process. Click to replace.</p>
-        </div>
-      ) : (
-        <div className="mx-auto max-w-sm">
-          <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium text-foreground">Drop your resume here</p>
-          <p className="mt-1 text-xs text-muted-foreground">or click to browse. PDF, DOCX, TXT up to 5MB.</p>
-        </div>
-      )}
+      <div className="mx-auto max-w-sm">
+        <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />
+        <p className="mt-3 text-sm font-medium text-foreground">Drop your resume here</p>
+        <p className="mt-1 text-xs text-muted-foreground">or click to browse. PDF, DOCX, TXT up to 5MB.</p>
+      </div>
     </div>
   )
 }

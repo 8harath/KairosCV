@@ -8,6 +8,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { loadResumeJSON, resumeJSONExists } from "@/lib/storage/resume-json-storage"
 import { isValidFileId } from "@/lib/security/file-id"
+import { isAuthBypassed } from "@/lib/config/env"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -19,6 +22,15 @@ export async function GET(
   try {
     if (process.env.NODE_ENV === "production" && process.env.ENABLE_DEBUG_JSON !== "true") {
       return NextResponse.json({ error: "Not found" }, { status: 404 })
+    }
+
+    // Auth check
+    if (!isAuthBypassed()) {
+      const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
     }
 
     const { fileId } = await params

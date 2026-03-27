@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { cleanupFileArtifacts, getFileMetadata, downloadGeneratedPDF, getGeneratedFilePath, fileExists } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
+import { isAuthBypassed } from "@/lib/config/env"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -12,6 +15,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
   }
 
   try {
+    // Auth check
+    if (!isAuthBypassed()) {
+      const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+    }
+
     // Check if this is a preview request (inline) or download request
     const url = new URL(request.url)
     const isPreview = url.searchParams.get('preview') === 'true'

@@ -84,6 +84,9 @@ export interface FileMetadata {
   size: number
   type: string
   email?: string
+  userId?: string | null
+  jobDescription?: string | null
+  templateId?: string | null
   uploadedAt: Date
   storage?: {
     bucket: string
@@ -117,7 +120,7 @@ export async function saveFileMetadata(metadata: FileMetadata): Promise<void> {
     const email = metadata.email || `guest-${metadata.fileId}@kairoscv.local`
     const emailHash = getEmailHash(email)
 
-    const { error } = await supabase.from("processing_jobs").insert({
+    const insertData: Record<string, unknown> = {
       id: metadata.fileId,
       email,
       email_hash: emailHash,
@@ -128,7 +131,12 @@ export async function saveFileMetadata(metadata: FileMetadata): Promise<void> {
       status: "queued",
       stage: "queued",
       progress: 0,
-    })
+    }
+    if (metadata.userId) insertData.user_id = metadata.userId
+    if (metadata.jobDescription) insertData.job_description = metadata.jobDescription
+    if (metadata.templateId) insertData.template_id = metadata.templateId
+
+    const { error } = await supabase.from("processing_jobs").insert(insertData)
 
     if (error) {
       console.error("Failed to save metadata to Supabase:", error)
@@ -152,7 +160,7 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
 
       const { data, error } = await supabase
         .from("processing_jobs")
-        .select("id, original_filename, mime_type, email, input_bucket, input_path, output_bucket, output_path, created_at")
+        .select("id, original_filename, mime_type, email, user_id, job_description, template_id, input_bucket, input_path, output_bucket, output_path, created_at")
         .eq("id", fileId)
         .single()
 
@@ -163,9 +171,12 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
       return {
         fileId: data.id,
         filename: data.original_filename,
-        size: 0, // Not stored in processing_jobs, but not critical
+        size: 0,
         type: data.mime_type,
         email: data.email,
+        userId: data.user_id || null,
+        jobDescription: data.job_description || null,
+        templateId: data.template_id || null,
         uploadedAt: new Date(data.created_at),
         storage: {
           bucket: data.input_bucket,

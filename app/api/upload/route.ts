@@ -5,12 +5,27 @@ import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib
 import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials"
 import { isAuthBypassed, isTrialLimitEnabled, shouldUseSupabaseStorage } from "@/lib/config/env"
 import { saveUploadedFileToSupabase } from "@/lib/storage/supabase-storage"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
+    const authBypassed = isAuthBypassed()
+
+    // Auth check — get authenticated user unless auth is bypassed
+    let userId: string | null = null
+    if (!authBypassed) {
+      const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      userId = user.id
+    }
+
     // Opportunistic garbage collection for stale files.
     void cleanupExpiredArtifacts().catch((error) => {
       console.warn("Background cleanup failed:", error)
@@ -21,9 +36,12 @@ export async function POST(request: NextRequest) {
     const file = rawFile instanceof File ? rawFile : null
     const emailValue = formData.get("email")
     const providedEmail = typeof emailValue === "string" ? normalizeEmail(emailValue) : ""
-    const authBypassed = isAuthBypassed()
     const emailRequired = !authBypassed
     const email = providedEmail || `guest-${randomUUID()}@kairoscv.local`
+    const jobDescription = formData.get("jobDescription")
+    const jobDescriptionText = typeof jobDescription === "string" ? jobDescription.trim() : null
+    const templateValue = formData.get("templateId")
+    const templateId = typeof templateValue === "string" ? templateValue.trim() : null
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
@@ -94,6 +112,9 @@ export async function POST(request: NextRequest) {
       size: file.size,
       type: file.type,
       email,
+      userId,
+      jobDescription: jobDescriptionText || null,
+      templateId,
       uploadedAt: new Date(),
       storage,
     })

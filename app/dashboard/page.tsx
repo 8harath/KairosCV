@@ -1,11 +1,17 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { FileText, Plus, Sparkles } from "lucide-react"
+import { Plus, Sparkles } from "lucide-react"
 import WorkspaceShell from "@/components/workspace-shell"
+import ResumeList from "@/components/resume-list"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 
 export const dynamic = "force-dynamic"
+
+export const metadata = {
+  title: "Dashboard | KairosCV",
+  description: "Your resume optimization workspace",
+}
 
 export default async function DashboardPage() {
   const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
@@ -25,7 +31,7 @@ export default async function DashboardPage() {
 
   const { data: resumes } = await supabase
     .from("generated_resumes")
-    .select("id, title, original_filename, created_at")
+    .select("id, job_id, title, original_filename, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(10)
@@ -70,6 +76,19 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Onboarding banner for new users */}
+      {resumeCount === 0 && (
+        <div className="rounded-md border border-border bg-muted/30 p-6">
+          <h2 className="text-sm font-semibold text-foreground">Welcome to KairosCV</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            You have {trialLimit} free resume generations per 24-hour window. Upload your first resume to get started.
+          </p>
+          <Link href="/optimize" className="btn mt-4 inline-flex items-center gap-2">
+            Get started
+          </Link>
+        </div>
+      )}
+
       {/* Recent resumes */}
       <div className="surface-panel p-6">
         <div className="flex items-center justify-between">
@@ -80,22 +99,7 @@ export default async function DashboardPage() {
         </div>
 
         {resumes && resumes.length > 0 ? (
-          <div className="mt-4 divide-y divide-border">
-            {resumes.map((resume) => (
-              <div key={resume.id} className="flex items-center justify-between gap-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{resume.title || resume.original_filename}</p>
-                    <p className="truncate text-xs text-muted-foreground">{resume.original_filename}</p>
-                  </div>
-                </div>
-                <p className="shrink-0 text-xs text-muted-foreground">
-                  {new Date(resume.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-          </div>
+          <ResumeList initialResumes={resumes} />
         ) : (
           <div className="mt-6 py-8 text-center">
             <Sparkles className="mx-auto h-8 w-8 text-muted-foreground/50" />

@@ -6,6 +6,11 @@ import SettingsClient from "@/components/settings-client"
 
 export const dynamic = "force-dynamic"
 
+export const metadata = {
+  title: "Settings | KairosCV",
+  description: "Manage your KairosCV account and preferences",
+}
+
 export default async function SettingsPage() {
   const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
   const {
