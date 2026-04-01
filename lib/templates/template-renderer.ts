@@ -340,10 +340,15 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
 
   const contactLine = contactParts.join(' <span class="separator">|</span> ')
 
-  // Format certifications as bullet points
+  // Format certifications as bullet points (handle both string and object formats)
   const certifications = parsedResume.certifications || []
   const certificationsHTML = certifications.length > 0
-    ? certifications.filter(cert => cert && typeof cert === 'string').map(cert => `<div class="bullet">${escapeHtml(cert)}</div>`).join('\n')
+    ? certifications.filter(cert => cert).map(cert => {
+        if (typeof cert === 'string') return `<div class="bullet">${escapeHtml(cert)}</div>`
+        const c = cert as { name?: string; issuer?: string; date?: string }
+        if (!c.name) return ''
+        return `<div class="bullet">${escapeHtml(c.name)}${c.issuer ? ` - ${escapeHtml(c.issuer)}` : ''}${c.date ? ` (${escapeHtml(c.date)})` : ''}</div>`
+      }).filter(h => h).join('\n')
     : ""
 
   // Generate new section HTMLs
@@ -372,7 +377,9 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     : ""
 
   const referencesHTML = parsedResume.references && parsedResume.references.length > 0
-    ? parsedResume.references.filter(ref => ref && typeof ref === 'string').map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
+    ? parsedResume.references
+        .filter(ref => ref && typeof ref === 'string' && !ref.toLowerCase().includes('available upon request'))
+        .map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
     : ""
 
   const customSectionsHTML = parsedResume.customSections && parsedResume.customSections.length > 0
@@ -407,5 +414,10 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     CUSTOM_SECTIONS: customSectionsHTML,
   }
 
-  return renderer.render(data)
+  let html = renderer.render(data)
+
+  // Post-render cleanup: remove any section that has a heading but no actual content
+  html = html.replace(/<div class="section">\s*<div class="section-title">[^<]*<\/div>\s*<\/div>/g, '')
+
+  return html
 }

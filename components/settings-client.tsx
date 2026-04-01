@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut, User } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { AvatarDisplay, AvatarPicker } from "@/components/avatar"
 import { signOutWithSupabase } from "@/lib/supabase/auth"
 import { toast } from "@/hooks/use-toast"
@@ -12,6 +12,8 @@ interface SettingsClientProps {
   displayName: string
   avatarUrl: string | null
   trialLimit: number
+  remaining: number
+  totalResumes: number
   memberSince: string
 }
 
@@ -20,6 +22,8 @@ export default function SettingsClient({
   displayName,
   avatarUrl,
   trialLimit,
+  remaining,
+  totalResumes,
   memberSince,
 }: SettingsClientProps) {
   const router = useRouter()
@@ -90,17 +94,21 @@ export default function SettingsClient({
         ) : null}
       </div>
 
-      {/* Plan & limits */}
+      {/* Usage & limits */}
       <div className="surface-panel p-6">
-        <h3 className="text-sm font-medium text-foreground">Plan</h3>
+        <h3 className="text-sm font-medium text-foreground">Usage</h3>
         <p className="mt-1 text-sm text-muted-foreground">Free plan with trial-based usage.</p>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg bg-secondary/30 px-4 py-3">
-            <p className="text-xs font-medium text-muted-foreground">Generations per cycle</p>
-            <p className="mt-1 text-lg font-semibold text-foreground">{trialLimit}</p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border border-border px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">Remaining today</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{remaining} <span className="text-sm font-normal text-muted-foreground">/ {trialLimit}</span></p>
           </div>
-          <div className="rounded-lg bg-secondary/30 px-4 py-3">
+          <div className="rounded-lg border border-border px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">Total resumes</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{totalResumes}</p>
+          </div>
+          <div className="rounded-lg border border-border px-4 py-3">
             <p className="text-xs font-medium text-muted-foreground">Reset window</p>
             <p className="mt-1 text-lg font-semibold text-foreground">24 hours</p>
           </div>

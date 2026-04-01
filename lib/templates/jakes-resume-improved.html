@@ -34,6 +34,7 @@
       font-weight: bold;
       margin-bottom: 2pt;
       letter-spacing: 0.3pt;
+      word-spacing: 3pt;
     }
 
     .contact-info {
@@ -151,7 +152,7 @@
       margin-left: 8pt;
     }
 
-    /* Bullet Points — single line, no wrapping */
+    /* Bullet Points */
     .bullets {
       margin-left: 0.18in;
       margin-top: 1pt;
@@ -163,9 +164,6 @@
       line-height: 1.2;
       text-indent: -0.14in;
       padding-left: 0.14in;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .bullet::before {
@@ -199,6 +197,12 @@
       font-size: 10pt;
       line-height: 1.2;
       margin-bottom: 2pt;
+    }
+
+    /* Force single page — hide overflow beyond page height */
+    html, body {
+      max-height: 10.09in; /* letter height minus top+bottom margins */
+      overflow: hidden;
     }
 
     /* Print Optimization */

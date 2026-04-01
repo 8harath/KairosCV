@@ -390,7 +390,28 @@ export async function* processResume(
       confidence: confidenceScore
     }
 
-    // Stage 4: Convert to ParsedResume format for PDF generation
+    // Stage 4: Infer skills from projects if skills section is empty
+    const skills = enhancedData.skills || { languages: [], frameworks: [], tools: [], databases: [] }
+    const hasExplicitSkills =
+      (skills.languages?.length || 0) > 0 ||
+      (skills.frameworks?.length || 0) > 0 ||
+      (skills.tools?.length || 0) > 0 ||
+      (skills.databases?.length || 0) > 0
+
+    if (!hasExplicitSkills && enhancedData.projects?.length > 0) {
+      const inferredTech = new Set<string>()
+      for (const proj of enhancedData.projects) {
+        if (proj.technologies && Array.isArray(proj.technologies)) {
+          proj.technologies.forEach((t: string) => inferredTech.add(t))
+        }
+      }
+      if (inferredTech.size > 0) {
+        skills.tools = [...inferredTech]
+        enhancedData.skills = skills
+      }
+    }
+
+    // Convert to ParsedResume format for PDF generation
     const parsedResume: ParsedResume = {
       contact: {
         name: enhancedData.contact?.name || "Your Name",

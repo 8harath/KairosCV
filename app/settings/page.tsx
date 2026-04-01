@@ -31,6 +31,23 @@ export default async function SettingsPage() {
   const displayName = profile?.full_name || user.user_metadata?.full_name || ""
   const trialLimit = profile?.trial_limit ?? 3
 
+  // Count usage in last 24 hours
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { count: usageCount } = await supabase
+    .from("processing_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("created_at", since)
+
+  const used = usageCount ?? 0
+  const remaining = Math.max(0, trialLimit - used)
+
+  // Count total resumes
+  const { count: totalResumes } = await supabase
+    .from("generated_resumes")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+
   return (
     <WorkspaceShell
       title="Settings"
@@ -44,6 +61,8 @@ export default async function SettingsPage() {
         displayName={displayName}
         avatarUrl={profile?.avatar_url || null}
         trialLimit={trialLimit}
+        remaining={remaining}
+        totalResumes={totalResumes ?? 0}
         memberSince={profile?.created_at || user.created_at || ""}
       />
     </WorkspaceShell>
