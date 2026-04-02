@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { LogOut } from "lucide-react"
+import { LogOut, Settings } from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 import { signOutWithSupabase } from "@/lib/supabase/auth"
 import { AvatarDisplay } from "@/components/avatar"
-import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AuthState {
   email: string
@@ -31,7 +38,6 @@ export default function AuthButtons() {
         return
       }
 
-      // Fetch profile for avatar
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, avatar_url")
@@ -82,25 +88,40 @@ export default function AuthButtons() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Link href="/dashboard" className="hidden items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-secondary md:flex">
-        <AvatarDisplay avatarUrl={user.avatarUrl} email={user.email} name={user.name} size="sm" />
-        <span className="max-w-[140px] truncate text-sm text-foreground">{user.name || user.email}</span>
-      </Link>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7"
-        onClick={async () => {
-          await signOutWithSupabase()
-          router.push("/")
-          router.refresh()
-        }}
-      >
-        <LogOut className="h-3.5 w-3.5" />
-        <span className="sr-only">Sign out</span>
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-secondary outline-none">
+          <AvatarDisplay avatarUrl={user.avatarUrl} email={user.email} name={user.name} size="sm" />
+          <span className="hidden max-w-[140px] truncate text-sm text-foreground md:block">
+            {user.name || user.email}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>
+          <p className="text-sm font-medium text-foreground">{user.name || "Account"}</p>
+          <p className="text-xs font-normal text-muted-foreground">{user.email}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex w-full items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={async () => {
+            await signOutWithSupabase()
+            router.push("/")
+            router.refresh()
+          }}
+          className="text-muted-foreground focus:text-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
