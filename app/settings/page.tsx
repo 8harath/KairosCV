@@ -51,7 +51,7 @@ export default async function SettingsPage() {
   return (
     <>
       <Header />
-      <main className="container max-w-2xl py-10">
+      <main className="container py-10">
         <div className="mb-8">
           <h1 className="text-lg font-semibold text-foreground">Settings</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage your profile and account.</p>

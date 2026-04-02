@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Header />
-      <main className="container max-w-4xl py-10">
+      <main className="container py-10">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-foreground">{displayName}</h1>
