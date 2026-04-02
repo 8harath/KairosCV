@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
-import WorkspaceShell from "@/components/workspace-shell"
+import Header from "@/components/header"
 import SettingsClient from "@/components/settings-client"
 
 export const dynamic = "force-dynamic"
@@ -49,22 +49,23 @@ export default async function SettingsPage() {
     .eq("user_id", user.id)
 
   return (
-    <WorkspaceShell
-      title="Settings"
-      description="Manage your profile and account."
-      userLabel={email}
-      avatarUrl={profile?.avatar_url}
-      userName={displayName}
-    >
-      <SettingsClient
-        email={email}
-        displayName={displayName}
-        avatarUrl={profile?.avatar_url || null}
-        trialLimit={trialLimit}
-        remaining={remaining}
-        totalResumes={totalResumes ?? 0}
-        memberSince={profile?.created_at || user.created_at || ""}
-      />
-    </WorkspaceShell>
+    <>
+      <Header />
+      <main className="container max-w-2xl py-10">
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-foreground">Settings</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage your profile and account.</p>
+        </div>
+        <SettingsClient
+          email={email}
+          displayName={displayName}
+          avatarUrl={profile?.avatar_url || null}
+          trialLimit={trialLimit}
+          remaining={remaining}
+          totalResumes={totalResumes ?? 0}
+          memberSince={profile?.created_at || user.created_at || ""}
+        />
+      </main>
+    </>
   )
 }
