@@ -41,6 +41,7 @@ export default function SettingsClient({
       })
       if (!res.ok) throw new Error("Failed to update avatar")
       toast({ title: "Avatar updated" })
+      window.dispatchEvent(new CustomEvent("avatar-changed", { detail: newAvatar }))
       router.refresh()
     } catch {
       toast({ title: "Failed to update avatar", variant: "destructive" })

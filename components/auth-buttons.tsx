@@ -69,9 +69,16 @@ export default function AuthButtons() {
       router.refresh()
     })
 
+    const handleAvatarChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail as string
+      setUser((prev) => prev ? { ...prev, avatarUrl: detail } : prev)
+    }
+    window.addEventListener("avatar-changed", handleAvatarChanged)
+
     return () => {
       isMounted = false
       subscription.unsubscribe()
+      window.removeEventListener("avatar-changed", handleAvatarChanged)
     }
   }, [router])
 
