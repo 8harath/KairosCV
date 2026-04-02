@@ -18,7 +18,7 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json()
   const { avatar_url } = body
 
-  if (typeof avatar_url !== "string" || !avatar_url.startsWith("preset:")) {
+  if (typeof avatar_url !== "string" || (!avatar_url.startsWith("dicebear:") && !avatar_url.startsWith("preset:"))) {
     return NextResponse.json({ error: "Invalid avatar value" }, { status: 400 })
   }
 

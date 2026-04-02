@@ -3,23 +3,41 @@
 import { cn } from "@/lib/utils"
 
 /**
- * Preset avatar palette — simple colored backgrounds with initials or emoji.
- * Stored in profiles.avatar_url as "preset:<index>" (e.g. "preset:3").
+ * DiceBear avatar system.
+ * Stored in profiles.avatar_url as "dicebear:<style>" (e.g. "dicebear:notionists").
+ * Avatar is generated deterministically from the user's email as seed.
  */
-export const AVATAR_PRESETS = [
-  { bg: "#E8D5B7", emoji: "K" },
-  { bg: "#F0B4B4", emoji: "R" },
-  { bg: "#B4D8F0", emoji: "B" },
-  { bg: "#B7E8C8", emoji: "G" },
-  { bg: "#D8B4F0", emoji: "P" },
-  { bg: "#F0D8B4", emoji: "O" },
-  { bg: "#B4F0E8", emoji: "T" },
-  { bg: "#F0B4D8", emoji: "M" },
-  { bg: "#D5D5D5", emoji: "S" },
-  { bg: "#C8E0B4", emoji: "L" },
-  { bg: "#E0C8F0", emoji: "V" },
-  { bg: "#F0E0B4", emoji: "Y" },
+
+export const DICEBEAR_STYLES = [
+  { id: "notionists", name: "Notion" },
+  { id: "avataaars", name: "Cartoon" },
+  { id: "bottts", name: "Robots" },
+  { id: "lorelei", name: "Minimal" },
+  { id: "fun-emoji", name: "Emoji" },
+  { id: "thumbs", name: "Thumbs" },
+  { id: "adventurer", name: "Explorer" },
+  { id: "big-smile", name: "Smiley" },
+  { id: "pixel-art", name: "Pixel" },
 ] as const
+
+export type DiceBearStyle = (typeof DICEBEAR_STYLES)[number]["id"]
+
+const DEFAULT_STYLE: DiceBearStyle = "notionists"
+
+export function getDiceBearUrl(seed: string, style: DiceBearStyle = DEFAULT_STYLE, size = 128): string {
+  const encodedSeed = encodeURIComponent(seed.toLowerCase().trim())
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodedSeed}&size=${size}`
+}
+
+function getStyleFromAvatarUrl(avatarUrl: string | null | undefined): DiceBearStyle {
+  if (!avatarUrl?.startsWith("dicebear:")) return DEFAULT_STYLE
+  const style = avatarUrl.split(":")[1] as DiceBearStyle
+  return DICEBEAR_STYLES.some((s) => s.id === style) ? style : DEFAULT_STYLE
+}
+
+function getSeed(email?: string, name?: string): string {
+  return email || name || "default"
+}
 
 interface AvatarDisplayProps {
   avatarUrl?: string | null
@@ -29,48 +47,27 @@ interface AvatarDisplayProps {
   className?: string
 }
 
-function getPresetFromUrl(avatarUrl: string | null | undefined): (typeof AVATAR_PRESETS)[number] | null {
-  if (!avatarUrl?.startsWith("preset:")) return null
-  const index = parseInt(avatarUrl.split(":")[1], 10)
-  return AVATAR_PRESETS[index] ?? null
-}
-
-function getInitials(name?: string, email?: string): string {
-  if (name) {
-    const parts = name.trim().split(/\s+/)
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-    return parts[0][0]?.toUpperCase() || "?"
-  }
-  if (email) return email[0]?.toUpperCase() || "?"
-  return "?"
-}
-
 const sizeClasses = {
-  sm: "h-7 w-7 text-xs",
-  md: "h-9 w-9 text-sm",
-  lg: "h-16 w-16 text-xl",
+  sm: "h-7 w-7",
+  md: "h-9 w-9",
+  lg: "h-16 w-16",
 }
+
+const sizePx = { sm: 28, md: 36, lg: 64 }
 
 export function AvatarDisplay({ avatarUrl, email, name, size = "md", className }: AvatarDisplayProps) {
-  const preset = getPresetFromUrl(avatarUrl)
-  const initials = getInitials(name, email)
+  const style = getStyleFromAvatarUrl(avatarUrl)
+  const seed = getSeed(email, name)
+  const url = getDiceBearUrl(seed, style, sizePx[size] * 2) // 2x for retina
 
-  if (preset) {
-    return (
-      <div
-        className={cn("flex items-center justify-center rounded-full font-semibold text-foreground", sizeClasses[size], className)}
-        style={{ backgroundColor: preset.bg }}
-      >
-        {initials}
-      </div>
-    )
-  }
-
-  // Default: neutral background with initials
   return (
-    <div className={cn("flex items-center justify-center rounded-full bg-secondary font-semibold text-foreground", sizeClasses[size], className)}>
-      {initials}
-    </div>
+    <img
+      src={url}
+      alt={name || email || "Avatar"}
+      className={cn("rounded-full bg-secondary", sizeClasses[size], className)}
+      width={sizePx[size]}
+      height={sizePx[size]}
+    />
   )
 }
 
@@ -82,29 +79,37 @@ interface AvatarPickerProps {
 }
 
 export function AvatarPicker({ currentAvatar, name, email, onSelect }: AvatarPickerProps) {
-  const initials = getInitials(name, email)
+  const seed = getSeed(email, name)
+  const currentStyle = getStyleFromAvatarUrl(currentAvatar)
 
   return (
     <div>
-      <p className="text-sm font-medium text-foreground">Choose an avatar</p>
-      <p className="mt-1 text-sm text-muted-foreground">Select a color for your profile avatar.</p>
-      <div className="mt-4 grid grid-cols-6 gap-2">
-        {AVATAR_PRESETS.map((preset, index) => {
-          const value = `preset:${index}`
-          const isSelected = currentAvatar === value
+      <p className="text-sm font-medium text-foreground">Choose an avatar style</p>
+      <p className="mt-1 text-sm text-muted-foreground">Each style generates a unique avatar from your identity.</p>
+      <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+        {DICEBEAR_STYLES.map((s) => {
+          const isSelected = currentStyle === s.id
+          const url = getDiceBearUrl(seed, s.id, 96)
           return (
             <button
-              key={index}
+              key={s.id}
               type="button"
-              onClick={() => onSelect(value)}
+              onClick={() => onSelect(`dicebear:${s.id}`)}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-foreground transition-all",
-                isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:ring-2 hover:ring-border hover:ring-offset-1 hover:ring-offset-background"
+                "flex flex-col items-center gap-2 rounded-lg border p-3 transition-colors",
+                isSelected
+                  ? "border-foreground bg-muted"
+                  : "border-border hover:border-foreground/40"
               )}
-              style={{ backgroundColor: preset.bg }}
-              aria-label={`Avatar color ${index + 1}`}
             >
-              {initials}
+              <img
+                src={url}
+                alt={s.name}
+                className="h-12 w-12 rounded-full bg-secondary"
+                width={48}
+                height={48}
+              />
+              <span className="text-xs font-medium text-muted-foreground">{s.name}</span>
             </button>
           )
         })}
