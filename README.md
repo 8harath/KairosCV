@@ -2,7 +2,7 @@
 
 > **AI-Powered Resume Optimization Platform**
 
-Transform any resume into an ATS-optimized, single-page PDF with intelligent content enhancement powered by Google Gemini AI.
+Transform any resume into an ATS-optimized, single-page PDF with intelligent content enhancement powered by Groq AI (with Google Gemini as fallback).
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
@@ -17,7 +17,7 @@ Transform any resume into an ATS-optimized, single-page PDF with intelligent con
 ### Key Features
 
 - **Multi-Format Upload** — PDF, DOCX, and TXT files supported
-- **AI-Powered Enhancement** — Google Gemini 1.5 Flash rewrites and strengthens your content
+- **AI-Powered Enhancement** — Groq (primary) or Google Gemini (fallback) rewrites and strengthens your content
 - **Exact Single-Page Output** — Puppeteer scale fitting ensures the PDF always fills one full page with no clipping
 - **Three Professional Templates** — Professional (LaTeX-inspired), Modern (blue accents), Classic (traditional serif)
 - **Real-Time Progress** — Server-Sent Events stream live processing updates
@@ -36,7 +36,7 @@ Transform any resume into an ATS-optimized, single-page PDF with intelligent con
 | Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | UI | React 19, Radix UI, Tailwind CSS |
-| AI | Google Gemini 1.5 Flash |
+| AI | Groq (primary) · Google Gemini (fallback) |
 | PDF Generation | Puppeteer / puppeteer-core |
 | Templates | Custom HTML + Handlebars |
 | Auth & Storage | Supabase (Auth, Storage, Postgres) |
@@ -50,7 +50,7 @@ Transform any resume into an ATS-optimized, single-page PDF with intelligent con
 
 - **Node.js** >= 18.17.0
 - **pnpm** >= 8.0.0 — [install](https://pnpm.io/installation)
-- **Google Gemini API Key** — [get one](https://ai.google.dev/)
+- **Groq API Key** — [get one](https://console.groq.com/) (or a Google Gemini key as fallback)
 - **Supabase project** — [create one](https://supabase.com/) (optional for local no-auth mode)
 
 ---
@@ -76,7 +76,9 @@ Create `.env.local` in the project root:
 
 ```env
 # ── AI ────────────────────────────────────────────
-GOOGLE_GEMINI_API_KEY=your-gemini-api-key
+# Groq is the primary provider. Gemini is used as fallback if GROQ_API_KEY is absent.
+GROQ_API_KEY=your-groq-api-key
+GOOGLE_GEMINI_API_KEY=your-gemini-api-key   # optional fallback
 GEMINI_MODEL=gemini-1.5-flash
 GEMINI_TEMPERATURE=0.3
 GEMINI_MAX_TOKENS=2048
@@ -307,7 +309,8 @@ MIT — see [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 - [Jake's Resume](https://github.com/jakegut/resume) — inspiration for the Professional template design
-- [Google Gemini](https://ai.google.dev/) — AI content enhancement
+- [Groq](https://groq.com/) — fast AI inference for content enhancement
+- [Google Gemini](https://ai.google.dev/) — AI fallback provider
 - [Sparticuz Chromium](https://github.com/Sparticuz/chromium) — serverless Chromium for PDF generation
 - [Supabase](https://supabase.com/) — auth and storage
 
