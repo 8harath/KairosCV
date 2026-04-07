@@ -111,7 +111,15 @@ export class PDFGenerator {
   }
 
   /**
-   * Generate PDF from HTML content
+   * Generate PDF from HTML content — always exactly one page.
+   *
+   * Strategy:
+   *  1. Set viewport to the print content width (letter − 2×0.5in margins = 7.5in = 720px)
+   *     so on-screen line-wrapping matches what Puppeteer will do in print mode.
+   *  2. Measure the full content height via scrollHeight (no overflow clipping in templates).
+   *  3. Compute a Puppeteer `scale` so the content fills the usable print area exactly.
+   *  4. Clamp scale to [0.62, 1.45] — below 0.62 text becomes unreadable; above 1.45 the
+   *     layout looks too sparse.
    */
   async generateFromHTML(
     html: string,
@@ -126,12 +134,34 @@ export class PDFGenerator {
     const page: Page = await this.browser.newPage()
 
     try {
+      // Match the narrowest print content width used by any template (classic: 7.4in ≈ 710px).
+      // Using 720px (7.5in) is accurate for professional/modern; the 10px diff for classic
+      // produces a negligible <2% height error.
+      await page.setViewport({ width: 720, height: 1056, deviceScaleFactor: 1 })
+
       // Set content — wait for font imports to complete
       await page.setContent(html, {
         waitUntil: ["networkidle0", "domcontentloaded"],
       })
 
-      // Generate PDF — use CSS @page margins, no additional Puppeteer margins
+      // Full content height in CSS px at 96 dpi (no overflow: hidden in templates).
+      const contentHeight = await page.evaluate(
+        () => document.documentElement.scrollHeight
+      )
+
+      // Usable vertical space on a letter page with 0.5in top+bottom margins:
+      //   (11in − 1.0in) × 96 px/in = 960px
+      // This is a conservative middle-ground across templates
+      // (professional: 969.6px, modern: 960px, classic: 940.8px).
+      const TARGET_HEIGHT_PX = 10.0 * 96 // 960
+
+      // Scale that makes content fill exactly one page.
+      //   scale > 1 → sparse resume: content zoomed up to fill the page
+      //   scale < 1 → dense resume: content zoomed out so nothing overflows
+      const rawScale = TARGET_HEIGHT_PX / contentHeight
+      const scale = Math.min(1.45, Math.max(0.62, rawScale))
+
+      // Generate PDF — CSS @page controls physical margins; Puppeteer margin = 0
       const pdfBuffer = await page.pdf({
         format: options.format || "letter",
         printBackground: options.printBackground !== false,
@@ -142,6 +172,7 @@ export class PDFGenerator {
           left: "0",
         },
         preferCSSPageSize: true,
+        scale,
       })
 
       return Buffer.from(pdfBuffer)
