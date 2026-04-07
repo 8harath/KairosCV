@@ -199,11 +199,7 @@
       margin-bottom: 2pt;
     }
 
-    /* Force single page — hide overflow beyond page height */
-    html, body {
-      max-height: 10.09in; /* letter height minus top+bottom margins */
-      overflow: hidden;
-    }
+    /* Page fitting is handled by Puppeteer scale in the PDF generator */
 
     /* Print Optimization */
     @media print {
