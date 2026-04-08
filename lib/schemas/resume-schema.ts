@@ -52,8 +52,8 @@ export const EducationSchema = z.object({
   startDate: z.string().optional(), // "Aug 2020"
   endDate: z.string().optional(), // "May 2024" or "Expected May 2024"
   gpa: z.string().optional(), // "3.8/4.0" or "3.8"
-  honors: z.array(z.string()).optional(), // Dean's List, Cum Laude, etc.
-  relevantCoursework: z.array(z.string()).optional(),
+  honors: z.array(z.string()).nullish().transform(v => v ?? undefined), // Dean's List, Cum Laude, etc.
+  relevantCoursework: z.array(z.string()).nullish().transform(v => v ?? undefined),
 })
 
 export type Education = z.infer<typeof EducationSchema>
@@ -123,7 +123,7 @@ export type Award = z.infer<typeof AwardSchema>
 
 export const PublicationSchema = z.object({
   title: z.string().min(1, "Publication title is required"),
-  authors: z.array(z.string()).optional(), // Co-authors
+  authors: z.array(z.string()).nullish().transform(v => v ?? undefined), // Co-authors
   venue: z.string().optional(), // Conference/Journal name
   date: z.string().optional(),
   url: z.string().optional(), // Removed .url() validation for flexibility
@@ -209,7 +209,7 @@ export const ResumeDataSchema = z.object({
   languageProficiency: z.array(LanguageProficiencySchema).optional(), // Spoken languages
   volunteer: z.array(VolunteerSchema).optional(),
   hobbies: z.array(HobbySchema).optional(),
-  references: z.array(z.string()).optional(), // Simple string array like "Available upon request"
+  references: z.array(z.string()).nullish().transform(v => v ?? undefined), // Simple string array like "Available upon request"
 
   // Catch-all for unrecognized sections (ZERO DATA LOSS)
   customSections: z.array(CustomSectionSchema).optional(),
@@ -371,8 +371,8 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       startDate: edu.startDate,
       endDate: edu.endDate,
       gpa: edu.gpa,
-      honors: edu.honors,
-      relevantCoursework: edu.relevantCoursework,
+      honors: edu.honors ?? undefined,
+      relevantCoursework: edu.relevantCoursework ?? undefined,
     })) || [],
     skills: {
       languages: partial.skills?.languages || [],
@@ -432,7 +432,7 @@ export function fillDefaults(partial: PartialResumeData): ResumeData {
       name: hobby.name || 'Unknown Hobby',
       description: hobby.description,
     })),
-    references: partial.references,
+    references: partial.references ?? undefined,
     customSections: partial.customSections?.map(section => ({
       heading: section.heading || 'Untitled Section',
       content: section.content || [],
