@@ -5,7 +5,6 @@ import { ArrowRight, ChevronDown, ChevronUp, Loader2, X } from "lucide-react"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
-import { Input } from "@/components/ui/input"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 import { toast } from "@/hooks/use-toast"
 
@@ -15,7 +14,6 @@ interface OptimizeClientProps {
 
 export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [file, setFile] = useState<File | null>(null)
-  const [email, setEmail] = useState("")
   const [jobDescription, setJobDescription] = useState("")
   const [showJD, setShowJD] = useState(false)
   const [templateId, setTemplateId] = useState("professional")
@@ -74,21 +72,12 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const handleOptimize = async () => {
     if (!file) return
 
-    const typedEmail = email.trim().toLowerCase()
-    if (!authBypassed && typedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) {
-      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" })
-      return
-    }
-
-    const normalizedEmail = typedEmail || `guest-${Date.now()}@kairoscv.local`
-
     setPdfUrl(null)
     setIsUploading(true)
 
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("email", normalizedEmail)
       if (jobDescription.trim()) {
         formData.append("jobDescription", jobDescription.trim())
       }
@@ -137,19 +126,6 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   if (showUploadForm) {
     return (
       <div className="space-y-6">
-        {!authBypassed ? (
-          <div>
-            <label className="mb-2 block text-sm font-medium text-foreground">Email</label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-            />
-            <p className="mt-1.5 text-xs text-muted-foreground">Used for trial tracking. 3 free generations per 24 hours.</p>
-          </div>
-        ) : null}
 
         <div>
           <button
