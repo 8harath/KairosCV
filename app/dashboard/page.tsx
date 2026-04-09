@@ -36,9 +36,17 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10)
 
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { count: usageCount } = await supabase
+    .from("processing_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("created_at", since)
+
   const displayName = profile?.full_name || user.user_metadata.full_name || "Welcome"
   const email = profile?.email || user.email || ""
   const trialLimit = profile?.trial_limit ?? 3
+  const remaining = Math.max(0, trialLimit - (usageCount ?? 0))
   const resumeCount = resumes?.length ?? 0
 
   return (
@@ -60,8 +68,10 @@ export default async function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="surface-panel p-5">
             <p className="text-xs font-medium text-muted-foreground">Generations left</p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">{trialLimit}</p>
-            <p className="mt-1 text-xs text-muted-foreground">per 24-hour window</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {remaining} <span className="text-sm font-normal text-muted-foreground">/ {trialLimit}</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">resets every 24 hours</p>
           </div>
           <div className="surface-panel p-5">
             <p className="text-xs font-medium text-muted-foreground">Resumes created</p>
@@ -82,7 +92,7 @@ export default async function DashboardPage() {
           <div className="mt-6 rounded-md border border-border bg-muted/30 p-6">
             <h2 className="text-sm font-semibold text-foreground">Welcome to KairosCV</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              You have {trialLimit} free resume generations per 24-hour window. Upload your first resume to get started.
+              You have {remaining} free resume generation{remaining !== 1 ? "s" : ""} left today. Upload your first resume to get started.
             </p>
             <Link href="/optimize" className="btn mt-4 inline-flex items-center gap-2">
               Get started
