@@ -42,6 +42,10 @@ TEST_IMPLEMENTATION_SUMMARY.md
 VISION_EXTRACTION.md
 IMPLEMENTATION_SUMMARY.md
 
+# Claude Code (local AI assistant config — not relevant to contributors)
+CLAUDE.md
+.claude/
+
 # temp files
 test-puppeteer.js
 
