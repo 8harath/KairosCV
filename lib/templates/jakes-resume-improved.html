@@ -221,6 +221,14 @@
     </div>
   </div>
 
+  <!-- Summary / Profile (shown only if present) -->
+  {{#if SUMMARY}}
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary">{{SUMMARY}}</div>
+  </div>
+  {{/if}}
+
   <!-- Education (comes first in Jake's template) -->
   {{#if EDUCATION_ITEMS}}
   <div class="section">
@@ -319,14 +327,6 @@
   <div class="section">
     <div class="section-title">Leadership / Activities</div>
     {{VOLUNTEER}}
-  </div>
-  {{/if}}
-
-  <!-- Summary (at bottom if present — Jake's doesn't have one, but we support it) -->
-  {{#if SUMMARY}}
-  <div class="section">
-    <div class="section-title">Summary</div>
-    <div class="summary">{{SUMMARY}}</div>
   </div>
   {{/if}}
 
