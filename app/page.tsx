@@ -19,7 +19,7 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex items-center justify-center gap-3">
-              <Link href="/auth/login" className="btn-hero">
+              <Link href="/login" className="btn-hero">
                 Get started
                 <ArrowRight className="h-4 w-4" />
               </Link>
