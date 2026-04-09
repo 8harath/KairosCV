@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Download, FileText, Trash2 } from "lucide-react"
+import { Download, Eye, FileText, Trash2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 interface ResumeEntry {
@@ -20,9 +20,14 @@ export default function ResumeList({ initialResumes }: ResumeListProps) {
   const [resumes, setResumes] = useState(initialResumes)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const handleDownload = (resume: ResumeEntry) => {
+  const handlePreview = (resume: ResumeEntry) => {
     const fileId = resume.job_id || resume.id
     window.open(`/api/download/${fileId}?preview=true`, "_blank")
+  }
+
+  const getDownloadUrl = (resume: ResumeEntry) => {
+    const fileId = resume.job_id || resume.id
+    return `/api/download/${fileId}`
   }
 
   const handleDelete = async (resume: ResumeEntry) => {
@@ -57,7 +62,7 @@ export default function ResumeList({ initialResumes }: ResumeListProps) {
       {resumes.map((resume) => (
         <div key={resume.id} className="flex items-center justify-between gap-4 py-3">
           <button
-            onClick={() => handleDownload(resume)}
+            onClick={() => handlePreview(resume)}
             className="flex min-w-0 items-center gap-3 text-left hover:opacity-80 transition-opacity"
           >
             <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -70,12 +75,20 @@ export default function ResumeList({ initialResumes }: ResumeListProps) {
           </button>
           <div className="flex items-center gap-1 shrink-0">
             <button
-              onClick={() => handleDownload(resume)}
+              onClick={() => handlePreview(resume)}
+              className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="Preview PDF"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            <a
+              href={getDownloadUrl(resume)}
+              download
               className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Download PDF"
             >
               <Download className="h-4 w-4" />
-            </button>
+            </a>
             <button
               onClick={() => handleDelete(resume)}
               disabled={deletingId === resume.id}
