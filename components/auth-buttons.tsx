@@ -56,17 +56,19 @@ export default function AuthButtons() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user?.email) {
         setUser({
           email: session.user.email,
           name: session.user.user_metadata?.full_name || "",
         })
-      } else {
+        setLoading(false)
+        router.refresh()
+      } else if (event !== "SIGNED_OUT") {
         setUser(null)
+        setLoading(false)
+        router.refresh()
       }
-      setLoading(false)
-      router.refresh()
     })
 
     const handleAvatarChanged = (e: Event) => {
@@ -120,8 +122,7 @@ export default function AuthButtons() {
         <DropdownMenuItem
           onClick={async () => {
             await signOutWithSupabase()
-            router.push("/")
-            router.refresh()
+            window.location.href = "/"
           }}
           className="text-muted-foreground focus:text-foreground"
         >
