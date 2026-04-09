@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
 import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
-import { consumeTrial, isValidEmail, normalizeEmail } from "@/lib/trials"
+import { consumeTrial, normalizeEmail } from "@/lib/trials"
 import { isAuthBypassed, isTrialLimitEnabled, shouldUseSupabaseStorage } from "@/lib/config/env"
 import { saveUploadedFileToSupabase } from "@/lib/storage/supabase-storage"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Auth check — get authenticated user unless auth is bypassed
     let userId: string | null = null
+    let userEmail: string | null = null
     if (!authBypassed) {
       const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
       const { data: { user } } = await supabase.auth.getUser()
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
       userId = user.id
+      userEmail = user.email ?? null
     }
 
     // Opportunistic garbage collection for stale files.
@@ -34,10 +36,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const rawFile = formData.get("file")
     const file = rawFile instanceof File ? rawFile : null
-    const emailValue = formData.get("email")
-    const providedEmail = typeof emailValue === "string" ? normalizeEmail(emailValue) : ""
-    const emailRequired = !authBypassed
-    const email = providedEmail || `guest-${randomUUID()}@kairoscv.local`
+    const email = userEmail ? normalizeEmail(userEmail) : `guest-${randomUUID()}@kairoscv.local`
     const jobDescription = formData.get("jobDescription")
     const jobDescriptionText = typeof jobDescription === "string" ? jobDescription.trim() : null
     const templateValue = formData.get("templateId")
@@ -45,9 +44,6 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
-    }
-    if (emailRequired && !isValidEmail(providedEmail)) {
-      return NextResponse.json({ detail: "A valid email is required." }, { status: 400 })
     }
 
     let trial:
