@@ -53,8 +53,7 @@ export default function SettingsClient({
 
   const handleSignOut = async () => {
     await signOutWithSupabase()
-    router.push("/")
-    router.refresh()
+    window.location.href = "/"
   }
 
   const formattedDate = memberSince
