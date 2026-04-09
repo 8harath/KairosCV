@@ -229,7 +229,7 @@ npx tsc --noEmit  # Type checking
 4. Add environment variables in the Render dashboard (see `.env.local` above)
 5. Set `PUPPETEER_EXECUTABLE_PATH=/opt/render/.cache/puppeteer/chrome`
 
-See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for full instructions.
+See [docs/RENDER_DEPLOYMENT.md](docs/RENDER_DEPLOYMENT.md) for full instructions.
 
 ### Vercel
 
@@ -238,7 +238,7 @@ See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for full instructions.
 3. Leave `PUPPETEER_EXECUTABLE_PATH` empty — the app detects the Vercel environment automatically
 4. Deploy the `main` branch
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for full instructions.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full instructions.
 
 ---
 
@@ -297,6 +297,23 @@ Download link returned
 4. Push and open a Pull Request against `main`
 
 **Scopes:** `parser`, `ai`, `pdf`, `ui`, `api`, `auth`, `deploy`
+
+---
+
+## Documentation
+
+Additional guides are in the [`docs/`](docs/) directory:
+
+| File | Description |
+|------|-------------|
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Vercel deployment guide |
+| [RENDER_DEPLOYMENT.md](docs/RENDER_DEPLOYMENT.md) | Render.com deployment guide |
+| [SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) | Supabase project setup |
+| [EMAILJS_SETUP.md](docs/EMAILJS_SETUP.md) | Contact form (EmailJS) setup |
+| [TESTING_GUIDE.md](docs/TESTING_GUIDE.md) | Running and writing tests |
+| [TEST_COVERAGE.md](docs/TEST_COVERAGE.md) | Test coverage reference |
+| [EXTRACTION_PIPELINE.md](docs/EXTRACTION_PIPELINE.md) | Resume parsing pipeline deep-dive |
+| [EDGE_CASES_HANDLED.md](docs/EDGE_CASES_HANDLED.md) | Known edge cases and how they are handled |
 
 ---
 
