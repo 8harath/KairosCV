@@ -345,7 +345,10 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     const linkedinUrl = /^https?:\/\//i.test(contact.linkedin) ? contact.linkedin : `https://${contact.linkedin}`
     contactParts.push(`<a href="${linkedinUrl}">LinkedIn</a>`)
   }
-  if (contact.github) contactParts.push(`<a href="https://${contact.github}">GitHub</a>`)
+  if (contact.github) {
+    const githubContactUrl = /^https?:\/\//i.test(contact.github) ? contact.github : `https://${contact.github}`
+    contactParts.push(`<a href="${githubContactUrl}">GitHub</a>`)
+  }
   if (contact.location) contactParts.push(contact.location)
 
   const contactLine = contactParts.join(' <span class="separator">|</span> ')
