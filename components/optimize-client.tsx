@@ -15,7 +15,7 @@ interface OptimizeClientProps {
 export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [file, setFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState("")
-  const [showJD, setShowJD] = useState(false)
+  const [showJD, setShowJD] = useState(true)
   const [templateId, setTemplateId] = useState("professional")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -128,22 +128,31 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
       <div className="space-y-6">
 
         <div>
-          <button
-            type="button"
-            onClick={() => setShowJD(!showJD)}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showJD ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            Paste a job description to tailor your resume (optional)
-          </button>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowJD(!showJD)}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showJD ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              Paste a job description to tailor your resume
+              <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary">Recommended</span>
+            </button>
+          </div>
           {showJD && (
-            <textarea
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the job description here. We'll tailor your resume to match the role's keywords and requirements."
-              rows={5}
-              className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
-            />
+            <div className="mt-2">
+              <textarea
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value.slice(0, 2000))}
+                placeholder="Paste the job description here. We'll tailor your resume bullets and keywords to match the role."
+                rows={5}
+                maxLength={2000}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground tabular-nums">
+                {jobDescription.length} / 2000
+              </p>
+            </div>
           )}
         </div>
 
