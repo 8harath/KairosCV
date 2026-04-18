@@ -214,7 +214,7 @@ export class PDFGenerator {
 
       // CSS handled the bulk; scale provides final fine-tuning.
       const rawScale = TARGET_HEIGHT_PX / contentHeight
-      const scale = Math.min(1.45, Math.max(0.62, rawScale))
+      const scale = Math.min(1.45, Math.max(0.55, rawScale))
       const pdfBuffer = await page.pdf({
         format: options.format || "letter",
         printBackground: options.printBackground !== false,
