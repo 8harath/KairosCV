@@ -17,6 +17,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [jobDescription, setJobDescription] = useState("")
   const [showJD, setShowJD] = useState(true)
   const [templateId, setTemplateId] = useState("professional")
+  const [format, setFormat] = useState<"letter" | "a4">("letter")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, confidence, elapsed, startProcessing, cleanup } = useResumeOptimizer()
@@ -83,6 +84,9 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
       }
       if (templateId !== "professional") {
         formData.append("templateId", templateId)
+      }
+      if (format !== "letter") {
+        formData.append("format", format)
       }
 
       const uploadResponse = await fetch("/api/upload", { method: "POST", body: formData })
@@ -176,6 +180,30 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
               >
                 <p className="text-sm font-medium text-foreground">{t.name}</p>
                 <p className="text-xs text-muted-foreground">{t.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-foreground">Paper size</label>
+          <div className="flex gap-2">
+            {([
+              { id: "letter", label: "Letter", sub: "8.5 × 11 in (US)" },
+              { id: "a4",     label: "A4",     sub: "210 × 297 mm (Intl)" },
+            ] as const).map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFormat(f.id)}
+                className={`flex-1 rounded-md border px-3 py-2 text-left transition-colors ${
+                  format === f.id
+                    ? "border-foreground bg-muted"
+                    : "border-border hover:border-foreground/40"
+                }`}
+              >
+                <p className="text-sm font-medium text-foreground">{f.label}</p>
+                <p className="text-xs text-muted-foreground">{f.sub}</p>
               </button>
             ))}
           </div>
