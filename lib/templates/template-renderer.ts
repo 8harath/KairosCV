@@ -193,10 +193,12 @@ function generateEducationHTML(entry: EducationEntry): string {
     details.push(`Coursework: ${coursework.join(", ")}`)
   }
 
+  const eduDateStr = [escapeHtml(entry.startDate), escapeHtml(entry.endDate)].filter(Boolean).join(" – ")
+
   return `  <div class="entry">
     <div class="entry-header">
       <span class="entry-title">${escapeHtml(entry.institution)}</span>
-      <span class="entry-date">${escapeHtml(entry.startDate)} – ${escapeHtml(entry.endDate)}</span>
+      ${eduDateStr ? `<span class="entry-date">${eduDateStr}</span>` : ""}
     </div>
     <div class="entry-subtitle">
       <span class="entry-company">${escapeHtml(degree)}</span>
