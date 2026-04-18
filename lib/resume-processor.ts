@@ -179,11 +179,12 @@ export function extractSections(text: string): ResumeData {
 export async function generatePDF(
   parsedResume: ParsedResume,
   summary?: string,
-  templateId?: string | null
+  templateId?: string | null,
+  format?: "letter" | "a4" | null
 ): Promise<Buffer> {
   try {
     const pdfBuffer = await generateResumePDF(parsedResume, summary, {
-      format: "letter",
+      format: format ?? "letter",
       printBackground: true,
     }, templateId)
 
@@ -447,7 +448,8 @@ export async function* processResume(
 
     // Stage 5: Generate PDF using Puppeteer and Jake's template
     const templateId = metadata.templateId || null
-    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary, templateId)
+    const paperFormat = (metadata.format === "a4" ? "a4" : "letter") as "letter" | "a4"
+    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary, templateId, paperFormat)
 
     // Save generated PDF
     await saveGeneratedPDF(fileId, pdfBuffer)
