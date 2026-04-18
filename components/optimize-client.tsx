@@ -342,5 +342,14 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
     )
   }
 
-  return <ResultsPanel pdfUrl={pdfUrl} downloadUrl={downloadUrl} fileId={fileId} onReset={handleReset} />
+  return (
+    <ResultsPanel
+      pdfUrl={pdfUrl}
+      downloadUrl={downloadUrl}
+      fileId={fileId}
+      onReset={handleReset}
+      confidence={confidence}
+      jobDescription={jobDescription || null}
+    />
+  )
 }
