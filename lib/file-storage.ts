@@ -87,6 +87,7 @@ export interface FileMetadata {
   userId?: string | null
   jobDescription?: string | null
   templateId?: string | null
+  format?: "letter" | "a4" | null
   uploadedAt: Date
   storage?: {
     bucket: string
