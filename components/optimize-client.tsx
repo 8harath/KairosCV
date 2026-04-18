@@ -19,7 +19,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [templateId, setTemplateId] = useState("professional")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const { progress, stage, message, downloadUrl, error, isProcessing, fileId, startProcessing, cleanup } = useResumeOptimizer()
+  const { progress, stage, message, downloadUrl, error, isProcessing, fileId, confidence, elapsed, startProcessing, cleanup } = useResumeOptimizer()
 
   useEffect(() => {
     if (error) {
@@ -216,7 +216,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   }
 
   if (isProcessing) {
-    return <ProgressTracker progress={progress} stage={stage} message={message} />
+    return <ProgressTracker progress={progress} stage={stage} message={message} elapsed={elapsed} />
   }
 
   if (error) {

@@ -2,10 +2,14 @@
 
 import { CheckCircle2, FileOutput, FileText, Loader2, Sparkles, WandSparkles } from "lucide-react"
 
+// Empirical baseline: typical end-to-end processing takes ~45 seconds.
+const BASELINE_SECONDS = 45
+
 interface ProgressTrackerProps {
   progress: number
   stage: string
   message: string
+  elapsed?: number
 }
 
 const stages = [
@@ -16,8 +20,22 @@ const stages = [
   { key: "compiling", label: "Compile", icon: FileOutput },
 ]
 
-export default function ProgressTracker({ progress, stage, message }: ProgressTrackerProps) {
+function formatSeconds(s: number): string {
+  if (s < 60) return `${s}s`
+  return `${Math.floor(s / 60)}m ${s % 60}s`
+}
+
+export default function ProgressTracker({ progress, stage, message, elapsed = 0 }: ProgressTrackerProps) {
   const currentStageIndex = stages.findIndex((item) => item.key === stage)
+
+  // Estimate remaining time: use progress % as the primary signal when available,
+  // fall back to elapsed vs baseline when progress is still 0.
+  const remaining =
+    progress > 5
+      ? Math.max(0, Math.round(((100 - progress) / progress) * elapsed))
+      : Math.max(0, BASELINE_SECONDS - elapsed)
+
+  const showEta = elapsed > 3 && progress < 100
 
   return (
     <div className="space-y-6">
@@ -26,9 +44,16 @@ export default function ProgressTracker({ progress, stage, message }: ProgressTr
           <h2 className="text-lg font-semibold text-foreground">Processing</h2>
           <p className="mt-1 text-sm text-muted-foreground">Your resume is being optimized.</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          {Math.round(progress)}%
+        <div className="flex flex-col items-end gap-0.5 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {Math.round(progress)}%
+          </div>
+          {showEta && (
+            <span className="text-xs tabular-nums">
+              ~{formatSeconds(remaining)} remaining
+            </span>
+          )}
         </div>
       </div>
 
@@ -68,6 +93,12 @@ export default function ProgressTracker({ progress, stage, message }: ProgressTr
           )
         })}
       </div>
+
+      {elapsed > 0 && (
+        <p className="text-center text-xs text-muted-foreground tabular-nums">
+          {formatSeconds(elapsed)} elapsed
+        </p>
+      )}
     </div>
   )
 }
