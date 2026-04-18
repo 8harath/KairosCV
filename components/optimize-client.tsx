@@ -8,6 +8,80 @@ import ResultsPanel from "@/components/results-panel"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 import { toast } from "@/hooks/use-toast"
 
+// ---------------------------------------------------------------------------
+// TemplateThumbnail — tiny CSS-drawn resume preview for the template picker
+// ---------------------------------------------------------------------------
+function TemplateThumbnail({ variant }: { variant: "professional" | "modern" | "classic" }) {
+  const accentColor =
+    variant === "modern" ? "#2563eb" : variant === "classic" ? "#000" : "#000"
+  const headingFont =
+    variant === "professional" ? "Georgia, serif" : variant === "modern" ? "Arial, sans-serif" : "Georgia, serif"
+  const isModern = variant === "modern"
+  const isClassic = variant === "classic"
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: "100%",
+        aspectRatio: "8.5 / 11",
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 2,
+        padding: "6% 7%",
+        overflow: "hidden",
+        fontFamily: headingFont,
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+      }}
+    >
+      {/* Name block */}
+      <div style={{ textAlign: isModern ? "left" : "center" }}>
+        <div style={{
+          height: 5,
+          background: "#1a1a1a",
+          borderRadius: 1,
+          width: isModern ? "70%" : "60%",
+          margin: isModern ? undefined : "0 auto",
+        }} />
+        {isModern && (
+          <div style={{ height: 1.5, background: accentColor, marginTop: 3, width: "100%" }} />
+        )}
+        {isClassic && (
+          <div style={{ height: 1, background: "#000", marginTop: 2, width: "80%", margin: "2px auto 0" }} />
+        )}
+        <div style={{ height: 2.5, background: "#ccc", borderRadius: 1, width: "50%", marginTop: 3, ...(isModern ? {} : { margin: "3px auto 0" }) }} />
+      </div>
+
+      {/* Sections */}
+      {[0, 1, 2].map((i) => (
+        <div key={i} style={{ marginTop: 4 }}>
+          <div style={{
+            height: 2.5,
+            background: isModern ? accentColor : "#1a1a1a",
+            borderRadius: 1,
+            width: "35%",
+            marginBottom: 2,
+          }} />
+          {isClassic && (
+            <div style={{ height: 0.5, background: "#000", marginBottom: 2 }} />
+          )}
+          {[0, 1, 2].map((j) => (
+            <div key={j} style={{
+              height: 1.5,
+              background: "#e5e7eb",
+              borderRadius: 1,
+              width: `${68 - j * 12}%`,
+              marginBottom: 1.5,
+            }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 interface OptimizeClientProps {
   authBypassed: boolean
 }
@@ -164,22 +238,24 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
           <label className="mb-2 block text-sm font-medium text-foreground">Template</label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { id: "professional", name: "Professional", desc: "LaTeX-style serif" },
-              { id: "modern", name: "Modern", desc: "Clean sans-serif" },
-              { id: "classic", name: "Classic", desc: "Traditional formal" },
+              { id: "professional", name: "Professional", desc: "LaTeX serif", thumbnail: "professional" },
+              { id: "modern",       name: "Modern",       desc: "Sans-serif",  thumbnail: "modern" },
+              { id: "classic",      name: "Classic",      desc: "Traditional", thumbnail: "classic" },
             ].map((t) => (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => setTemplateId(t.id)}
-                className={`rounded-md border px-3 py-2.5 text-left transition-colors ${
+                className={`rounded-md border p-2 text-left transition-colors ${
                   templateId === t.id
                     ? "border-foreground bg-muted"
                     : "border-border hover:border-foreground/40"
                 }`}
               >
-                <p className="text-sm font-medium text-foreground">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.desc}</p>
+                {/* Mini CSS resume thumbnail */}
+                <TemplateThumbnail variant={t.thumbnail as "professional" | "modern" | "classic"} />
+                <p className="mt-1.5 text-xs font-medium text-foreground">{t.name}</p>
+                <p className="text-[10px] text-muted-foreground">{t.desc}</p>
               </button>
             ))}
           </div>
