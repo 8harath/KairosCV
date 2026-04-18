@@ -89,10 +89,12 @@ function generateExperienceHTML(entry: ExperienceEntry): string {
     .map((bullet) => `    <div class="bullet">${escapeHtml(bullet)}</div>`)
     .join("\n")
 
+  const dateStr = [escapeHtml(entry.startDate), escapeHtml(entry.endDate)].filter(Boolean).join(" – ")
+
   return `  <div class="entry">
     <div class="entry-header">
       <span class="entry-title">${escapeHtml(entry.title)}</span>
-      <span class="entry-date">${escapeHtml(entry.startDate)} – ${escapeHtml(entry.endDate)}</span>
+      ${dateStr ? `<span class="entry-date">${dateStr}</span>` : ""}
     </div>
     <div class="entry-subtitle">
       <span class="entry-company">${escapeHtml(entry.company)}</span>
