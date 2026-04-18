@@ -113,13 +113,19 @@ export class PDFGenerator {
   /**
    * Generate PDF from HTML content — always exactly one page.
    *
-   * Strategy:
-   *  1. Set viewport to the print content width (letter − 2×0.5in margins = 7.5in = 720px)
-   *     so on-screen line-wrapping matches what Puppeteer will do in print mode.
-   *  2. Measure the full content height via scrollHeight (no overflow clipping in templates).
-   *  3. Compute a Puppeteer `scale` so the content fills the usable print area exactly.
-   *  4. Clamp scale to [0.62, 1.45] — below 0.62 text becomes unreadable; above 1.45 the
-   *     layout looks too sparse.
+   * Two-pass strategy:
+   *  1. Render at 720px viewport (= letter width minus margins) and measure scrollHeight.
+   *  2a. Sparse resume (content < 88% of target): inject CSS to redistribute extra
+   *      whitespace proportionally across sections, entries, and the header.
+   *  2b. Dense resume (content > 106% of target): inject CSS to tighten section/entry
+   *      gaps and bullet spacing before scaling.
+   *  3. Re-measure after CSS adjustment, then apply a Puppeteer scale for fine-tuning.
+   *     Scale stays close to 1.0 because CSS handles the bulk of the adjustment.
+   *
+   * Target height: 940px (= 9.79in × 96 dpi) — chosen as a conservative floor that
+   * fits the tightest template margins (classic: 0.6in t/b → 9.8in usable). Modern
+   * and professional templates have slightly more usable height; the final scale
+   * (clamped to ≤ 1.45) fills that remaining gap without overflow.
    */
   async generateFromHTML(
     html: string,
