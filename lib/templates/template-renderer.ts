@@ -226,7 +226,10 @@ function generateProjectHTML(entry: ProjectEntry): string {
     : ""
 
   const links: string[] = []
-  if (entry.github) links.push(`<a href="${escapeHtml(entry.github)}">GitHub</a>`)
+  if (entry.github) {
+    const githubUrl = /^https?:\/\//i.test(entry.github) ? entry.github : `https://${entry.github}`
+    links.push(`<a href="${escapeHtml(githubUrl)}">GitHub</a>`)
+  }
 
   const dateStr = entry.startDate && entry.endDate
     ? `${escapeHtml(entry.startDate)} – ${escapeHtml(entry.endDate)}`
