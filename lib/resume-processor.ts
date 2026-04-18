@@ -242,7 +242,7 @@ export async function enhanceWithAI(
   }
 }
 
-// Process resume file (main processing pipeline using Gemini for extraction)
+// Process resume file — delegates to the LangGraph agentic pipeline.
 export async function* processResume(
   fileId: string,
   fileType: string,
@@ -251,8 +251,7 @@ export async function* processResume(
   let resolvedUpload: Awaited<ReturnType<typeof resolveUploadedFile>> | undefined
 
   try {
-    // Stage 1: Parse file to extract raw text
-    yield { stage: "parsing", progress: 10, message: "Reading resume file..." }
+    yield { stage: "parsing", progress: 5, message: "Loading metadata..." }
 
     const metadata = await getFileMetadata(fileId)
     if (!metadata) {
@@ -262,213 +261,30 @@ export async function* processResume(
     resolvedUpload = await resolveUploadedFile(fileId, originalFilename, metadata.storage)
     const filePath = resolvedUpload.filePath
 
-    let rawText = ""
-    let parseResult: Awaited<ReturnType<typeof parseResume>> | null = null
+    // Delegate to the LangGraph agentic pipeline
+    const { runResumeAgent } = await import("./agent/resume-agent")
 
-    parseResult = await parseResume(filePath, fileType)
-    rawText = parseResult.text
-
-    // Show extraction details in progress
-    if (parseResult?.extractionInfo) {
-      yield {
-        stage: "parsing",
-        progress: 20,
-        message: `Text extraction complete | ${parseResult.extractionInfo}`
-      }
-    } else {
-      yield { stage: "parsing", progress: 20, message: "Text extraction complete" }
-    }
-
-    // Stage 2: Multi-layer extraction with verification (NEW APPROACH)
-    yield { stage: "extraction", progress: 25, message: "Starting multi-layer extraction..." }
-
-    const { extractWithVerification } = await import('./extraction/multi-layer-extractor')
-
-    const extractionResult = await extractWithVerification(
-      rawText,
+    const agentInput = {
       fileId,
       filePath,
-      (stage, progress, message) => {
-        // Forward progress updates from extractor
-        // Map progress from 25-75
-        const mappedProgress = 25 + (progress / 100) * 50
-        // Don't yield here to avoid async generator issues
-      }
-    )
-
-    const extractedData = extractionResult.data
-
-    // Show verification results
-    if (!extractionResult.verification.complete) {
-      const missingCount = extractionResult.verification.missingContent.length
-      yield {
-        stage: "extraction",
-        progress: 75,
-        message: `Extraction complete with ${missingCount} potential gaps (confidence: ${(extractionResult.verification.confidence * 100).toFixed(0)}%)`
-      }
-
-      console.warn("⚠️  Extraction verification warnings:")
-      extractionResult.verification.missingContent.forEach((item, i) => {
-        console.warn(`   ${i + 1}. ${item}`)
-      })
-    } else {
-      yield {
-        stage: "extraction",
-        progress: 75,
-        message: `All data extracted successfully (${(extractionResult.verification.confidence * 100).toFixed(0)}% confidence)`
-      }
+      fileType,
+      originalFilename,
+      jobDescription: metadata.jobDescription ?? null,
+      templateId: metadata.templateId ?? null,
+      paperFormat: (metadata.format === "a4" ? "a4" : "letter") as "letter" | "a4",
     }
 
-    // Read job description from metadata for targeted optimization
-    const jobDescription = metadata.jobDescription || null
-
-    yield {
-      stage: "enhancing",
-      progress: 78,
-      message: jobDescription ? "Tailoring content to job description..." : "Enhancing content for ATS optimization...",
+    for await (const event of runResumeAgent(agentInput)) {
+      yield event
     }
 
-    // Stage 3: Enhance the extracted data (improve bullet points, generate summary)
-    let enhancedData = await enhanceExtractedData(extractedData, jobDescription)
-
-    yield { stage: "enhancing", progress: 85, message: "Optimizing bullet points..." }
-
-    // Stage 3.4: Handle ALL edge cases (deduplication, normalization, cleanup)
-    yield { stage: "cleaning", progress: 87, message: "Removing duplicates and normalizing data..." }
-    enhancedData = handleAllEdgeCases(enhancedData, rawText)
-
-    // Validate processed data
-    const processedValidation = validateProcessedData(enhancedData as SchemaResumeData)
-    if (processedValidation.warnings.length > 0) {
-      console.warn('⚠️  Data quality warnings:', processedValidation.warnings)
-    }
-    if (processedValidation.issues.length > 0) {
-      console.error('❌ Data quality issues:', processedValidation.issues)
-    }
-
-    // Stage 3.5: Validate and score resume data quality
-    yield { stage: "validating", progress: 89, message: "Validating resume data..." }
-
-    const validation = safeValidateResumeData(enhancedData)
-
-    if (!validation.success) {
-      console.warn('Resume data validation failed:', validation.errors)
-      // Fill defaults for missing required fields
-      enhancedData = fillDefaults(enhancedData as PartialResumeData)
-      const postFillValidation = safeValidateResumeData(enhancedData)
-      if (!postFillValidation.success) {
-        throw new Error(`Resume data is invalid after fallback defaults: ${postFillValidation.errors?.join(", ")}`)
-      }
-      yield {
-        stage: "validating",
-        progress: 91,
-        message: "Auto-fixing missing fields..."
-      }
-    } else {
-      yield { stage: "validating", progress: 91, message: "Validation passed!" }
-    }
-
-    // Calculate confidence score
-    yield { stage: "scoring", progress: 93, message: "Calculating quality score..." }
-    const confidenceScore = scoreResume(enhancedData)
-
-    // Log confidence for debugging
-    console.log('📊 Resume Confidence Score:', {
-      overall: confidenceScore.overall,
-      level: confidenceScore.level,
-      contact: confidenceScore.sections.contact.score,
-      experience: confidenceScore.sections.experience.score,
-      education: confidenceScore.sections.education.score,
-      skills: confidenceScore.sections.skills.score,
-      projects: confidenceScore.sections.projects.score,
-    })
-
-    // Yield progress with confidence score
-    yield {
-      stage: "scoring",
-      progress: 95,
-      message: `Resume quality: ${confidenceScore.overall}% (${confidenceScore.level})`,
-      confidence: confidenceScore
-    }
-
-    // Stage 4: Infer skills from projects if skills section is empty
-    const skills = enhancedData.skills || { languages: [], frameworks: [], tools: [], databases: [] }
-    const hasExplicitSkills =
-      (skills.languages?.length || 0) > 0 ||
-      (skills.frameworks?.length || 0) > 0 ||
-      (skills.tools?.length || 0) > 0 ||
-      (skills.databases?.length || 0) > 0
-
-    if (!hasExplicitSkills && enhancedData.projects?.length > 0) {
-      const inferredTech = new Set<string>()
-      for (const proj of enhancedData.projects) {
-        if (proj.technologies && Array.isArray(proj.technologies)) {
-          proj.technologies.forEach((t: string) => inferredTech.add(t))
-        }
-      }
-      if (inferredTech.size > 0) {
-        skills.tools = [...inferredTech]
-        enhancedData.skills = skills
-      }
-    }
-
-    // Convert to ParsedResume format for PDF generation
-    const parsedResume: ParsedResume = {
-      contact: {
-        name: enhancedData.contact?.name || "Your Name",
-        email: enhancedData.contact?.email || "",
-        phone: enhancedData.contact?.phone || "",
-        linkedin: enhancedData.contact?.linkedin || "",
-        github: enhancedData.contact?.github || "",
-        website: enhancedData.contact?.website || "",
-        location: enhancedData.contact?.location || "",
-      },
-      summary: enhancedData.summary,
-      experience: enhancedData.experience || [],
-      education: enhancedData.education || [],
-      skills: enhancedData.skills || {
-        languages: [],
-        frameworks: [],
-        tools: [],
-        databases: [],
-      },
-      projects: enhancedData.projects || [],
-      certifications: enhancedData.certifications || [],
-      // New comprehensive sections
-      awards: enhancedData.awards,
-      publications: enhancedData.publications,
-      languageProficiency: enhancedData.languageProficiency,
-      volunteer: enhancedData.volunteer,
-      hobbies: enhancedData.hobbies,
-      references: enhancedData.references,
-      customSections: enhancedData.customSections,
-    }
-
-    yield { stage: "generating", progress: 96, message: "Generating optimized PDF..." }
-
-    // Stage 5: Generate PDF using Puppeteer and Jake's template
-    const templateId = metadata.templateId || null
-    const paperFormat = (metadata.format === "a4" ? "a4" : "letter") as "letter" | "a4"
-    const pdfBuffer = await generatePDF(parsedResume, enhancedData.summary, templateId, paperFormat)
-
-    // Save generated PDF
-    await saveGeneratedPDF(fileId, pdfBuffer)
-    yield { stage: "compiling", progress: 98, message: "Finalizing..." }
-
-    // Final completion message
-    yield {
-      stage: "complete",
-      progress: 100,
-      message: "Resume optimization complete!",
-    }
-
-    // Return basic resume data for compatibility
+    // Return minimal ResumeData for SSE route compatibility
     const resumeData: ResumeData = {
-      text: rawText,
+      text: "",
       sections: {},
-      skills: parsedResume.skills.languages.concat(parsedResume.skills.frameworks),
-      experience: parsedResume.experience.map(exp => exp.title),
-      education: parsedResume.education.map(edu => edu.institution),
+      skills: [],
+      experience: [],
+      education: [],
     }
 
     return resumeData
