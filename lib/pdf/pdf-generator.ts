@@ -157,9 +157,8 @@ export class PDFGenerator {
         () => document.documentElement.scrollHeight
       )
 
-      // Scale that makes content fill exactly one page.
-      //   scale > 1 → sparse resume: content zoomed up to fill the page
-      //   scale < 1 → dense resume: content zoomed out so nothing overflows
+      const ratio = TARGET_HEIGHT_PX / contentHeight
+
       const rawScale = TARGET_HEIGHT_PX / contentHeight
       const scale = Math.min(1.45, Math.max(0.62, rawScale))
 
