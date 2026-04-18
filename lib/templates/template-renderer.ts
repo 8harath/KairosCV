@@ -328,13 +328,25 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     .filter(html => html.length > 0)
     .join("\n")
 
-  // Prepare skills - safe access
+  // Prepare skills — merge sparse categories (<2 items) into "Other"
   const skills = parsedResume.skills || { languages: [], frameworks: [], tools: [], databases: [] }
+  const skillCategories: { key: keyof typeof skills; items: string[] }[] = [
+    { key: "languages",  items: (skills.languages  || []).filter(Boolean) },
+    { key: "frameworks", items: (skills.frameworks || []).filter(Boolean) },
+    { key: "tools",      items: (skills.tools      || []).filter(Boolean) },
+    { key: "databases",  items: (skills.databases  || []).filter(Boolean) },
+  ]
+  const sparseItems: string[] = []
+  const denseCategories: Record<string, string[]> = {}
+  for (const cat of skillCategories) {
+    if (cat.items.length >= 2) {
+      denseCategories[cat.key] = cat.items
+    } else if (cat.items.length === 1) {
+      sparseItems.push(...cat.items)
+    }
+  }
   const hasSkills =
-    (skills.languages || []).length > 0 ||
-    (skills.frameworks || []).length > 0 ||
-    (skills.tools || []).length > 0 ||
-    (skills.databases || []).length > 0
+    Object.values(denseCategories).some(arr => arr.length > 0) || sparseItems.length > 0
 
   // Build contact line (avoid nested conditionals in template)
   const contact = parsedResume.contact || {}
@@ -412,10 +424,11 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     EDUCATION_ITEMS: educationHTML || "",
     PROJECT_ITEMS: projectHTML || "",
     HAS_SKILLS: hasSkills,
-    LANGUAGES: (skills.languages || []).join(", "),
-    FRAMEWORKS: (skills.frameworks || []).join(", "),
-    TOOLS: (skills.tools || []).join(", "),
-    DATABASES: (skills.databases || []).join(", "),
+    LANGUAGES:  (denseCategories["languages"]  || []).join(", "),
+    FRAMEWORKS: (denseCategories["frameworks"] || []).join(", "),
+    TOOLS:      (denseCategories["tools"]      || []).join(", "),
+    DATABASES:  (denseCategories["databases"]  || []).join(", "),
+    OTHER_SKILLS: sparseItems.join(", "),
     CERTIFICATIONS: certificationsHTML,
     // New comprehensive sections
     AWARDS: awardsHTML,
