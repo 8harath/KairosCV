@@ -150,13 +150,12 @@ export class PDFGenerator {
         waitUntil: ["networkidle0", "domcontentloaded"],
       })
 
-      // Full content height in CSS px at 96 dpi (no overflow: hidden in templates).
-      const contentHeight = await page.evaluate(
-        () => document.documentElement.scrollHeight
-      )
-
       // Conservative cross-template usable height (see JSDoc above).
       const TARGET_HEIGHT_PX = 940
+
+      let contentHeight = await page.evaluate(
+        () => document.documentElement.scrollHeight
+      )
 
       // Scale that makes content fill exactly one page.
       //   scale > 1 → sparse resume: content zoomed up to fill the page
