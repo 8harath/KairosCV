@@ -341,7 +341,10 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
   const contactParts: string[] = []
   if (contact.phone) contactParts.push(contact.phone)
   if (contact.email) contactParts.push(`<a href="mailto:${contact.email}">${contact.email}</a>`)
-  if (contact.linkedin) contactParts.push(`<a href="https://${contact.linkedin}">LinkedIn</a>`)
+  if (contact.linkedin) {
+    const linkedinUrl = /^https?:\/\//i.test(contact.linkedin) ? contact.linkedin : `https://${contact.linkedin}`
+    contactParts.push(`<a href="${linkedinUrl}">LinkedIn</a>`)
+  }
   if (contact.github) contactParts.push(`<a href="https://${contact.github}">GitHub</a>`)
   if (contact.location) contactParts.push(contact.location)
 
