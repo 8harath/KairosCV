@@ -41,6 +41,9 @@ export async function POST(request: NextRequest) {
     const jobDescriptionText = typeof jobDescription === "string" ? jobDescription.trim() : null
     const templateValue = formData.get("templateId")
     const templateId = typeof templateValue === "string" ? templateValue.trim() : null
+    const formatValue = formData.get("format")
+    const format: "letter" | "a4" | null =
+      formatValue === "a4" ? "a4" : formatValue === "letter" ? "letter" : null
 
     if (!file) {
       return NextResponse.json({ detail: "No file provided" }, { status: 400 })
@@ -111,6 +114,7 @@ export async function POST(request: NextRequest) {
       userId,
       jobDescription: jobDescriptionText || null,
       templateId,
+      format,
       uploadedAt: new Date(),
       storage,
     })
