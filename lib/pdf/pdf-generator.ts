@@ -155,11 +155,8 @@ export class PDFGenerator {
         () => document.documentElement.scrollHeight
       )
 
-      // Usable vertical space on a letter page with 0.5in top+bottom margins:
-      //   (11in − 1.0in) × 96 px/in = 960px
-      // This is a conservative middle-ground across templates
-      // (professional: 969.6px, modern: 960px, classic: 940.8px).
-      const TARGET_HEIGHT_PX = 10.0 * 96 // 960
+      // Conservative cross-template usable height (see JSDoc above).
+      const TARGET_HEIGHT_PX = 940
 
       // Scale that makes content fill exactly one page.
       //   scale > 1 → sparse resume: content zoomed up to fill the page
