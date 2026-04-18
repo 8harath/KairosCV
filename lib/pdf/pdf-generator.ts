@@ -159,6 +159,36 @@ export class PDFGenerator {
 
       const ratio = TARGET_HEIGHT_PX / contentHeight
 
+      if (ratio > 1.12) {
+        // Sparse resume: redistribute extra whitespace via CSS so scale stays near 1.0.
+        const extraPx = TARGET_HEIGHT_PX - contentHeight
+        await page.evaluate((extra: number) => {
+          const header = document.querySelector<HTMLElement>(".header")
+          const sections = Array.from(document.querySelectorAll<HTMLElement>(".section"))
+          const entries = Array.from(document.querySelectorAll<HTMLElement>(".entry"))
+          // Weight: header=1, each section=1, each entry=0.4
+          const totalWeight = (header ? 1 : 0) + sections.length + entries.length * 0.4
+          const pxPerUnit = totalWeight > 0 ? extra / totalWeight : 0
+
+          if (header) {
+            const cur = parseFloat(getComputedStyle(header).marginBottom) || 2
+            header.style.marginBottom = cur + pxPerUnit * 0.8 + "px"
+          }
+          sections.forEach(el => {
+            const cur = parseFloat(getComputedStyle(el).marginTop) || 4
+            el.style.marginTop = cur + pxPerUnit * 0.7 + "px"
+          })
+          entries.forEach(el => {
+            const cur = parseFloat(getComputedStyle(el).marginBottom) || 3
+            el.style.marginBottom = cur + pxPerUnit * 0.3 + "px"
+          })
+        }, extraPx)
+
+        contentHeight = await page.evaluate(
+          () => document.documentElement.scrollHeight
+        )
+      }
+
       const rawScale = TARGET_HEIGHT_PX / contentHeight
       const scale = Math.min(1.45, Math.max(0.62, rawScale))
 
