@@ -140,12 +140,8 @@ export class PDFGenerator {
     const page: Page = await this.browser.newPage()
 
     try {
-      // Match the narrowest print content width used by any template (classic: 7.4in ≈ 710px).
-      // Using 720px (7.5in) is accurate for professional/modern; the 10px diff for classic
-      // produces a negligible <2% height error.
       await page.setViewport({ width: 720, height: 1056, deviceScaleFactor: 1 })
 
-      // Set content — wait for font imports to complete
       await page.setContent(html, {
         waitUntil: ["networkidle0", "domcontentloaded"],
       })
