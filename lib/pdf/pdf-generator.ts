@@ -187,12 +187,34 @@ export class PDFGenerator {
         contentHeight = await page.evaluate(
           () => document.documentElement.scrollHeight
         )
+      } else if (ratio < 0.944) {
+        // Dense resume: tighten spacing so less compression is needed from scale.
+        await page.evaluate((r: number) => {
+          const compress = Math.max(r * 0.85, 0.65)
+          document.querySelectorAll<HTMLElement>(".section").forEach(el => {
+            const cur = parseFloat(getComputedStyle(el).marginTop) || 6
+            el.style.marginTop = Math.max(cur * compress, 1.5) + "px"
+          })
+          document.querySelectorAll<HTMLElement>(".entry").forEach(el => {
+            const cur = parseFloat(getComputedStyle(el).marginBottom) || 4
+            el.style.marginBottom = Math.max(cur * compress, 1) + "px"
+          })
+          document.querySelectorAll<HTMLElement>(".bullet").forEach(el => {
+            el.style.marginBottom = "0"
+          })
+          document.querySelectorAll<HTMLElement>(".bullets").forEach(el => {
+            el.style.marginTop = "0"
+          })
+        }, ratio)
+
+        contentHeight = await page.evaluate(
+          () => document.documentElement.scrollHeight
+        )
       }
 
+      // CSS handled the bulk; scale provides final fine-tuning.
       const rawScale = TARGET_HEIGHT_PX / contentHeight
       const scale = Math.min(1.45, Math.max(0.62, rawScale))
-
-      // Generate PDF — CSS @page controls physical margins; Puppeteer margin = 0
       const pdfBuffer = await page.pdf({
         format: options.format || "letter",
         printBackground: options.printBackground !== false,
