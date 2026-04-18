@@ -30,7 +30,7 @@ export interface AgentEducation {
   startDate?: string
   endDate?: string
   gpa?: string
-  honors?: string
+  honors?: string | string[]
 }
 
 export interface AgentProject {
