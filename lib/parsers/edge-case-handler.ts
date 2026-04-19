@@ -108,13 +108,13 @@ function isAcronymOf(short: string, full: string): boolean {
  * (e.g. "BS" and "Bachelor of Science", "PhD" and "Doctor of Philosophy").
  */
 function degreeEquivalent(a: string, b: string): boolean {
-  const map: Record<string, string> = {
-    bs: 'bachelor of science', ba: 'bachelor of arts',
-    ms: 'master of science', ma: 'master of arts',
-    mba: 'master of business administration',
-    phd: 'doctor of philosophy', md: 'doctor of medicine',
-  }
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
+  const map: Record<string, string> = {
+    bs: norm('bachelor of science'), ba: norm('bachelor of arts'),
+    ms: norm('master of science'), ma: norm('master of arts'),
+    mba: norm('master of business administration'),
+    phd: norm('doctor of philosophy'), md: norm('doctor of medicine'),
+  }
   const na = norm(a), nb = norm(b)
   return map[na] === nb || map[nb] === na
 }
