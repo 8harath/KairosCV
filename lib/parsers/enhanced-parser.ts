@@ -485,25 +485,23 @@ export function extractSummary(text: string): string {
     const line = lines[i].trim()
     const lowerLine = line.toLowerCase()
 
-    // Detect summary section
-    if (lowerLine.includes("summary") ||
-        lowerLine.includes("objective") ||
-        lowerLine.includes("profile") ||
-        lowerLine.includes("about")) {
+    // Detect summary section header (must be a short standalone header line)
+    const isSummaryHeader = (
+      /^(summary|professional summary|career summary|objective|career objective|profile|about|about me)$/i.test(line) ||
+      (/^[A-Z][A-Z\s]+$/.test(line) && line.length < 40 &&
+        (lowerLine.includes("summary") || lowerLine.includes("objective") ||
+         lowerLine.includes("profile") || lowerLine === "about"))
+    )
 
+    if (isSummaryHeader) {
       // Get next few lines as summary
       const summaryLines: string[] = []
       for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
         const summaryLine = lines[j].trim()
-        const summaryLower = summaryLine.toLowerCase()
 
-        // Stop at next section
-        if (summaryLower.includes("experience") ||
-            summaryLower.includes("education") ||
-            summaryLower.includes("skills") ||
-            summaryLower.includes("projects")) {
-          break
-        }
+        // Stop at the next all-caps section header
+        const isNextSection = /^[A-Z][A-Z\s]{2,}$/.test(summaryLine) && summaryLine.length < 40
+        if (isNextSection) break
 
         if (summaryLine.length > 0) {
           summaryLines.push(summaryLine)
