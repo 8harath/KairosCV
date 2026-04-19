@@ -11,8 +11,10 @@ WORKDIR /app
 # Copy manifests first so Docker can cache this layer
 COPY package.json pnpm-lock.yaml ./
 
-# Install all deps (including devDeps needed for the build)
-RUN pnpm install --frozen-lockfile
+# Install all deps — mount pnpm store as a build cache so repeated
+# builds reuse the downloaded tarballs without re-downloading them.
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 
 # ─────────────────────────────────────────────────────────────────────────────
