@@ -1,0 +1,41 @@
+# Development override — hot-reload via bind-mount source
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# This overrides the production runner with a dev image that:
+#   - Bind-mounts the source tree so file changes reflect instantly
+#   - Runs `pnpm dev` instead of `node server.js`
+#   - Exposes port 3000 with Next.js Fast Refresh over WebSocket
+
+version: "3.9"
+
+services:
+  app:
+    build:
+      # Re-use the deps stage only — no need for the full builder/runner stages
+      target: deps
+    image: kairoscv:dev
+    container_name: kairoscv-dev
+    command: sh -c "pnpm dev"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      PUPPETEER_HEADLESS: "true"
+    volumes:
+      # Bind-mount source — changes reflect without rebuild
+      - .:/app
+      # Keep node_modules inside the container (avoids host/container mismatch)
+      - /app/node_modules
+      # Persist .next build cache between restarts for faster rebuilds
+      - nextjs_cache:/app/.next
+      - uploads:/app/uploads
+    ports:
+      - "${PORT:-3000}:3000"
+    shm_size: "256mb"
+
+volumes:
+  nextjs_cache:
+  uploads:
