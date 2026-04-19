@@ -4,6 +4,14 @@ import puppeteer, { Browser, Page, type LaunchOptions } from "puppeteer-core"
 import { getChromiumBinaryUrl } from "../config/env"
 import type { ParsedResume } from "../parsers/enhanced-parser"
 import { renderJakesResume } from "../templates/template-renderer"
+import { onShutdown, registerShutdownHandlers } from "../graceful-shutdown"
+
+// Register process-level shutdown handlers once — ensures the Puppeteer
+// browser is closed cleanly when Docker sends SIGTERM on container stop.
+registerShutdownHandlers()
+onShutdown(async () => {
+  await cleanupPDFGenerator()
+})
 
 const COMMON_LOCAL_CHROME_PATHS = [
   process.env.PUPPETEER_EXECUTABLE_PATH,
