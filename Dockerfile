@@ -52,6 +52,12 @@ RUN pnpm run build
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-slim AS runner
 
+# OCI standard image metadata
+LABEL org.opencontainers.image.title="KairosCV" \
+      org.opencontainers.image.description="AI-powered resume optimization platform" \
+      org.opencontainers.image.source="https://github.com/8harath/KairosCV" \
+      org.opencontainers.image.licenses="MIT"
+
 # ── System dependencies for Puppeteer / Chromium ──────────────────────────
 # These are the packages required by Chrome headless on Debian/Ubuntu slim.
 RUN apt-get update && apt-get install -y --no-install-recommends \
