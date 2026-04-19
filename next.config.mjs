@@ -14,7 +14,13 @@ const nextConfig = {
     '@napi-rs/canvas',
     'tesseract.js',
     'sharp',
-    'canvas'
+    'canvas',
+    '@langchain/core',
+    '@langchain/groq',
+    '@langchain/google-genai',
+    '@langchain/langgraph',
+    'langchain',
+    '@langchain/community',
   ],
   // Ensure HTML templates are included in Vercel serverless function bundles
   outputFileTracingIncludes: {
