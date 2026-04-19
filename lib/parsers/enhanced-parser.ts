@@ -334,9 +334,24 @@ export function extractEducation(text: string): EducationEntry[] {
 
     if (!inEducationSection || !line) continue
 
-    // Detect institution (has location or keywords)
-    const institutionMatch = line.match(/^([A-Za-z\s()'-]+?)\s+([A-Z][a-z]+,?\s*[A-Z]{2,3})$/i) ||
-                             (line.match(/university|college|institute|school|deemed/i) && line.length < 100)
+    // Detect degree line early so it is never misclassified as an institution
+    const isEdDateLine = !!(line.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b/i) ||
+                            line.match(/\b\d{4}\b/) ||
+                            line.match(/\bExpected\b/i))
+    const isDegreeLine = !isEdDateLine && !!(
+      line.match(/\b(bachelor|master|degree|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma)\b/i)
+    )
+
+    // Detect institution (has location or known keywords) — only when not a date or degree line
+    const instRegexMatch: RegExpMatchArray | null = !isEdDateLine && !isDegreeLine
+      ? line.match(/^([A-Za-z0-9\s()'-]+?)\s{2,}([A-Z][a-z]+,\s*[A-Z]{2})$/) ||
+        line.match(/^([A-Za-z0-9\s()'-]+?),\s+([A-Z][a-z]+,?\s*[A-Z]{2})$/)
+      : null
+    const institutionMatch: boolean | RegExpMatchArray | null = instRegexMatch ||
+      (!isEdDateLine && !isDegreeLine && (
+        !!(line.match(/\b(university|college|institute|school|academy|polytechnic)\b/i) && line.length < 100) ||
+        (!currentEntry && !line.match(/^[•●\-*]/) && line.length > 1 && line.length < 80)
+      ))
 
     if (institutionMatch) {
       // Save previous entry
@@ -344,10 +359,10 @@ export function extractEducation(text: string): EducationEntry[] {
         education.push(currentEntry as EducationEntry)
       }
 
-      if (Array.isArray(institutionMatch)) {
+      if (instRegexMatch) {
         currentEntry = {
-          institution: institutionMatch[1].trim(),
-          location: institutionMatch[2].trim(),
+          institution: instRegexMatch[1].trim(),
+          location: instRegexMatch[2].trim(),
           degree: "",
           field: "",
           startDate: "",
@@ -366,10 +381,7 @@ export function extractEducation(text: string): EducationEntry[] {
       linesSinceEntry = 0
     }
     // Detect degree
-    else if (
-      currentEntry &&
-      line.match(/bachelor|master|degree|phd|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma/i)
-    ) {
+    else if (isDegreeLine && currentEntry) {
       const degreeMatch = line.match(/(bachelor|master|degree|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma)[\w\s.]*/i)
       currentEntry.degree = degreeMatch ? degreeMatch[0].trim() : line
 
