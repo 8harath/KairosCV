@@ -260,7 +260,7 @@ export async function* processResume(
     const filePath = resolvedUpload.filePath
 
     // Delegate to the LangGraph agentic pipeline
-    const { runResumeAgent } = await import("./agent/resume-agent")
+    const { runResumeAgent } = await import("./agent")
 
     const agentInput = {
       fileId,
