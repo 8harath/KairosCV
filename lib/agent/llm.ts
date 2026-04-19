@@ -2,6 +2,16 @@ import { ChatGroq } from "@langchain/groq"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models"
 
+// LangSmith tracing — enabled when LANGCHAIN_API_KEY is set in env.
+// Set these in .env.local to enable:
+//   LANGCHAIN_API_KEY=ls__...
+//   LANGCHAIN_PROJECT=kairoscv
+//   LANGCHAIN_TRACING_V2=true
+if (process.env.LANGCHAIN_API_KEY) {
+  process.env.LANGCHAIN_TRACING_V2 = "true"
+  process.env.LANGCHAIN_PROJECT = process.env.LANGCHAIN_PROJECT ?? "kairoscv"
+}
+
 interface LLMOptions {
   temperature?: number
   maxTokens?: number

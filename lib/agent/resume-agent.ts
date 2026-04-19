@@ -42,18 +42,28 @@ export async function* runResumeAgent(
   let lastProgress = 5
   let lastStage = "parsing"
   let finalConfidence: ProcessingProgress["confidence"] | undefined
+  const nodeTimings: Record<string, number> = {}
+  let nodeStart = Date.now()
 
   // Stream graph execution — each state update yields progress
   try {
     const stream = await graph.stream(initialState, { streamMode: "updates" })
 
     for await (const update of stream) {
+      const elapsed = Date.now() - nodeStart
+      nodeStart = Date.now()
+
       // Each update is a Record<nodeName, partialState>
-      for (const [, nodeState] of Object.entries(update)) {
+      for (const [nodeName, nodeState] of Object.entries(update)) {
+        nodeTimings[nodeName] = elapsed
         const s = nodeState as Partial<ResumeAgentStateType>
 
         if (s.error) {
           throw new Error(s.error)
+        }
+
+        if (s.warnings && s.warnings.length > 0) {
+          s.warnings.forEach(w => console.warn(`[agent:${nodeName}] ${w}`))
         }
 
         if (s.stage && s.progress !== undefined && s.message) {
@@ -66,7 +76,6 @@ export async function* runResumeAgent(
             message: s.message,
           }
 
-          // Attach confidence when available
           if (s.confidenceScore) {
             finalConfidence = s.confidenceScore
             progressEvent.confidence = s.confidenceScore
@@ -76,6 +85,16 @@ export async function* runResumeAgent(
         }
       }
     }
+
+    // Log timing breakdown for observability
+    const totalMs = Object.values(nodeTimings).reduce((a, b) => a + b, 0)
+    console.log(
+      "⏱️  Agent node timings:",
+      Object.entries(nodeTimings)
+        .map(([k, v]) => `${k}=${v}ms`)
+        .join(" | "),
+      `| total=${totalMs}ms`
+    )
 
     // Emit final completion event with confidence
     if (lastStage !== "complete" || lastProgress < 100) {
