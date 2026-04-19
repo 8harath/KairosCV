@@ -125,5 +125,9 @@ USER nextjs
 
 EXPOSE 3000
 
+# Docker-native health check — docker ps shows health status without compose
+HEALTHCHECK --interval=30s --timeout=10s --start-period=25s --retries=3 \
+  CMD wget -qO- http://localhost:3000/api/health || exit 1
+
 # next start is provided by the standalone output's server.js
 CMD ["node", "server.js"]
