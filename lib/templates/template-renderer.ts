@@ -1,6 +1,7 @@
 import fs from "fs-extra"
 import path from "path"
 import type { ParsedResume, ExperienceEntry, EducationEntry, ProjectEntry } from "../parsers/enhanced-parser"
+import { isValidResumeData } from "@/lib/schemas/resume-schema"
 
 /**
  * Simple template renderer (Handlebars-like syntax)
