@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+dist
+out
+
+# Local env files — pass secrets via docker-compose env_file or --env-file
+.env
+.env.local
+.env.*.local
+
+# Uploads and generated files (mounted as a volume at runtime)
+uploads
+
+# Dev/test artifacts
+__tests__
+test-files
+coverage
+*.test.ts
+vitest.config.ts
+
+# Docs and tooling
+docs
+README.md
+CLAUDE.md
+.claude
+.git
+.gitignore
+*.md
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode
+.idea
