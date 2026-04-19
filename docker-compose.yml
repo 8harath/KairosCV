@@ -1,0 +1,64 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# KairosCV — local Docker Compose stack
+#
+# Usage:
+#   cp .env.example .env.local          # fill in your API keys
+#   docker compose up --build           # first run (builds image)
+#   docker compose up                   # subsequent runs (uses cached image)
+#   docker compose down -v              # stop and remove volumes
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Public env vars that must be baked in at build time
+      args:
+        NEXT_PUBLIC_SUPABASE_URL:       ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY:  ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+        NEXT_PUBLIC_DISABLE_AUTH:       ${NEXT_PUBLIC_DISABLE_AUTH:-true}
+        NEXT_PUBLIC_ENABLE_DEBUG_TOOLS: ${NEXT_PUBLIC_ENABLE_DEBUG_TOOLS:-false}
+    image: kairoscv:local
+    container_name: kairoscv-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+
+    # Runtime secrets — loaded from .env.local (never baked into image)
+    env_file:
+      - path: .env.local
+        required: false     # graceful if file is missing (CI, etc.)
+
+    environment:
+      NODE_ENV:                     production
+      PORT:                         3000
+      # Puppeteer — use the system Chromium installed in the image
+      PUPPETEER_EXECUTABLE_PATH:    /usr/bin/chromium
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      PUPPETEER_HEADLESS:           "true"
+      # Disable Next.js telemetry
+      NEXT_TELEMETRY_DISABLED:      "1"
+
+    volumes:
+      # Persist uploaded and generated files across restarts
+      - uploads:/app/uploads
+
+    # Chromium needs /dev/shm to be large enough (default 64 MB is too small)
+    shm_size: "256mb"
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Named volumes
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  uploads:
+    driver: local
