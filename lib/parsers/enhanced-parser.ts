@@ -187,11 +187,17 @@ export function extractExperience(text: string): ExperienceEntry[] {
     // 3. Next line: job title (optional)
     // 4. Then bullets
 
-    // Check if it's a company/location line (not a bullet, not a date)
-    const companyLocationMatch = line.match(/^([A-Za-z0-9\s&.'-]+)\s{2,}([A-Za-z\s,]+)$/) ||
-                                 line.match(/^([A-Za-z0-9\s&.'-]+?),?\s+([A-Z][A-Za-z]+,?\s*[A-Z]{2,3}|[A-Z][A-Za-z]+)$/i)
+    // Guard: detect date lines first so they are never misclassified as company/location
+    const isDateLine = !!(line.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|Present|Current|Now)\b/i) ||
+                         line.match(/\b\d{4}\s*[-–]\s*(\d{4}|Present|Current)\b/i))
 
-    if (companyLocationMatch && !line.match(/^[•●\-*]/) && i > 0) {
+    // Check if it's a company/location line (not a bullet, not a date)
+    const companyLocationMatch = !isDateLine && !line.match(/^[•●\-*]/) && (
+      line.match(/^([A-Za-z0-9\s&.'-]+)\s{2,}([A-Za-z\s,]+)$/) ||
+      line.match(/^([A-Za-z0-9\s&.'-]+?),?\s+([A-Z][A-Za-z]+,?\s*[A-Z]{2,3}|[A-Z][A-Za-z]+)$/i)
+    )
+
+    if (companyLocationMatch && i > 0) {
       // Save previous entry
       if (currentEntry && currentEntry.company) {
         experiences.push({
