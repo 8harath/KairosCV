@@ -531,29 +531,28 @@ export function extractCertifications(text: string): string[] {
     const lowerLine = line.toLowerCase()
 
     // Detect certifications section
-    if (lowerLine.includes("certification") ||
-        lowerLine.includes("licenses") ||
-        lowerLine.includes("credentials")) {
+    // Only trigger on true section headers (short line, exact keyword or all-caps with keyword)
+    const isCertHeader = !inCertSection && line.length < 50 && (
+      /^certifications?$/i.test(line) ||
+      /^licenses?\s*(&\s*certifications?)?$/i.test(line) ||
+      /^credentials?$/i.test(line) ||
+      (/^[A-Z][A-Z\s&]+$/.test(line) && (lowerLine.includes("certif") || lowerLine.includes("licens")))
+    )
+    if (isCertHeader) {
       inCertSection = true
       continue
     }
 
-    // Stop at next section
-    if (inCertSection &&
-        (lowerLine.includes("experience") ||
-         lowerLine.includes("education") ||
-         lowerLine.includes("skills") ||
-         lowerLine.includes("projects") ||
-         lowerLine.includes("awards"))) {
+    // Stop at next all-caps section header when inside the certifications section
+    if (inCertSection && /^[A-Z][A-Z\s]{2,}$/.test(line) && line.length < 40) {
       break
     }
 
     if (!inCertSection || !line) continue
 
-    // Add non-empty lines as certifications
-    if (line.length > 3 && !line.match(/^[A-Z\s]+$/)) {
-      // Remove bullet symbols
-      const cert = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+    // Add non-empty lines as certifications; strip leading bullet symbols
+    if (line.length > 3) {
+      const cert = line.replace(/^[^\w]+/, "").trim()
       if (cert.length > 0) {
         certifications.push(cert)
       }
