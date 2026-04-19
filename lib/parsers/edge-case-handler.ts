@@ -215,6 +215,17 @@ export function normalizeDate(date: string | undefined): string {
     return `${month} ${monthYearMatch[2]}`
   }
 
+  // Try ISO format: 2020-01 (year first)
+  const isoMatch = normalized.match(/^(\d{4})[\/\-](\d{1,2})$/)
+  if (isoMatch) {
+    const year = isoMatch[1]
+    const monthNum = parseInt(isoMatch[2])
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    if (monthNum >= 1 && monthNum <= 12) {
+      return `${months[monthNum - 1]} ${year}`
+    }
+  }
+
   // Try numeric format: 01/2020 or 2020-01
   const numericMatch = normalized.match(/(\d{1,2})[\/\-](\d{4})/)
   if (numericMatch) {
