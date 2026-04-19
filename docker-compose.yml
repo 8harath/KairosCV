@@ -56,9 +56,22 @@ services:
       retries: 3
       start_period: 20s
 
+    networks:
+      - kairoscv
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Named volumes
 # ─────────────────────────────────────────────────────────────────────────────
 volumes:
   uploads:
     driver: local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networks — explicit bridge network with a stable subnet
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  kairoscv:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
