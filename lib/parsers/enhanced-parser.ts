@@ -197,7 +197,29 @@ export function extractExperience(text: string): ExperienceEntry[] {
       line.match(/^([A-Za-z0-9\s&.'-]+?),?\s+([A-Z][A-Za-z]+,?\s*[A-Z]{2,3}|[A-Z][A-Za-z]+)$/i)
     )
 
-    if (companyLocationMatch && i > 0) {
+    // Pipe-format: "Software Engineer | Google" or "Google | Software Engineer"
+    const pipeMatch = !isDateLine && !line.match(/^[•●\-*]/) && line.match(/^([^|•●\-*]+?)\s*\|\s*([^|]+?)$/)
+    if (pipeMatch && i > 0) {
+      if (currentEntry && currentEntry.company) {
+        experiences.push({
+          company: currentEntry.company,
+          title: currentEntry.title || "Position",
+          location: currentEntry.location || "",
+          startDate: currentEntry.startDate || "",
+          endDate: currentEntry.endDate || "",
+          bullets: bullets,
+        })
+      }
+      const part1 = pipeMatch[1].trim(), part2 = pipeMatch[2].trim()
+      const titleKeywords = /engineer|developer|manager|analyst|designer|lead|architect|consultant|scientist|director|specialist|coordinator|officer|executive|intern|associate/i
+      if (titleKeywords.test(part1)) {
+        currentEntry = { title: part1, company: part2, location: "", startDate: "", endDate: "" }
+      } else {
+        currentEntry = { company: part1, title: part2, location: "", startDate: "", endDate: "" }
+      }
+      bullets = []
+      expectingJobTitle = false
+    } else if (companyLocationMatch && i > 0) {
       // Save previous entry
       if (currentEntry && currentEntry.company) {
         experiences.push({
