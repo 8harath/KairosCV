@@ -1,0 +1,52 @@
+# Production hardening overlay
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Applies resource limits, structured JSON logging, and a stricter
+# restart policy on top of the base docker-compose.yml.
+
+version: "3.9"
+
+services:
+  app:
+    restart: always
+
+    # Resource limits — tune for your host
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+    # Structured JSON logging — pipe to any log aggregator
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service=kairoscv"
+
+    # Drop all Linux capabilities not needed by Node/Chromium
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+
+    # Read-only root filesystem — only uploads volume is writable
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+      - /app/.next/cache:size=256m
+
+    environment:
+      NODE_ENV: production
+      # Enforce production auth — never bypass in prod
+      DISABLE_AUTH: "false"
+      NEXT_PUBLIC_DISABLE_AUTH: "false"
