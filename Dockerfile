@@ -124,6 +124,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/lib/templates  ./lib/templates
 # Uploads directory — will be mounted as a volume; create with correct owner
 RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
 
+# Copy and wire up the entrypoint script
+COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -132,5 +136,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=25s --retries=3 \
   CMD wget -qO- http://localhost:3000/api/health || exit 1
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # next start is provided by the standalone output's server.js
 CMD ["node", "server.js"]
