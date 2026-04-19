@@ -129,9 +129,12 @@ export function deduplicateEducation(education: any[]): any[] {
 
   for (const edu of education) {
     const isDuplicate = unique.some(existing => {
-      const institutionSimilar = stringSimilarity(edu.institution || '', existing.institution || '') > 0.85
-      const degreeSimilar = stringSimilarity(edu.degree || '', existing.degree || '') > 0.85
-      const dateSimilar = edu.endDate === existing.endDate
+      const instA = edu.institution || '', instB = existing.institution || ''
+      const degA = edu.degree || '', degB = existing.degree || ''
+      const institutionSimilar = stringSimilarity(instA, instB) > 0.85 ||
+                                 isAcronymOf(instA, instB) || isAcronymOf(instB, instA)
+      const degreeSimilar = stringSimilarity(degA, degB) > 0.85 || degreeEquivalent(degA, degB)
+      const dateSimilar = normalizeDate(edu.endDate) === normalizeDate(existing.endDate)
 
       return institutionSimilar && degreeSimilar && dateSimilar
     })
