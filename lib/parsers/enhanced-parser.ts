@@ -2,6 +2,7 @@
  * Enhanced Resume Parser
  * Extracts structured data from resume text with better logic
  */
+import { validatePartialResumeData } from "@/lib/schemas/resume-schema"
 
 export interface ContactInfo {
   name: string
@@ -700,7 +701,6 @@ export function parseResumeEnhanced(text: string): ParsedResume {
 
   // Validate structure with Zod (helps catch parser issues)
   try {
-    const { validatePartialResumeData } = require('../schemas/resume-schema')
     const validation = validatePartialResumeData(parsed)
 
     if (!validation.success) {
