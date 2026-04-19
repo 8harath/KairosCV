@@ -62,7 +62,8 @@ LABEL org.opencontainers.image.title="KairosCV" \
 
 # ── System dependencies for Puppeteer / Chromium ──────────────────────────
 # These are the packages required by Chrome headless on Debian/Ubuntu slim.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,id=apt-lists,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-liberation \
     fonts-noto-color-emoji \
