@@ -403,7 +403,7 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
 
   const referencesHTML = parsedResume.references && parsedResume.references.length > 0
     ? parsedResume.references
-        .filter(ref => ref && typeof ref === 'string' && !ref.toLowerCase().includes('available upon request'))
+        .filter(ref => ref && typeof ref === 'string')
         .map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
     : ""
 
