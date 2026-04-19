@@ -322,9 +322,9 @@ export function cleanBulletPoint(bullet: string): string {
   // Remove extra whitespace
   cleaned = cleaned.replace(/\s+/g, ' ')
 
-  // Fix smart quotes
-  cleaned = cleaned.replace(/[""]/g, '"')
-  cleaned = cleaned.replace(/['']/g, "'")
+  // Fix smart quotes (Unicode escapes to avoid encoding issues in the source file)
+  cleaned = cleaned.replace(/[\u201C\u201D]/g, '"')
+  cleaned = cleaned.replace(/[\u2018\u2019]/g, "'")
 
   // Fix em-dashes and en-dashes
   cleaned = cleaned.replace(/[—–]/g, '-')
