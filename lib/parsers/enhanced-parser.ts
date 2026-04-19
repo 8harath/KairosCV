@@ -97,8 +97,8 @@ export function extractContactInfo(text: string): ContactInfo {
     ? websiteMatch[0]
     : ""
 
-  // Extract name (usually the first line if it's short and looks like a name)
-  const firstLine = lines[0]?.trim() || ""
+  // Extract name (usually the first non-empty line)
+  const firstLine = lines.find(l => l.trim().length > 0)?.trim() || ""
 
   // More flexible name matching:
   // - Allow all caps (JOHN SMITH)
