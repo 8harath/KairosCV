@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Required for Docker standalone image — emits server.js + minimal node_modules
+  output: "standalone",
   images: {
     unoptimized: true,
   },
