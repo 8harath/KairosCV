@@ -412,7 +412,7 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     : ""
 
   const data = {
-    NAME: parsedResume.contact?.name || "Your Name",
+    NAME: escapeHtml(parsedResume.contact?.name || "Your Name"),
     CONTACT_LINE: contactLine,
     EMAIL: parsedResume.contact?.email || "",
     PHONE: parsedResume.contact?.phone || "",
