@@ -74,7 +74,8 @@ export function deduplicateExperience(experiences: any[]): any[] {
     const isDuplicate = unique.some(existing => {
       const companySimilar = stringSimilarity(exp.company || '', existing.company || '') > 0.85
       const titleSimilar = stringSimilarity(exp.title || '', existing.title || '') > 0.85
-      const dateSimilar = exp.startDate === existing.startDate && exp.endDate === existing.endDate
+      const dateSimilar = normalizeDate(exp.startDate) === normalizeDate(existing.startDate) &&
+                         normalizeDate(exp.endDate) === normalizeDate(existing.endDate)
 
       return companySimilar && titleSimilar && dateSimilar
     })
