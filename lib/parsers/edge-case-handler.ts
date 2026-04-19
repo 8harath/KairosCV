@@ -89,6 +89,37 @@ export function deduplicateExperience(experiences: any[]): any[] {
 }
 
 /**
+ * Check whether `short` is an acronym of `full`, ignoring stop-words.
+ * e.g. isAcronymOf("MIT", "Massachusetts Institute of Technology") → true
+ */
+function isAcronymOf(short: string, full: string): boolean {
+  if (short.length > 8 || full.length < 4) return false
+  const skipWords = new Set(['of', 'the', 'and', 'at', 'in', 'for', 'a', 'an'])
+  const initials = full
+    .split(/\s+/)
+    .filter(w => !skipWords.has(w.toLowerCase()))
+    .map(w => w[0]?.toUpperCase() || '')
+    .join('')
+  return initials === short.toUpperCase()
+}
+
+/**
+ * Return true when two degree strings refer to the same qualification
+ * (e.g. "BS" and "Bachelor of Science", "PhD" and "Doctor of Philosophy").
+ */
+function degreeEquivalent(a: string, b: string): boolean {
+  const map: Record<string, string> = {
+    bs: 'bachelor of science', ba: 'bachelor of arts',
+    ms: 'master of science', ma: 'master of arts',
+    mba: 'master of business administration',
+    phd: 'doctor of philosophy', md: 'doctor of medicine',
+  }
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
+  const na = norm(a), nb = norm(b)
+  return map[na] === nb || map[nb] === na
+}
+
+/**
  * Remove duplicate education entries
  */
 export function deduplicateEducation(education: any[]): any[] {
