@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle2, FileOutput, FileText, Loader2, Sparkles, WandSparkles } from "lucide-react"
+import { BarChart2, CheckCircle2, FileOutput, FileText, Loader2, Sparkles, WandSparkles } from "lucide-react"
 
 // Empirical baseline: typical end-to-end processing takes ~45 seconds.
 const BASELINE_SECONDS = 45
@@ -13,11 +13,11 @@ interface ProgressTrackerProps {
 }
 
 const stages = [
-  { key: "uploading", label: "Upload", icon: FileText },
-  { key: "parsing", label: "Parse", icon: FileText },
-  { key: "enhancing", label: "Enhance", icon: Sparkles },
-  { key: "generating", label: "Generate", icon: WandSparkles },
-  { key: "compiling", label: "Compile", icon: FileOutput },
+  { key: "parsing",    label: "Parse",    icon: FileText,     matches: ["parsing"] },
+  { key: "extraction", label: "Extract",  icon: WandSparkles, matches: ["extraction", "verified", "retry_extraction"] },
+  { key: "enhancing",  label: "Enhance",  icon: Sparkles,     matches: ["enhancing", "tailoring"] },
+  { key: "scoring",    label: "Score",    icon: BarChart2,    matches: ["scoring"] },
+  { key: "generating", label: "Generate", icon: FileOutput,   matches: ["generating", "complete"] },
 ]
 
 function formatSeconds(s: number): string {
