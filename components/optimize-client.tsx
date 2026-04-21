@@ -221,9 +221,18 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
                 maxLength={2000}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
               />
-              <p className="mt-1 text-right text-xs text-muted-foreground tabular-nums">
-                {jobDescription.length} / 2000
-              </p>
+              <div className="mt-1 flex items-start justify-between gap-2">
+                {jobDescription.trim().length > 0 && jobDescription.trim().length < 50 ? (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Too short for effective tailoring — paste the full job description for best results.
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                  {jobDescription.length} / 2000
+                </p>
+              </div>
             </div>
           )}
         </div>
