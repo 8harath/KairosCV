@@ -26,7 +26,9 @@ function formatSeconds(s: number): string {
 }
 
 export default function ProgressTracker({ progress, stage, message, elapsed = 0 }: ProgressTrackerProps) {
-  const currentStageIndex = stages.findIndex((item) => item.key === stage)
+  // Match the raw pipeline stage key against each visual stage's matches[] list.
+  // Returns -1 when stage is empty/unknown, leaving all rows in pending state.
+  const currentStageIndex = stages.findIndex((s) => s.matches.includes(stage))
 
   // Estimate remaining time: use progress % as the primary signal when available,
   // fall back to elapsed vs baseline when progress is still 0.
