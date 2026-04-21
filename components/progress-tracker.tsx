@@ -80,7 +80,12 @@ export default function ProgressTracker({ progress, stage, message, elapsed = 0 
                 isActive ? "bg-primary text-primary-foreground" :
                 "bg-secondary text-muted-foreground"
               }`}>
-                {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                {isCompleted
+                ? <CheckCircle2 className="h-4 w-4" />
+                : isActive
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Icon className="h-4 w-4" />
+              }
               </div>
               <span className={isActive ? "font-medium text-foreground" : isCompleted ? "text-foreground" : "text-muted-foreground"}>
                 {label}
