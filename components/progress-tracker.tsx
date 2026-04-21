@@ -71,11 +71,11 @@ export default function ProgressTracker({ progress, stage, message, elapsed = 0 
           return (
             <div
               key={key}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-300 ${
                 isActive ? "bg-secondary" : ""
               }`}
             >
-              <div className={`flex h-7 w-7 items-center justify-center rounded-md ${
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors duration-300 ${
                 isCompleted ? "bg-success/10 text-success" :
                 isActive ? "bg-primary text-primary-foreground" :
                 "bg-secondary text-muted-foreground"
@@ -87,13 +87,12 @@ export default function ProgressTracker({ progress, stage, message, elapsed = 0 
                   : <Icon className="h-4 w-4" />
               }
               </div>
-              <span className={isActive ? "font-medium text-foreground" : isCompleted ? "text-foreground" : "text-muted-foreground"}>
+              <span className={`transition-colors duration-300 ${isActive ? "font-medium text-foreground" : isCompleted ? "text-foreground" : "text-muted-foreground"}`}>
                 {label}
               </span>
               {isActive && message ? (
-                <span className="ml-auto text-xs text-muted-foreground">{message}</span>
-              ) : null}
-              {isCompleted ? (
+                <span className="ml-auto max-w-[180px] truncate text-xs text-muted-foreground">{message}</span>
+              ) : isCompleted ? (
                 <span className="ml-auto text-xs text-muted-foreground">Done</span>
               ) : null}
             </div>
