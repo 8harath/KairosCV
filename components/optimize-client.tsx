@@ -1,83 +1,62 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight, ChevronDown, ChevronUp, Loader2, X } from "lucide-react"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
+import TemplatePreviewModal from "@/components/template-preview-modal"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
 import { toast } from "@/hooks/use-toast"
 
 // ---------------------------------------------------------------------------
-// TemplateThumbnail — tiny CSS-drawn resume preview for the template picker
+// TemplateThumbnail — scaled-down iframe of the real sample resume HTML
 // ---------------------------------------------------------------------------
 function TemplateThumbnail({ variant }: { variant: "professional" | "modern" | "classic" }) {
-  const accentColor =
-    variant === "modern" ? "#2563eb" : variant === "classic" ? "#000" : "#000"
-  const headingFont =
-    variant === "professional" ? "Georgia, serif" : variant === "modern" ? "Arial, sans-serif" : "Georgia, serif"
-  const isModern = variant === "modern"
-  const isClassic = variant === "classic"
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.18)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      setScale(entry.contentRect.width / 816)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div
+      ref={containerRef}
       aria-hidden
       style={{
         width: "100%",
         aspectRatio: "8.5 / 11",
+        overflow: "hidden",
+        position: "relative",
         background: "#fff",
         border: "1px solid #e5e7eb",
         borderRadius: 2,
-        padding: "6% 7%",
-        overflow: "hidden",
-        fontFamily: headingFont,
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
       }}
     >
-      {/* Name block */}
-      <div style={{ textAlign: isModern ? "left" : "center" }}>
-        <div style={{
-          height: 5,
-          background: "#1a1a1a",
-          borderRadius: 1,
-          width: isModern ? "70%" : "60%",
-          margin: isModern ? undefined : "0 auto",
-        }} />
-        {isModern && (
-          <div style={{ height: 1.5, background: accentColor, marginTop: 3, width: "100%" }} />
-        )}
-        {isClassic && (
-          <div style={{ height: 1, background: "#000", marginTop: 2, width: "80%", margin: "2px auto 0" }} />
-        )}
-        <div style={{ height: 2.5, background: "#ccc", borderRadius: 1, width: "50%", marginTop: 3, ...(isModern ? {} : { margin: "3px auto 0" }) }} />
-      </div>
-
-      {/* Sections */}
-      {[0, 1, 2].map((i) => (
-        <div key={i} style={{ marginTop: 4 }}>
-          <div style={{
-            height: 2.5,
-            background: isModern ? accentColor : "#1a1a1a",
-            borderRadius: 1,
-            width: "35%",
-            marginBottom: 2,
-          }} />
-          {isClassic && (
-            <div style={{ height: 0.5, background: "#000", marginBottom: 2 }} />
-          )}
-          {[0, 1, 2].map((j) => (
-            <div key={j} style={{
-              height: 1.5,
-              background: "#e5e7eb",
-              borderRadius: 1,
-              width: `${68 - j * 12}%`,
-              marginBottom: 1.5,
-            }} />
-          ))}
-        </div>
-      ))}
+      <iframe
+        src={`/samples/${variant}-sample.html`}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "816px",
+          height: "1056px",
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          border: "none",
+          pointerEvents: "none",
+        }}
+        title={`${variant} template preview`}
+        tabIndex={-1}
+        sandbox="allow-same-origin"
+      />
     </div>
   )
 }
@@ -91,6 +70,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [jobDescription, setJobDescription] = useState("")
   const [showJD, setShowJD] = useState(true)
   const [templateId, setTemplateId] = useState("professional")
+  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
   const [format, setFormat] = useState<"letter" | "a4">("letter")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -201,8 +181,22 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
 
   const showUploadForm = !isUploading && !isProcessing && !pdfUrl && !error
 
+  const TEMPLATES = [
+    { id: "professional", name: "Professional", desc: "LaTeX serif" },
+    { id: "modern",       name: "Modern",       desc: "Sans-serif"  },
+    { id: "classic",      name: "Classic",      desc: "Traditional" },
+  ] as const
+
   if (showUploadForm) {
     return (
+      <>
+        {previewTemplate && (
+          <TemplatePreviewModal
+            variant={previewTemplate}
+            name={TEMPLATES.find((t) => t.id === previewTemplate)?.name ?? previewTemplate}
+            onClose={() => setPreviewTemplate(null)}
+          />
+        )}
       <div className="space-y-6">
 
         <div>
@@ -237,11 +231,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
         <div>
           <label className="mb-2 block text-sm font-medium text-foreground">Template</label>
           <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: "professional", name: "Professional", desc: "LaTeX serif", thumbnail: "professional" },
-              { id: "modern",       name: "Modern",       desc: "Sans-serif",  thumbnail: "modern" },
-              { id: "classic",      name: "Classic",      desc: "Traditional", thumbnail: "classic" },
-            ].map((t) => (
+            {TEMPLATES.map((t) => (
               <button
                 key={t.id}
                 type="button"
@@ -252,9 +242,17 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
                     : "border-border hover:border-foreground/40"
                 }`}
               >
-                {/* Mini CSS resume thumbnail */}
-                <TemplateThumbnail variant={t.thumbnail as "professional" | "modern" | "classic"} />
-                <p className="mt-1.5 text-xs font-medium text-foreground">{t.name}</p>
+                <TemplateThumbnail variant={t.id} />
+                <div className="mt-1.5 flex items-center justify-between gap-1">
+                  <p className="text-xs font-medium text-foreground truncate">{t.name}</p>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setPreviewTemplate(t.id) }}
+                    className="shrink-0 text-[10px] text-primary hover:underline"
+                  >
+                    Preview
+                  </button>
+                </div>
                 <p className="text-[10px] text-muted-foreground">{t.desc}</p>
               </button>
             ))}
@@ -315,6 +313,7 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
           </div>
         )}
       </div>
+      </>
     )
   }
 
