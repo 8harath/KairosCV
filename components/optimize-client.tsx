@@ -5,7 +5,9 @@ import { ArrowRight, ChevronDown, ChevronUp, Loader2, X } from "lucide-react"
 import FileUploader from "@/components/file-uploader"
 import ProgressTracker from "@/components/progress-tracker"
 import ResultsPanel from "@/components/results-panel"
+import UpgradeModal from "@/components/upgrade-modal"
 import { useResumeOptimizer } from "@/hooks/use-resume-optimizer"
+import { usePlanStatus } from "@/hooks/use-plan-status"
 import { toast } from "@/hooks/use-toast"
 
 // ---------------------------------------------------------------------------
@@ -94,6 +96,9 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
   const [format, setFormat] = useState<"letter" | "a4">("letter")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isPreview, setIsPreview] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const { status: planStatus, refresh: refreshPlan } = usePlanStatus()
   const { progress, stage, message, downloadUrl, error, isProcessing, fileId, confidence, elapsed, startProcessing, cleanup } = useResumeOptimizer()
 
   useEffect(() => {
@@ -171,16 +176,26 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
       }
 
       const uploadData = await uploadResponse.json()
+      const previewFlag = uploadData?.preview === true && uploadData?.plan?.isPro !== true
+      setIsPreview(previewFlag)
       startProcessing(uploadData.file_id)
 
-      const remainingTrials = uploadData?.trial?.remaining
-      toast({
-        title: "Processing started",
-        description:
-          typeof remainingTrials === "number"
-            ? `${remainingTrials} generation(s) remaining in this window.`
-            : "Your resume is being optimized.",
-      })
+      if (previewFlag) {
+        toast({
+          title: "Preview mode",
+          description: "Free generations used up. Result will be locked — unlock Pro to download.",
+        })
+        setShowUpgradeModal(true)
+      } else {
+        const remainingTrials = uploadData?.trial?.remaining
+        toast({
+          title: "Processing started",
+          description:
+            typeof remainingTrials === "number"
+              ? `${remainingTrials} generation(s) remaining in this window.`
+              : "Your resume is being optimized.",
+        })
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error"
       toast({ title: "Upload failed", description: errorMessage, variant: "destructive" })
@@ -192,7 +207,14 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
     setFile(null)
     setPdfUrl(null)
     setIsUploading(false)
+    setIsPreview(false)
+    setShowUpgradeModal(false)
     cleanup()
+  }
+
+  const handleUnlocked = () => {
+    setIsPreview(false)
+    void refreshPlan()
   }
 
   useEffect(() => {
@@ -342,14 +364,26 @@ export default function OptimizeClient({ authBypassed }: OptimizeClientProps) {
     )
   }
 
+  const showPreview = isPreview && !planStatus.isPro
+
   return (
-    <ResultsPanel
-      pdfUrl={pdfUrl}
-      downloadUrl={downloadUrl}
-      fileId={fileId}
-      onReset={handleReset}
-      confidence={confidence}
-      jobDescription={jobDescription || null}
-    />
+    <>
+      <ResultsPanel
+        pdfUrl={pdfUrl}
+        downloadUrl={downloadUrl}
+        fileId={fileId}
+        onReset={handleReset}
+        confidence={confidence}
+        jobDescription={jobDescription || null}
+        preview={showPreview}
+        onUnlock={showPreview ? () => setShowUpgradeModal(true) : undefined}
+      />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUnlocked={handleUnlocked}
+        paywall={planStatus.paywall}
+      />
+    </>
   )
 }

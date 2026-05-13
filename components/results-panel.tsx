@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CheckCircle2, Download, Info, RotateCcw } from "lucide-react"
+import { CheckCircle2, Download, Info, Lock, RotateCcw, Sparkles } from "lucide-react"
 import ExtractedDataViewer from "./extracted-data-viewer"
 import type { ConfidenceSummary } from "@/hooks/use-resume-optimizer"
 
@@ -97,6 +97,8 @@ interface ResultsPanelProps {
   onReset: () => void
   confidence?: ConfidenceSummary | null
   jobDescription?: string | null
+  preview?: boolean
+  onUnlock?: () => void
 }
 
 export default function ResultsPanel({
@@ -106,6 +108,8 @@ export default function ResultsPanel({
   onReset,
   confidence,
   jobDescription,
+  preview = false,
+  onUnlock,
 }: ResultsPanelProps) {
   const previewUrl = downloadUrl ? `${downloadUrl}?preview=true` : pdfUrl
   const showDebugTools = process.env.NEXT_PUBLIC_ENABLE_DEBUG_TOOLS === "true"
@@ -113,17 +117,41 @@ export default function ResultsPanel({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Your resume is ready</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Preview the result below, then download or start over.</p>
+        <h2 className="text-lg font-semibold text-foreground">
+          {preview ? "Your resume preview is ready" : "Your resume is ready"}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {preview
+            ? "You've used your free generations. Unlock Pro to remove the blur and download the full PDF."
+            : "Preview the result below, then download or start over."}
+        </p>
       </div>
 
       {previewUrl ? (
-        <div className="pdf-preview">
+        <div className="pdf-preview relative">
           <iframe
             src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-            className="h-[450px] w-full md:h-[650px]"
+            className={`h-[450px] w-full md:h-[650px] ${preview ? "blur-md pointer-events-none select-none" : ""}`}
             title="Optimized Resume PDF"
+            aria-hidden={preview ? "true" : undefined}
           />
+          {preview && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/40 backdrop-blur-[2px] p-6 text-center">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Preview locked</p>
+              <p className="max-w-xs text-xs text-muted-foreground">
+                Unlock the full resume — no blur, full download, unlimited future generations.
+              </p>
+              {onUnlock && (
+                <button type="button" onClick={onUnlock} className="btn inline-flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Unlock Pro
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="empty-state">
@@ -136,7 +164,17 @@ export default function ResultsPanel({
           <RotateCcw className="h-4 w-4" />
           Start over
         </button>
-        {downloadUrl ? (
+        {preview ? (
+          <button
+            type="button"
+            onClick={onUnlock}
+            className="btn flex-1 inline-flex items-center justify-center gap-2"
+            disabled={!onUnlock}
+          >
+            <Lock className="h-4 w-4" />
+            Unlock to download
+          </button>
+        ) : downloadUrl ? (
           <a href={downloadUrl} download className="btn flex-1 text-center">
             <Download className="h-4 w-4" />
             Download PDF
@@ -144,9 +182,9 @@ export default function ResultsPanel({
         ) : null}
       </div>
 
-      {confidence && <ConfidenceCard confidence={confidence} />}
+      {!preview && confidence && <ConfidenceCard confidence={confidence} />}
 
-      {jobDescription && fileId && (
+      {!preview && jobDescription && fileId && (
         <KeywordMatchCard fileId={fileId} jobDescription={jobDescription} />
       )}
 
