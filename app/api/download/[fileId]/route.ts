@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
 import { cleanupFileArtifacts, getFileMetadata, downloadGeneratedPDF, getGeneratedFilePath, fileExists } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
-import { isAuthBypassed } from "@/lib/config/env"
+import { isAuthBypassed, isPaywallEnabled } from "@/lib/config/env"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
+import { getPlanStatusByEmail } from "@/lib/payments/plan-service"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -16,12 +17,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
 
   try {
     // Auth check
+    let userEmail: string | null = null
     if (!isAuthBypassed()) {
       const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
+      userEmail = user.email ?? null
     }
 
     // Check if this is a preview request (inline) or download request
@@ -32,6 +35,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     const metadata = await getFileMetadata(fileId)
     if (!metadata) {
       return NextResponse.json({ error: "File not found" }, { status: 404 })
+    }
+
+    // Paywall gate: full downloads of a preview-flagged job require a pro plan.
+    // Inline previews always allowed (client renders them blurred). The flag
+    // only exists on metadata if the upload exceeded the free trial limit.
+    if (metadata.preview && !isPreview && isPaywallEnabled()) {
+      const planEmail = userEmail ?? metadata.email ?? null
+      const planStatus = await getPlanStatusByEmail(planEmail)
+      if (!planStatus.isPro) {
+        return NextResponse.json(
+          {
+            error: "Upgrade required to download the full PDF.",
+            paywall: { required: true },
+          },
+          { status: 402 },
+        )
+      }
     }
 
     let pdfBuffer: Buffer
