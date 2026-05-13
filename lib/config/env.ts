@@ -153,3 +153,56 @@ export function isVisualExtractionEnabled(): boolean {
 export function isFieldVerificationEnabled(): boolean {
   return parseBooleanEnv(process.env.ENABLE_FIELD_VERIFICATION, false)
 }
+
+// ---------------------------------------------------------------------------
+// Razorpay / paywall configuration
+// ---------------------------------------------------------------------------
+
+const DEFAULT_PRO_PRICE_PAISE = 19900 // ₹199 one-time unlock
+const DEFAULT_PRO_CURRENCY = "INR"
+
+export function getRazorpayKeyId(): string {
+  return process.env.RAZORPAY_KEY_ID?.trim() || ""
+}
+
+export function getRazorpayKeySecret(): string {
+  return process.env.RAZORPAY_KEY_SECRET?.trim() || ""
+}
+
+export function getRazorpayWebhookSecret(): string {
+  return process.env.RAZORPAY_WEBHOOK_SECRET?.trim() || ""
+}
+
+export function getPublicRazorpayKeyId(): string {
+  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.trim() || getRazorpayKeyId()
+}
+
+export function isRazorpayConfigured(): boolean {
+  return getRazorpayKeyId().length > 0 && getRazorpayKeySecret().length > 0
+}
+
+export function getProPricePaise(): number {
+  const rawValue = process.env.PRO_PRICE_PAISE?.trim()
+  if (!rawValue) {
+    return DEFAULT_PRO_PRICE_PAISE
+  }
+  const parsed = Number.parseInt(rawValue, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PRO_PRICE_PAISE
+}
+
+export function getProCurrency(): string {
+  return process.env.PRO_CURRENCY?.trim() || DEFAULT_PRO_CURRENCY
+}
+
+export function getProPlanLabel(): string {
+  return process.env.PRO_PLAN_LABEL?.trim() || "KairosCV Pro (Lifetime)"
+}
+
+export function isPaywallEnabled(): boolean {
+  // Default ON so the soft paywall activates as soon as Razorpay keys are set.
+  // Force-disable in dev via DISABLE_PAYWALL=true.
+  if (parseBooleanEnv(process.env.DISABLE_PAYWALL, false)) {
+    return false
+  }
+  return true
+}
