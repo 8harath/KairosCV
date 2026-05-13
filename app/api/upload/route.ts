@@ -3,10 +3,20 @@ import { randomUUID } from "crypto"
 import { cleanupExpiredArtifacts, saveUploadedFile, saveFileMetadata } from "@/lib/file-storage"
 import { getSafeExtension, isAllowedMimeType, isValidFileSignature } from "@/lib/security/file-validation"
 import { consumeTrial, normalizeEmail } from "@/lib/trials"
-import { isAuthBypassed, isTrialLimitEnabled, shouldUseSupabaseStorage } from "@/lib/config/env"
+import {
+  getProPricePaise,
+  getProCurrency,
+  getProPlanLabel,
+  isAuthBypassed,
+  isPaywallEnabled,
+  isRazorpayConfigured,
+  isTrialLimitEnabled,
+  shouldUseSupabaseStorage,
+} from "@/lib/config/env"
 import { saveUploadedFileToSupabase } from "@/lib/storage/supabase-storage"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
+import { getPlanStatusByEmail } from "@/lib/payments/plan-service"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -57,19 +67,34 @@ export async function POST(request: NextRequest) {
         }
       | undefined
 
-    if (isTrialLimitEnabled()) {
+    // Pro users skip the trial limiter entirely. Lookup is keyed by hashed
+    // email; getPlanStatusByEmail returns the free fallback if Supabase isn't
+    // configured or the user has no row yet.
+    const planStatus = await getPlanStatusByEmail(userEmail)
+    const isProUser = planStatus.isPro
+
+    let preview = false
+    if (isTrialLimitEnabled() && !isProUser) {
       trial = await consumeTrial(email)
       if (!trial.allowed) {
-        return NextResponse.json(
-          {
-            detail: "Free trial limit reached. You can try again after the reset time.",
-            trial: {
-              remaining: trial.remaining,
-              resetAt: trial.resetAt,
+        // Soft paywall: instead of 429-ing, flag the response as a preview and
+        // continue serving the request. The client renders a blurred result +
+        // upgrade modal. Hard-block remains available by flipping
+        // DISABLE_PAYWALL=true (paywall disabled => return 429).
+        if (isPaywallEnabled()) {
+          preview = true
+        } else {
+          return NextResponse.json(
+            {
+              detail: "Free trial limit reached. You can try again after the reset time.",
+              trial: {
+                remaining: trial.remaining,
+                resetAt: trial.resetAt,
+              },
             },
-          },
-          { status: 429 }
-        )
+            { status: 429 }
+          )
+        }
       }
     }
 
@@ -116,6 +141,7 @@ export async function POST(request: NextRequest) {
       templateId,
       format,
       uploadedAt: new Date(),
+      preview,
       storage,
     })
 
@@ -127,6 +153,20 @@ export async function POST(request: NextRequest) {
         ? {
             remaining: trial.remaining,
             resetAt: trial.resetAt,
+          }
+        : undefined,
+      plan: {
+        isPro: isProUser,
+        plan: planStatus.plan,
+      },
+      preview,
+      paywall: preview
+        ? {
+            required: true,
+            amountPaise: getProPricePaise(),
+            currency: getProCurrency(),
+            label: getProPlanLabel(),
+            keyConfigured: isRazorpayConfigured(),
           }
         : undefined,
       auth_bypassed: authBypassed,

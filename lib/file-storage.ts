@@ -89,6 +89,7 @@ export interface FileMetadata {
   templateId?: string | null
   format?: "letter" | "a4" | null
   uploadedAt: Date
+  preview?: boolean
   storage?: {
     bucket: string
     path: string
