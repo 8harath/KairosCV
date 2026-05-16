@@ -83,6 +83,7 @@ export async function GET(
           if (progress.confidence) {
             confidenceScore = progress.confidence
           }
+          await updateJobStatus(fileId, "processing", progress.stage, progress.progress, undefined, progress.confidence)
 
           // Don't send the "complete" stage from processor yet
           if (progress.stage !== "complete") {
@@ -109,6 +110,8 @@ export async function GET(
             const updatedMeta = await getFileMetadata(fileId)
             const pdfBucket = updatedMeta?.output?.bucket || "resume-outputs"
             const pdfPath = updatedMeta?.output?.path || `generated/${fileId}.pdf`
+            const jsonBucket = updatedMeta?.json?.bucket || null
+            const jsonPath = updatedMeta?.json?.path || null
 
             await serviceClient.from("generated_resumes").insert({
               user_id: authenticatedUserId,
@@ -117,6 +120,8 @@ export async function GET(
               original_filename: metadata.filename,
               pdf_bucket: pdfBucket,
               pdf_path: pdfPath,
+              json_bucket: jsonBucket,
+              json_path: jsonPath,
             })
           } catch (insertError) {
             console.warn("Failed to insert into generated_resumes:", insertError)
@@ -149,4 +154,3 @@ export async function GET(
     },
   })
 }
-
