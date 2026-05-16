@@ -11,6 +11,7 @@ import { isValidFileId } from "@/lib/security/file-id"
 import { isAuthBypassed } from "@/lib/config/env"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
+import { getFileMetadata } from "@/lib/file-storage"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -25,12 +26,14 @@ export async function GET(
     }
 
     // Auth check
+    let userId: string | null = null
     if (!isAuthBypassed()) {
       const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
+      userId = user.id
     }
 
     const { fileId } = await params
@@ -40,6 +43,14 @@ export async function GET(
         { error: "Valid file ID is required" },
         { status: 400 }
       )
+    }
+
+    const metadata = await getFileMetadata(fileId)
+    if (!metadata) {
+      return NextResponse.json({ error: "Resume JSON not found. The file may not have been processed yet." }, { status: 404 })
+    }
+    if (!isAuthBypassed() && metadata.userId && metadata.userId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     // Check if JSON exists
