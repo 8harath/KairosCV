@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       | undefined
 
     if (usingSupabaseStorage) {
-      storage = await saveUploadedFileToSupabase(fileId, file.name, fileBuffer, file.type)
+      storage = await saveUploadedFileToSupabase(fileId, file.name, fileBuffer, file.type, userId)
     } else {
       // Save file to filesystem until the full processing pipeline is migrated.
       await saveUploadedFile(fileId, file.name, fileBuffer)
@@ -147,6 +147,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       file_id: fileId,
+      job_id: fileId,
       filename: file.name,
       size: file.size,
       trial: trial
