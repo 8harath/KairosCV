@@ -143,7 +143,10 @@ export class PDFGenerator {
       await page.setViewport({ width: 720, height: 1056, deviceScaleFactor: 1 })
 
       await page.setContent(html, {
-        waitUntil: ["networkidle0", "domcontentloaded"],
+        waitUntil: "domcontentloaded",
+      })
+      await page.waitForNetworkIdle({ idleTime: 500, timeout: 5000 }).catch(() => {
+        // External font CDNs can be slow or blocked; continue with fallback fonts.
       })
 
       // Conservative cross-template usable height (see JSDoc above).
