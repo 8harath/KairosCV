@@ -16,21 +16,21 @@
 
     body {
       font-family: 'Computer Modern Serif', 'Latin Modern Roman', 'CMU Serif', 'Times New Roman', serif;
-      font-size: 10pt;
+      font-size: 9.5pt;
       line-height: 1.15;
       color: #000;
       background: #fff;
-      /* No padding — Puppeteer applies page margins */
+      padding: 0.35in 0.5in;
     }
 
     /* Header Section — Centered */
     .header {
       text-align: center;
-      margin-bottom: 2pt;
+      margin-bottom: 0.08in;
     }
 
     .header h1 {
-      font-size: 22pt;
+      font-size: 16pt;
       font-weight: bold;
       margin-bottom: 2pt;
       letter-spacing: 0.3pt;
@@ -65,7 +65,7 @@
       text-transform: uppercase;
       border-bottom: 0.8pt solid #000;
       padding-bottom: 0pt;
-      margin-bottom: 4pt;
+      margin-bottom: 0.06in;
     }
 
     /* Experience / Education / Projects entries */
@@ -203,12 +203,12 @@
 
     /* Print Optimization */
     @media print {
-      body { padding: 0; }
+      body { padding: 0.35in 0.5in; }
     }
 
     @page {
       size: letter;
-      margin: 0.45in 0.5in;
+      margin: 0;
     }
   </style>
 </head>
@@ -332,6 +332,26 @@
   <div class="section">
     <div class="section-title">Leadership / Activities</div>
     {{VOLUNTEER}}
+  </div>
+  {{/if}}
+
+  <!-- Hobbies -->
+  {{#if HOBBIES}}
+  <div class="section">
+    <div class="section-title">Interests</div>
+    <div class="bullets">
+      {{HOBBIES}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- References -->
+  {{#if REFERENCES}}
+  <div class="section">
+    <div class="section-title">References</div>
+    <div class="bullets">
+      {{REFERENCES}}
+    </div>
   </div>
   {{/if}}
 

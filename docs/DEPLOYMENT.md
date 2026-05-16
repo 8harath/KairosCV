@@ -1,219 +1,101 @@
-# KairosCV Deployment Guide
+# KairosCV Production Deployment Guide
 
-## Overview
+This guide reflects the current production architecture: Next.js, Supabase Auth/Postgres/Storage, Groq or Gemini for AI, Puppeteer/Chromium for PDF generation, and Razorpay for Pro unlocks.
 
-This guide covers deploying KairosCV to Render.com. The application consists of a Next.js frontend with integrated resume optimization features.
+## Required Infrastructure
 
-## Prerequisites
+1. Create a Supabase project.
+2. Run `supabase/bootstrap_kairoscv.sql` in the Supabase SQL editor.
+3. Run `supabase/payments.sql` after the bootstrap script.
+4. Confirm these private Supabase Storage buckets exist:
+   - `resume-inputs`
+   - `resume-outputs`
+   - `resume-json`
+5. Enable the Google provider in Supabase Auth.
+6. Add production and preview callback URLs in Supabase Auth, including:
+   - `https://YOUR_DOMAIN/auth/callback`
+   - local development callback URLs when needed.
+7. Configure Razorpay keys and the webhook endpoint:
+   - `https://YOUR_DOMAIN/api/payments/webhook`
 
-1. **GitHub Account** - Repository must be pushed to GitHub
-2. **Render.com Account** - Sign up at https://render.com
-3. **Google Gemini API Key** - Get from https://ai.google.dev
+## Production Environment Variables
 
-## Deployment Steps
+Set these in the hosting provider:
 
-### 1. Push Code to GitHub
+```env
+NODE_ENV=production
 
-```bash
-# Ensure you're on the correct branch
-git checkout main-remote02-integration
+DISABLE_AUTH=false
+NEXT_PUBLIC_DISABLE_AUTH=false
+ENABLE_TRIAL_LIMIT=true
+TRIAL_LIMIT=3
+TRIAL_WINDOW_HOURS=24
 
-# Push to GitHub
-git push origin main-remote02-integration
+USE_SUPABASE_STORAGE=true
+USE_SUPABASE_TRIALS=true
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_INPUT_BUCKET=resume-inputs
+SUPABASE_OUTPUT_BUCKET=resume-outputs
+SUPABASE_JSON_BUCKET=resume-json
 
-# Or merge to main and push
-git checkout main
-git merge main-remote02-integration
-git push origin main
+GROQ_API_KEY=...
+GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_FAST_MODEL=llama-3.1-8b-instant
+GOOGLE_GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash
+
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
+RAZORPAY_WEBHOOK_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=...
+PRO_PRICE_PAISE=19900
+PRO_CURRENCY=INR
+PRO_PLAN_LABEL=KairosCV Pro (Lifetime)
+DISABLE_PAYWALL=false
+
+CHROMIUM_BINARY_URL=...
+PUPPETEER_HEADLESS=true
+ENABLE_DEBUG_JSON=false
+NEXT_PUBLIC_ENABLE_DEBUG_TOOLS=false
 ```
 
-### 2. Deploy to Render.com
+For Vercel, `CHROMIUM_BINARY_URL` may use the default from `lib/config/env.ts`, but explicitly setting it is safer for reproducible deployments.
 
-#### Option A: Using render.yaml (Recommended)
+## Build And Verification
 
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click **"New +"** → **"Blueprint"**
-3. Connect your GitHub repository
-4. Select the branch (`main` or `main-remote02-integration`)
-5. Render will automatically detect `render.yaml`
-6. Click **"Apply"**
-
-#### Option B: Manual Setup
-
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click **"New +"** → **"Web Service"**
-3. Connect your GitHub repository
-4. Configure:
-   - **Name:** kairoscv-frontend
-   - **Environment:** Node
-   - **Region:** Oregon (or closest to you)
-   - **Branch:** main
-   - **Build Command:**
-     ```bash
-     corepack enable && corepack prepare pnpm@latest --activate && pnpm install --no-frozen-lockfile && pnpm build
-     ```
-   - **Start Command:**
-     ```bash
-     pnpm start
-     ```
-   - **Plan:** Free
-
-### 3. Configure Environment Variables
-
-In Render dashboard, go to your service → **Environment** tab and add:
-
-| Key | Value | Notes |
-|-----|-------|-------|
-| `NODE_ENV` | `production` | Already set in render.yaml |
-| `GOOGLE_GEMINI_API_KEY` | `your_api_key_here` | Get from https://ai.google.dev |
-
-### 4. Set Up Health Check
-
-- **Health Check Path:** `/api/health`
-- Already configured in `render.yaml`
-
-### 5. Deploy
-
-1. Click **"Create Web Service"** or **"Apply"**
-2. Render will start building and deploying
-3. Monitor the logs for any errors
-4. Once deployed, you'll get a URL like: `https://kairoscv-frontend.onrender.com`
-
-## Post-Deployment
-
-### Verify Deployment
-
-1. Visit your Render URL
-2. Check health endpoint: `https://your-app.onrender.com/api/health`
-3. Test file upload functionality
-4. Verify resume optimization works
-
-### Monitor Application
-
-- Check Render logs for errors
-- Monitor performance metrics in Render dashboard
-- Set up alerts for downtime (Render Pro plan)
-
-## Environment Variables Reference
-
-### Frontend (.env.local for local development)
+Run these before every production release:
 
 ```bash
-# Google Gemini API for AI enhancement
-GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
-
-# Node environment
-NODE_ENV=development
+pnpm install --frozen-lockfile
+npx tsc --noEmit
+pnpm test:run
+pnpm build
 ```
 
-## Troubleshooting
+Expected runtime smoke tests:
 
-### Build Fails
+1. `/api/health` returns `supabaseConfigured: true`, `useSupabaseStorage: true`, and `useSupabaseTrials: true`.
+2. A signed-in user can upload a PDF/DOCX/TXT file and receives both `file_id` and `job_id`.
+3. `/api/jobs/{job_id}` returns status, stage, progress, and a download URL when complete.
+4. `/api/download/{job_id}` rejects unauthenticated or non-owner requests.
+5. Trial exhaustion returns a locked preview and Razorpay unlock enables full download.
+6. Dashboard lists generated resumes from Supabase `generated_resumes`.
 
-**Issue:** `pnpm: command not found`
-**Solution:** Ensure build command includes corepack setup:
-```bash
-corepack enable && corepack prepare pnpm@latest --activate && pnpm install
-```
+## Production Data Model Notes
 
-**Issue:** `Module not found` errors
-**Solution:**
-- Check `package.json` for missing dependencies
-- Run `pnpm install` locally to verify
-- Clear Render cache and redeploy
+- Source files are stored under user-scoped paths in `resume-inputs`.
+- Generated PDFs are stored under user-scoped paths in `resume-outputs`.
+- Extracted JSON is stored under user-scoped paths in `resume-json`.
+- `processing_jobs` is the durable job state table.
+- `generated_resumes` is the user-facing resume history table.
+- `trial_events`, `user_plans`, and `payment_events` must remain server-controlled.
 
-### Runtime Errors
+## Operational Notes
 
-**Issue:** Application crashes on start
-**Solution:**
-- Check Render logs for error messages
-- Verify all environment variables are set
-- Ensure Node version is 18.17.0 or higher
-
-**Issue:** AI features not working
-**Solution:**
-- Verify `GOOGLE_GEMINI_API_KEY` is set correctly
-- Check API key has proper permissions
-- Review API quota limits
-
-### Performance Issues
-
-**Issue:** Slow cold starts (Free plan)
-**Solution:**
-- Free tier spins down after inactivity
-- Upgrade to paid plan for persistent instances
-- Consider implementing a keep-alive ping
-
-**Issue:** File upload timeouts
-**Solution:**
-- Check file size limits
-- Verify upload endpoint timeout settings
-- Review Render request timeout (30s on free tier)
-
-## Scaling Considerations
-
-### Free Tier Limitations
-
-- **RAM:** 512 MB
-- **Request Timeout:** 30 seconds
-- **Spin Down:** After 15 minutes of inactivity
-- **Build Time:** 10 minutes max
-
-### Upgrade Options
-
-For production use, consider:
-- **Starter Plan ($7/month):**
-  - No spin down
-  - Faster builds
-  - More RAM
-
-- **Standard Plan ($25/month):**
-  - Higher performance
-  - Priority support
-  - Custom domains
-
-## Security Best Practices
-
-1. **Never commit** `.env` files to git
-2. **Rotate API keys** periodically
-3. **Use environment variables** for all secrets
-4. **Enable HTTPS** (automatic on Render)
-5. **Monitor logs** for suspicious activity
-
-## Updating the Application
-
-### Deploy New Changes
-
-```bash
-# Make changes locally
-git add .
-git commit -m "feat: your changes"
-git push origin main
-
-# Render auto-deploys from connected branch
-```
-
-### Manual Redeploy
-
-1. Go to Render dashboard
-2. Click **"Manual Deploy"**
-3. Select branch
-4. Click **"Deploy"**
-
-## Support
-
-- **Render Documentation:** https://render.com/docs
-- **Next.js Documentation:** https://nextjs.org/docs
-- **Google Gemini API:** https://ai.google.dev/docs
-
-## Costs
-
-- **Render Free Tier:** $0/month (with limitations)
-- **Google Gemini API:** Free tier available (check current limits)
-- **Total Monthly Cost:** $0-7+ depending on plan
-
----
-
-**Last Updated:** November 2025
-**Version:** 1.0
-**Branch:** main-remote02-integration
+- Keep Supabase buckets private.
+- Use signed URLs for generated PDF access.
+- Keep `SUPABASE_SERVICE_ROLE_KEY`, AI keys, and Razorpay secrets server-only.
+- Local filesystem fallback is for development only.
+- The current processing path still starts from the SSE stream route; job progress is persisted in Supabase and exposed through `/api/jobs/[id]`. For higher traffic, move processing to a queue-backed worker while preserving the same `processing_jobs` contract.

@@ -12,6 +12,8 @@ import fs from "fs-extra"
 import path from "path"
 import { ResumeData } from "../schemas/resume-schema"
 import { getUploadsBaseDir } from "@/lib/file-storage"
+import { isSupabaseConfigured, shouldUseSupabaseStorage } from "@/lib/config/env"
+import { downloadResumeJSONFromSupabase, saveResumeJSONToSupabase } from "@/lib/storage/supabase-storage"
 
 // Storage directory for JSON files
 const JSON_STORAGE_DIR = path.join(getUploadsBaseDir(), "json")
@@ -44,6 +46,22 @@ export async function saveResumeJSON(
     },
   }
 
+  if (shouldUseSupabaseStorage() && isSupabaseConfigured()) {
+    const { getFileMetadata } = await import("@/lib/file-storage")
+    const { getSupabaseServiceRoleClient } = await import("@/lib/supabase/server")
+    const metadata = await getFileMetadata(fileId)
+    const stored = await saveResumeJSONToSupabase(fileId, jsonData, metadata?.userId)
+    const supabase = getSupabaseServiceRoleClient()
+    await supabase
+      .from("processing_jobs")
+      .update({
+        json_bucket: stored.bucket,
+        json_path: stored.path,
+      })
+      .eq("id", fileId)
+    return stored.path
+  }
+
   await fs.writeJSON(jsonPath, jsonData, { spaces: 2 })
 
   console.log(`📄 Resume JSON saved: ${jsonPath}`)
@@ -55,6 +73,17 @@ export async function saveResumeJSON(
  * Load resume JSON from storage
  */
 export async function loadResumeJSON(fileId: string): Promise<ResumeData | null> {
+  if (shouldUseSupabaseStorage() && isSupabaseConfigured()) {
+    const { getFileMetadata } = await import("@/lib/file-storage")
+    const metadata = await getFileMetadata(fileId)
+    if (!metadata?.json?.bucket || !metadata.json.path) {
+      return null
+    }
+    const jsonData = await downloadResumeJSONFromSupabase(metadata.json.bucket, metadata.json.path) as Record<string, unknown>
+    const { _metadata, ...resumeData } = jsonData
+    return resumeData as unknown as ResumeData
+  }
+
   const jsonPath = path.join(JSON_STORAGE_DIR, `${fileId}.json`)
 
   if (!(await fs.pathExists(jsonPath))) {
@@ -73,6 +102,12 @@ export async function loadResumeJSON(fileId: string): Promise<ResumeData | null>
  * Check if resume JSON exists
  */
 export async function resumeJSONExists(fileId: string): Promise<boolean> {
+  if (shouldUseSupabaseStorage() && isSupabaseConfigured()) {
+    const { getFileMetadata } = await import("@/lib/file-storage")
+    const metadata = await getFileMetadata(fileId)
+    return Boolean(metadata?.json?.bucket && metadata.json.path)
+  }
+
   const jsonPath = path.join(JSON_STORAGE_DIR, `${fileId}.json`)
   return await fs.pathExists(jsonPath)
 }

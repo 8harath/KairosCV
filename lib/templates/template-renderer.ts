@@ -1,6 +1,7 @@
 import fs from "fs-extra"
 import path from "path"
 import type { ParsedResume, ExperienceEntry, EducationEntry, ProjectEntry } from "../parsers/enhanced-parser"
+import { isValidResumeData } from "../schemas/resume-schema"
 
 /**
  * Simple template renderer (Handlebars-like syntax)
@@ -258,9 +259,8 @@ function escapeHtml(text: string | undefined | null): string {
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "'": "&#039;",
   }
-  return text.replace(/[&<>"']/g, (m) => map[m])
+  return text.replace(/[&<>"]/g, (m) => map[m])
 }
 
 export interface TemplateInfo {
@@ -296,7 +296,6 @@ function resolveTemplateFile(templateId?: string | null): string {
 export function renderJakesResume(parsedResume: ParsedResume, summary?: string, templateId?: string | null): string {
   // Fail-safe validation (last line of defense before rendering)
   try {
-    const { isValidResumeData } = require('../schemas/resume-schema')
     if (!isValidResumeData(parsedResume)) {
       console.warn('⚠️  Invalid resume data passed to template renderer - continuing anyway')
     }
@@ -403,7 +402,7 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
 
   const referencesHTML = parsedResume.references && parsedResume.references.length > 0
     ? parsedResume.references
-        .filter(ref => ref && typeof ref === 'string' && !ref.toLowerCase().includes('available upon request'))
+        .filter(ref => ref && typeof ref === 'string')
         .map(ref => `<div class="bullet">${escapeHtml(ref)}</div>`).join('\n')
     : ""
 
@@ -412,7 +411,7 @@ export function renderJakesResume(parsedResume: ParsedResume, summary?: string, 
     : ""
 
   const data = {
-    NAME: parsedResume.contact?.name || "Your Name",
+    NAME: escapeHtml(parsedResume.contact?.name || "Your Name"),
     CONTACT_LINE: contactLine,
     EMAIL: parsedResume.contact?.email || "",
     PHONE: parsedResume.contact?.phone || "",
