@@ -3,6 +3,8 @@
  * Extracts structured data from resume text with better logic
  */
 
+import { validatePartialResumeData } from "../schemas/resume-schema"
+
 export interface ContactInfo {
   name: string
   email?: string
@@ -67,11 +69,46 @@ export interface ParsedResume {
   customSections?: Array<{heading: string; content: string[]}>
 }
 
+const SECTION_HEADERS = [
+  "summary",
+  "professional summary",
+  "objective",
+  "profile",
+  "about",
+  "experience",
+  "work experience",
+  "work history",
+  "employment",
+  "education",
+  "skills",
+  "technical skills",
+  "projects",
+  "certifications",
+  "licenses & certifications",
+  "licenses",
+  "credentials",
+  "awards",
+  "activities",
+]
+
+function isSectionHeader(line: string): boolean {
+  const normalized = line.trim().toLowerCase().replace(/:$/, "")
+  return SECTION_HEADERS.includes(normalized)
+}
+
+function isBulletLine(line: string): boolean {
+  return /^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]/.test(line.trim())
+}
+
+function stripBullet(line: string): string {
+  return line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+}
+
 /**
  * Extract contact information from resume text
  */
 export function extractContactInfo(text: string): ContactInfo {
-  const lines = text.split("\n").slice(0, 10) // Check first 10 lines
+  const lines = text.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 10) // Check first 10 non-empty lines
   const fullText = lines.join(" ")
 
   // Extract email
@@ -146,11 +183,7 @@ export function extractExperience(text: string): ExperienceEntry[] {
     const lowerLine = line.toLowerCase()
 
     // Detect experience section start
-    if (
-      lowerLine.includes("experience") ||
-      lowerLine.includes("work history") ||
-      lowerLine.includes("employment")
-    ) {
+    if (["experience", "work experience", "work history", "employment"].includes(lowerLine.replace(/:$/, ""))) {
       inExperienceSection = true
       continue
     }
@@ -180,6 +213,31 @@ export function extractExperience(text: string): ExperienceEntry[] {
 
     if (!inExperienceSection || !line) continue
 
+    // Common compact format: "Software Engineer | Google"
+    const pipeRoleCompanyMatch = line.match(/^(.{2,80})\s+\|\s+(.{2,80})$/)
+    if (pipeRoleCompanyMatch && !isBulletLine(line)) {
+      if (currentEntry && currentEntry.company) {
+        experiences.push({
+          company: currentEntry.company,
+          title: currentEntry.title || "Position",
+          location: currentEntry.location || "",
+          startDate: currentEntry.startDate || "",
+          endDate: currentEntry.endDate || "",
+          bullets,
+        })
+      }
+      currentEntry = {
+        title: pipeRoleCompanyMatch[1].trim(),
+        company: pipeRoleCompanyMatch[2].trim(),
+        location: "",
+        startDate: "",
+        endDate: "",
+      }
+      bullets = []
+      expectingJobTitle = false
+      continue
+    }
+
     // Format detection:
     // 1. "CompanyName    Location" or "CompanyName, Location"
     // 2. Next line: dates
@@ -190,7 +248,7 @@ export function extractExperience(text: string): ExperienceEntry[] {
     const companyLocationMatch = line.match(/^([A-Za-z0-9\s&.'-]+)\s{2,}([A-Za-z\s,]+)$/) ||
                                  line.match(/^([A-Za-z0-9\s&.'-]+?),?\s+([A-Z][A-Za-z]+,?\s*[A-Z]{2,3}|[A-Z][A-Za-z]+)$/i)
 
-    if (companyLocationMatch && !line.match(/^[•●\-*]/) && i > 0) {
+    if (companyLocationMatch && !line.match(/^[•●\-*]/) && !line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December|\d{4}|Present|Current)/i) && i > 0) {
       // Save previous entry
       if (currentEntry && currentEntry.company) {
         experiences.push({
@@ -234,8 +292,8 @@ export function extractExperience(text: string): ExperienceEntry[] {
       expectingJobTitle = false
     }
     // Detect bullet points with ● (or other bullet chars)
-    else if (line.match(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]/)) {
-      const bullet = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+    else if (isBulletLine(line)) {
+      const bullet = stripBullet(line)
       if (bullet && bullet.length > 3) {
         bullets.push(bullet)
         expectingJobTitle = false
@@ -270,128 +328,48 @@ export function extractExperience(text: string): ExperienceEntry[] {
  * Extract education entries with structured data
  */
 export function extractEducation(text: string): EducationEntry[] {
-  const education: EducationEntry[] = []
-  const lines = text.split("\n")
-
+  const sectionLines: string[] = []
   let inEducationSection = false
-  let currentEntry: Partial<EducationEntry> | null = null
-  let linesSinceEntry = 0
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    const lowerLine = line.toLowerCase()
+  for (const rawLine of text.split("\n")) {
+    const line = rawLine.trim()
+    const lowerLine = line.toLowerCase().replace(/:$/, "")
 
-    // Detect education section start
-    if (lowerLine.includes("education")) {
+    if (["education", "academic background"].includes(lowerLine)) {
       inEducationSection = true
       continue
     }
-
-    // Stop at next section
-    if (
-      inEducationSection &&
-      (lowerLine.includes("experience") ||
-        lowerLine.includes("skills") ||
-        lowerLine.includes("projects") ||
-        lowerLine.includes("certifications") ||
-        lowerLine.includes("activities"))
-    ) {
-      // Save last entry
-      if (currentEntry && currentEntry.institution) {
-        education.push(currentEntry as EducationEntry)
-      }
+    if (inEducationSection && line && isSectionHeader(line)) {
       break
     }
-
-    if (!inEducationSection || !line) continue
-
-    // Detect institution (has location or keywords)
-    const institutionMatch = line.match(/^([A-Za-z\s()'-]+?)\s+([A-Z][a-z]+,?\s*[A-Z]{2,3})$/i) ||
-                             (line.match(/university|college|institute|school|deemed/i) && line.length < 100)
-
-    if (institutionMatch) {
-      // Save previous entry
-      if (currentEntry && currentEntry.institution && linesSinceEntry > 0) {
-        education.push(currentEntry as EducationEntry)
-      }
-
-      if (Array.isArray(institutionMatch)) {
-        currentEntry = {
-          institution: institutionMatch[1].trim(),
-          location: institutionMatch[2].trim(),
-          degree: "",
-          field: "",
-          startDate: "",
-          endDate: "",
-        }
-      } else {
-        currentEntry = {
-          institution: line,
-          degree: "",
-          field: "",
-          location: "",
-          startDate: "",
-          endDate: "",
-        }
-      }
-      linesSinceEntry = 0
-    }
-    // Detect degree
-    else if (
-      currentEntry &&
-      line.match(/bachelor|master|degree|phd|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma/i)
-    ) {
-      const degreeMatch = line.match(/(bachelor|master|degree|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma)[\w\s.]*/i)
-      currentEntry.degree = degreeMatch ? degreeMatch[0].trim() : line
-
-      // Try to extract expected graduation
-      const expectedMatch = line.match(/Expected\s+([A-Za-z]+\s+\d{4})/i)
-      if (expectedMatch) {
-        currentEntry.endDate = expectedMatch[1]
-      }
-
-      // Try to extract field
-      const fieldMatch = line.match(/(?:in|of)\s+([A-Z][a-z][a-zA-Z\s]+?)(?:;|$|Expected)/i)
-      if (fieldMatch) {
-        currentEntry.field = fieldMatch[1].trim()
-      }
-      linesSinceEntry++
-    }
-    // Detect major/minor
-    else if (currentEntry && line.match(/major|minor/i)) {
-      const fieldMatch = line.match(/(?:Major|Minor)\s+in\s+([A-Za-z\s]+)/i)
-      if (fieldMatch && !currentEntry.field) {
-        currentEntry.field = fieldMatch[1].trim()
-      }
-      linesSinceEntry++
-    }
-    // Detect GPA
-    else if (currentEntry && line.match(/gpa|grade|cumulative/i)) {
-      const gpaMatch = line.match(/(\d+\.?\d*)/i)
-      if (gpaMatch && !currentEntry.gpa) {
-        currentEntry.gpa = gpaMatch[1]
-      }
-      linesSinceEntry++
-    }
-    // Detect dates
-    else if (currentEntry && line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4}|Expected)/i)) {
-      const dates = extractDates(line)
-      if (!currentEntry.startDate) {
-        currentEntry.startDate = dates.start
-        currentEntry.endDate = dates.end
-      }
-      linesSinceEntry++
-    } else if (currentEntry) {
-      linesSinceEntry++
+    if (inEducationSection && line) {
+      sectionLines.push(line)
     }
   }
 
-  // Save last entry
-  if (currentEntry && currentEntry.institution) {
-    education.push(currentEntry as EducationEntry)
-  }
+  if (sectionLines.length === 0) return []
 
-  return education
+  const institution = sectionLines[0]
+  const degreeLine = sectionLines.find((line, index) =>
+    index > 0 && /bachelor|master|degree|phd|doctorate|b\.s\.|m\.s\.|b\.a\.|m\.a\.|b\.c\.a\.|associate|diploma/i.test(line)
+  ) || ""
+  const dateLine = sectionLines.find((line) =>
+    /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December|\d{4}|Expected)/i.test(line)
+  ) || ""
+  const gpaLine = sectionLines.find((line) => /gpa|grade|cumulative/i.test(line)) || ""
+  const dates = extractDates(dateLine)
+  const fieldMatch = degreeLine.match(/(?:in|of)\s+([A-Z][a-z][a-zA-Z\s]+?)(?:;|$|Expected)/i)
+  const locationMatch = institution.match(/^(.+?)\s{2,}(.+)$/)
+
+  return [{
+    institution: locationMatch ? locationMatch[1].trim() : institution,
+    degree: degreeLine || "",
+    field: fieldMatch ? fieldMatch[1].trim() : "",
+    location: locationMatch ? locationMatch[2].trim() : "",
+    startDate: dates.start,
+    endDate: dates.end,
+    gpa: gpaLine.match(/(\d+\.?\d*)/)?.[1],
+  }]
 }
 
 /**
@@ -485,10 +463,7 @@ export function extractSummary(text: string): string {
     const lowerLine = line.toLowerCase()
 
     // Detect summary section
-    if (lowerLine.includes("summary") ||
-        lowerLine.includes("objective") ||
-        lowerLine.includes("profile") ||
-        lowerLine.includes("about")) {
+    if (["summary", "professional summary", "objective", "profile", "about"].includes(lowerLine.replace(/:$/, ""))) {
 
       // Get next few lines as summary
       const summaryLines: string[] = []
@@ -497,15 +472,12 @@ export function extractSummary(text: string): string {
         const summaryLower = summaryLine.toLowerCase()
 
         // Stop at next section
-        if (summaryLower.includes("experience") ||
-            summaryLower.includes("education") ||
-            summaryLower.includes("skills") ||
-            summaryLower.includes("projects")) {
+        if (isSectionHeader(summaryLine)) {
           break
         }
 
         if (summaryLine.length > 0) {
-          summaryLines.push(summaryLine)
+          summaryLines.push(stripBullet(summaryLine))
         }
       }
 
@@ -532,20 +504,14 @@ export function extractCertifications(text: string): string[] {
     const lowerLine = line.toLowerCase()
 
     // Detect certifications section
-    if (lowerLine.includes("certification") ||
-        lowerLine.includes("licenses") ||
-        lowerLine.includes("credentials")) {
+    if (["certifications", "certification", "licenses & certifications", "licenses", "credentials"].includes(lowerLine.replace(/:$/, ""))) {
       inCertSection = true
       continue
     }
 
     // Stop at next section
     if (inCertSection &&
-        (lowerLine.includes("experience") ||
-         lowerLine.includes("education") ||
-         lowerLine.includes("skills") ||
-         lowerLine.includes("projects") ||
-         lowerLine.includes("awards"))) {
+        isSectionHeader(line)) {
       break
     }
 
@@ -554,7 +520,7 @@ export function extractCertifications(text: string): string[] {
     // Add non-empty lines as certifications
     if (line.length > 3 && !line.match(/^[A-Z\s]+$/)) {
       // Remove bullet symbols
-      const cert = line.replace(/^[•●\-*▪︎◦○■□☐☑✓✔➢➣⦿⦾]\s*/, "").trim()
+      const cert = stripBullet(line)
       if (cert.length > 0) {
         certifications.push(cert)
       }
@@ -700,7 +666,6 @@ export function parseResumeEnhanced(text: string): ParsedResume {
 
   // Validate structure with Zod (helps catch parser issues)
   try {
-    const { validatePartialResumeData } = require('../schemas/resume-schema')
     const validation = validatePartialResumeData(parsed)
 
     if (!validation.success) {
