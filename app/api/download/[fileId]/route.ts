@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { cleanupFileArtifacts, getFileMetadata, downloadGeneratedPDF, getGeneratedFilePath, fileExists } from "@/lib/file-storage"
 import { isValidFileId } from "@/lib/security/file-id"
-import { isAuthBypassed, isPaywallEnabled } from "@/lib/config/env"
+import { isAuthBypassed, isPaywallEnabled, shouldUseSupabaseStorage } from "@/lib/config/env"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getSupabaseCookieAdapter } from "@/lib/supabase/cookies"
 import { getPlanStatusByEmail } from "@/lib/payments/plan-service"
+import { createGeneratedPDFSignedUrl } from "@/lib/storage/supabase-storage"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -18,12 +19,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
   try {
     // Auth check
     let userEmail: string | null = null
+    let userId: string | null = null
     if (!isAuthBypassed()) {
       const supabase = createSupabaseServerClient(await getSupabaseCookieAdapter())
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
+      userId = user.id
       userEmail = user.email ?? null
     }
 
@@ -35,6 +38,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     const metadata = await getFileMetadata(fileId)
     if (!metadata) {
       return NextResponse.json({ error: "File not found" }, { status: 404 })
+    }
+
+    if (!isAuthBypassed() && metadata.userId && metadata.userId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     // Paywall gate: full downloads of a preview-flagged job require a pro plan.
@@ -52,6 +59,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
           { status: 402 },
         )
       }
+    }
+
+    if (shouldUseSupabaseStorage() && metadata.output?.bucket && metadata.output?.path) {
+      const signedUrl = await createGeneratedPDFSignedUrl(metadata.output.bucket, metadata.output.path)
+      return NextResponse.redirect(signedUrl)
     }
 
     let pdfBuffer: Buffer
