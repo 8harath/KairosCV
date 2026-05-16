@@ -2,7 +2,7 @@ import { randomUUID } from "crypto"
 import path from "path"
 import fs from "fs-extra"
 import os from "os"
-import { getSupabaseInputBucket, getSupabaseOutputBucket } from "@/lib/config/env"
+import { getSupabaseInputBucket, getSupabaseJsonBucket, getSupabaseOutputBucket } from "@/lib/config/env"
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server"
 
 export interface StoredUpload {
@@ -18,11 +18,13 @@ export async function saveUploadedFileToSupabase(
   fileId: string,
   filename: string,
   buffer: Buffer,
-  contentType: string
+  contentType: string,
+  ownerId?: string | null
 ): Promise<StoredUpload> {
   const bucket = getSupabaseInputBucket()
   const safeFilename = sanitizeFilename(filename)
-  const objectPath = `uploads/${fileId}/${randomUUID()}-${safeFilename}`
+  const ownerFolder = ownerId || "system"
+  const objectPath = `${ownerFolder}/uploads/${fileId}/${randomUUID()}-${safeFilename}`
   const supabase = getSupabaseServiceRoleClient()
 
   const { error } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
@@ -47,10 +49,12 @@ export function getStorageFilename(storagePath: string): string {
 // Save generated PDF to Supabase Storage
 export async function saveGeneratedPDFToSupabase(
   fileId: string,
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
+  ownerId?: string | null
 ): Promise<StoredUpload> {
   const bucket = getSupabaseOutputBucket()
-  const objectPath = `outputs/${fileId}/${fileId}.pdf`
+  const ownerFolder = ownerId || "system"
+  const objectPath = `${ownerFolder}/outputs/${fileId}/${fileId}.pdf`
   const supabase = getSupabaseServiceRoleClient()
 
   const { error } = await supabase.storage.from(bucket).upload(objectPath, pdfBuffer, {
@@ -66,6 +70,58 @@ export async function saveGeneratedPDFToSupabase(
     bucket,
     path: objectPath,
   }
+}
+
+export async function saveResumeJSONToSupabase(
+  fileId: string,
+  jsonData: unknown,
+  ownerId?: string | null
+): Promise<StoredUpload> {
+  const bucket = getSupabaseJsonBucket()
+  const ownerFolder = ownerId || "system"
+  const objectPath = `${ownerFolder}/json/${fileId}/${fileId}.json`
+  const supabase = getSupabaseServiceRoleClient()
+  const buffer = Buffer.from(JSON.stringify(jsonData, null, 2))
+
+  const { error } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
+    contentType: "application/json",
+    upsert: true,
+  })
+
+  if (error) {
+    throw new Error(`Supabase JSON upload failed: ${error.message}`)
+  }
+
+  return { bucket, path: objectPath }
+}
+
+export async function downloadResumeJSONFromSupabase(
+  bucket: string,
+  storagePath: string
+): Promise<unknown> {
+  const supabase = getSupabaseServiceRoleClient()
+  const { data, error } = await supabase.storage.from(bucket).download(storagePath)
+
+  if (error || !data) {
+    throw new Error(`Supabase JSON download failed: ${error?.message || "Unknown error"}`)
+  }
+
+  return JSON.parse(Buffer.from(await data.arrayBuffer()).toString("utf-8"))
+}
+
+export async function createGeneratedPDFSignedUrl(
+  bucket: string,
+  storagePath: string,
+  expiresInSeconds = 300
+): Promise<string> {
+  const supabase = getSupabaseServiceRoleClient()
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(storagePath, expiresInSeconds)
+
+  if (error || !data?.signedUrl) {
+    throw new Error(`Supabase signed URL failed: ${error?.message || "Unknown error"}`)
+  }
+
+  return data.signedUrl
 }
 
 // Download generated PDF from Supabase Storage
