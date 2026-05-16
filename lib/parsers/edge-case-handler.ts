@@ -30,6 +30,21 @@ function stringSimilarity(str1: string, str2: string): number {
   return (longer.length - editDistance) / longer.length
 }
 
+function normalizeComparable(value: string | undefined): string {
+  return (value || '')
+    .toLowerCase()
+    .replace(/\bincorporated\b/g, 'inc')
+    .replace(/\bcorporation\b/g, 'corp')
+    .replace(/\bcompany\b/g, 'co')
+    .replace(/\bmassachusetts institute of technology\b/g, 'mit')
+    .replace(/\bbachelor of science\b/g, 'bs')
+    .replace(/\bbachelor's\b/g, 'bs')
+    .replace(/\bmaster of science\b/g, 'ms')
+    .replace(/\bmaster's\b/g, 'ms')
+    .replace(/\bcomputer science\b/g, 'cs')
+    .replace(/[^a-z0-9]+/g, '')
+}
+
 /**
  * Levenshtein distance calculation
  */
@@ -72,9 +87,10 @@ export function deduplicateExperience(experiences: any[]): any[] {
   for (const exp of experiences) {
     // Check if this experience is similar to any existing one
     const isDuplicate = unique.some(existing => {
-      const companySimilar = stringSimilarity(exp.company || '', existing.company || '') > 0.85
-      const titleSimilar = stringSimilarity(exp.title || '', existing.title || '') > 0.85
-      const dateSimilar = exp.startDate === existing.startDate && exp.endDate === existing.endDate
+      const companySimilar = stringSimilarity(normalizeComparable(exp.company), normalizeComparable(existing.company)) > 0.85
+      const titleSimilar = stringSimilarity(normalizeComparable(exp.title), normalizeComparable(existing.title)) > 0.85
+      const dateSimilar = normalizeDate(exp.startDate) === normalizeDate(existing.startDate) &&
+        normalizeDate(exp.endDate) === normalizeDate(existing.endDate)
 
       return companySimilar && titleSimilar && dateSimilar
     })
@@ -97,11 +113,13 @@ export function deduplicateEducation(education: any[]): any[] {
 
   for (const edu of education) {
     const isDuplicate = unique.some(existing => {
-      const institutionSimilar = stringSimilarity(edu.institution || '', existing.institution || '') > 0.85
-      const degreeSimilar = stringSimilarity(edu.degree || '', existing.degree || '') > 0.85
-      const dateSimilar = edu.endDate === existing.endDate
+      const institutionSimilar = stringSimilarity(normalizeComparable(edu.institution), normalizeComparable(existing.institution)) > 0.85
+      const degreeSimilar = stringSimilarity(normalizeComparable(edu.degree), normalizeComparable(existing.degree)) > 0.75
+      const fieldSimilar = stringSimilarity(normalizeComparable(edu.field), normalizeComparable(existing.field)) > 0.75 ||
+        !normalizeComparable(edu.field) || !normalizeComparable(existing.field)
+      const dateSimilar = normalizeDate(edu.endDate) === normalizeDate(existing.endDate)
 
-      return institutionSimilar && degreeSimilar && dateSimilar
+      return institutionSimilar && degreeSimilar && fieldSimilar && dateSimilar
     })
 
     if (!isDuplicate) {
@@ -215,7 +233,18 @@ export function normalizeDate(date: string | undefined): string {
     return `${month} ${monthYearMatch[2]}`
   }
 
-  // Try numeric format: 01/2020 or 2020-01
+  // Try ISO format: 2020-01
+  const isoMatch = normalized.match(/^(\d{4})-(\d{1,2})$/)
+  if (isoMatch) {
+    const year = isoMatch[1]
+    const monthNum = parseInt(isoMatch[2])
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    if (monthNum >= 1 && monthNum <= 12) {
+      return `${months[monthNum - 1]} ${year}`
+    }
+  }
+
+  // Try numeric format: 01/2020
   const numericMatch = normalized.match(/(\d{1,2})[\/\-](\d{4})/)
   if (numericMatch) {
     const monthNum = parseInt(numericMatch[1])
@@ -312,8 +341,8 @@ export function cleanBulletPoint(bullet: string): string {
   cleaned = cleaned.replace(/\s+/g, ' ')
 
   // Fix smart quotes
-  cleaned = cleaned.replace(/[""]/g, '"')
-  cleaned = cleaned.replace(/['']/g, "'")
+  cleaned = cleaned.replace(/[\u201c\u201d]/g, '"')
+  cleaned = cleaned.replace(/[\u2018\u2019]/g, "'")
 
   // Fix em-dashes and en-dashes
   cleaned = cleaned.replace(/[—–]/g, '-')
