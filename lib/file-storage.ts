@@ -65,7 +65,8 @@ export async function readFile(filePath: string): Promise<Buffer> {
 // Save generated PDF (routes to Supabase or local filesystem)
 export async function saveGeneratedPDF(fileId: string, pdfBuffer: Buffer): Promise<string> {
   if (shouldUseSupabaseStorage()) {
-    const { bucket, path: storagePath } = await saveGeneratedPDFToSupabase(fileId, pdfBuffer)
+    const metadata = await getFileMetadata(fileId)
+    const { bucket, path: storagePath } = await saveGeneratedPDFToSupabase(fileId, pdfBuffer, metadata?.userId)
     // Update the processing_jobs row with output location
     await updateJobOutput(fileId, bucket, storagePath)
     return storagePath
@@ -95,6 +96,10 @@ export interface FileMetadata {
     path: string
   }
   output?: {
+    bucket: string
+    path: string
+  }
+  json?: {
     bucket: string
     path: string
   }
@@ -162,7 +167,7 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
 
       const { data, error } = await supabase
         .from("processing_jobs")
-        .select("id, original_filename, mime_type, email, user_id, job_description, template_id, input_bucket, input_path, output_bucket, output_path, created_at")
+        .select("id, original_filename, mime_type, email, user_id, job_description, template_id, input_bucket, input_path, output_bucket, output_path, json_bucket, json_path, created_at")
         .eq("id", fileId)
         .single()
 
@@ -186,6 +191,9 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata | nu
         },
         output: data.output_bucket && data.output_path
           ? { bucket: data.output_bucket, path: data.output_path }
+          : undefined,
+        json: data.json_bucket && data.json_path
+          ? { bucket: data.json_bucket, path: data.json_path }
           : undefined,
       }
     } catch (error) {
@@ -216,7 +224,8 @@ export async function updateJobStatus(
   status: string,
   stage?: string,
   progress?: number,
-  errorMessage?: string
+  errorMessage?: string,
+  confidence?: unknown
 ): Promise<void> {
   if (!shouldUseSupabaseStorage() || !isSupabaseConfigured()) return
 
@@ -228,6 +237,7 @@ export async function updateJobStatus(
     if (stage !== undefined) update.stage = stage
     if (progress !== undefined) update.progress = progress
     if (errorMessage !== undefined) update.error_message = errorMessage
+    if (confidence !== undefined) update.confidence = confidence
     if (status === "processing" && !update.started_at) update.started_at = new Date().toISOString()
     if (status === "completed") update.completed_at = new Date().toISOString()
 
