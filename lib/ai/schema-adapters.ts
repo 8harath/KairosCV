@@ -95,3 +95,32 @@ function sanitizeForGemini(node: unknown): unknown {
 
   return out
 }
+
+// Keywords Groq's json_schema endpoint rejects. Refs are already inlined by the
+// base-schema generator, so the `definitions`/`$ref` strips are belt-and-braces.
+const GROQ_STRIPPED_KEYS = new Set(["$schema", "definitions", "$defs", "$ref"])
+
+/**
+ * Translate the base JSON Schema into Groq's `json_schema` dialect. Groq follows
+ * OpenAI semantics and tolerates draft-7 constructs, so this only removes the
+ * keywords it rejects and otherwise passes the schema through.
+ */
+export function toGroqJsonSchema(schema: JsonSchema): JsonSchema {
+  return stripGroqUnsupported(schema) as JsonSchema
+}
+
+function stripGroqUnsupported(node: unknown): unknown {
+  if (Array.isArray(node)) {
+    return node.map(stripGroqUnsupported)
+  }
+  if (!node || typeof node !== "object") {
+    return node
+  }
+
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    if (GROQ_STRIPPED_KEYS.has(key)) continue
+    out[key] = stripGroqUnsupported(value)
+  }
+  return out
+}
