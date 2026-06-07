@@ -224,16 +224,29 @@ export async function llmGenerateStructured<T>(
     schemaName: options.schemaName,
   }
 
-  const res = await generateRaw(prompt, options.systemPrompt, genOpts)
-  assertNotTruncated(res)
+  // Attempt once, then make a single self-repair attempt that feeds the
+  // validation errors back to the model before giving up.
+  let lastErrors: string[] = []
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const augmentedPrompt =
+      attempt === 0
+        ? prompt
+        : `${prompt}\n\nYour previous response failed schema validation with these errors:\n${lastErrors
+            .map((e) => `- ${e}`)
+            .join("\n")}\n\nReturn corrected JSON that satisfies the schema. Output JSON only.`
 
-  const parsed = parseModelJson<unknown>(res.text)
-  const validation = options.validate(parsed)
-  if (validation.success) {
-    return validation.data as T
+    const res = await generateRaw(augmentedPrompt, options.systemPrompt, genOpts)
+    assertNotTruncated(res)
+
+    const parsed = parseModelJson<unknown>(res.text)
+    const validation = options.validate(parsed)
+    if (validation.success) {
+      return validation.data as T
+    }
+    lastErrors = validation.errors ?? []
   }
 
-  throw new LLMValidationError(validation.errors)
+  throw new LLMValidationError(lastErrors)
 }
 
 /**
