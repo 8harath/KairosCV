@@ -379,7 +379,7 @@ export async function extractWithVerification(
 /**
  * Merge two extraction results to recover missing data (simple merge for text-based extractions)
  */
-function mergeSimpleExtractions(primary: any, secondary: any): any {
+function mergeSimpleExtractions(primary: PartialResumeData, secondary: PartialResumeData): PartialResumeData {
   return {
     contact: {
       name: primary.contact?.name || secondary.contact?.name || "",
@@ -414,18 +414,20 @@ function mergeSimpleExtractions(primary: any, secondary: any): any {
 /**
  * Merge two arrays of objects, avoiding duplicates based on a key field
  */
-function mergArrays(arr1: any[] | undefined, arr2: any[] | undefined, keyField: string): any[] {
+function mergArrays<T>(arr1: T[] | undefined, arr2: T[] | undefined, keyField: string): T[] {
   const primary = arr1 || []
   const secondary = arr2 || []
 
+  const keyOf = (item: T) => (item as Record<string, any>)[keyField]?.toLowerCase()
+
   // Get keys from primary array
-  const existingKeys = new Set(primary.map((item) => item[keyField]?.toLowerCase()))
+  const existingKeys = new Set(primary.map(keyOf))
 
   // Add items from secondary that don't exist in primary
   const merged = [...primary]
 
   for (const item of secondary) {
-    const key = item[keyField]?.toLowerCase()
+    const key = keyOf(item)
     if (key && !existingKeys.has(key)) {
       merged.push(item)
     }
