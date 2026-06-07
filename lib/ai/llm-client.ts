@@ -6,6 +6,7 @@
  */
 
 import { hasGroqApiKey, getGroqApiKey, getGroqModel, getGroqFastModel, hasGeminiApiKey, getGeminiApiKey, getGeminiTextModel } from "../config/env"
+import { parseModelJson } from "./json-utils"
 
 export interface LLMGenerateOptions {
   temperature?: number
@@ -52,6 +53,14 @@ export class LLMTruncationError extends Error {
 function assertNotTruncated(res: LLMStructuredResponse): void {
   if (res.truncated) {
     throw new LLMTruncationError(res.finishReason)
+  }
+}
+
+/** Thrown when structured output fails schema validation after all attempts. */
+export class LLMValidationError extends Error {
+  constructor(public readonly errors: string[] = []) {
+    super(`LLM output failed schema validation: ${errors.join("; ") || "unknown error"}`)
+    this.name = "LLMValidationError"
   }
 }
 
@@ -182,6 +191,49 @@ export async function llmGenerate(
   systemPrompt?: string
 ): Promise<string> {
   return (await generateRaw(prompt, systemPrompt, opts)).text
+}
+
+export interface StructuredGenerateOptions<T> {
+  /** Base JSON Schema used to constrain provider output. */
+  jsonSchema: Record<string, unknown>
+  /** Validator (typically a Zod safeParse wrapper) gating the parsed result. */
+  validate: (data: unknown) => { success: boolean; data?: T; errors?: string[] }
+  schemaName?: string
+  temperature?: number
+  maxTokens?: number
+  systemPrompt?: string
+}
+
+/**
+ * Generate schema-constrained JSON and return a validated, typed object.
+ *
+ * The provider is asked for structured output, the text is defensively parsed
+ * (models still occasionally wrap JSON in prose/fences), and the result is gated
+ * through `validate`. Throws LLMTruncationError or LLMValidationError on failure
+ * rather than returning unvalidated data.
+ */
+export async function llmGenerateStructured<T>(
+  prompt: string,
+  options: StructuredGenerateOptions<T>
+): Promise<T> {
+  const genOpts: LLMGenerateOptions = {
+    temperature: options.temperature ?? 0.2,
+    maxTokens: options.maxTokens ?? 4096,
+    jsonMode: true,
+    schema: options.jsonSchema,
+    schemaName: options.schemaName,
+  }
+
+  const res = await generateRaw(prompt, options.systemPrompt, genOpts)
+  assertNotTruncated(res)
+
+  const parsed = parseModelJson<unknown>(res.text)
+  const validation = options.validate(parsed)
+  if (validation.success) {
+    return validation.data as T
+  }
+
+  throw new LLMValidationError(validation.errors)
 }
 
 /**
