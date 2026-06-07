@@ -4,8 +4,10 @@
  * Drop-in replacement for gemini-service.ts — exports identical interfaces.
  */
 
-import { llmGenerate, retryWithBackoff, isLLMConfigured } from "./llm-client"
+import { llmGenerate, llmGenerateStructured, retryWithBackoff, isLLMConfigured } from "./llm-client"
 import { parseModelJson } from "./json-utils"
+import { getResumeJsonSchema } from "./resume-json-schema"
+import { validatePartialResumeData, type PartialResumeData } from "../schemas/resume-schema"
 
 export interface SkillsCategories {
   languages: string[]
@@ -298,137 +300,23 @@ ZERO DATA LOSS RULE: Do NOT skip ANY content. If you see a section you don't rec
 13. CUSTOM SECTIONS (catch-all for unrecognized content):
     - If you see ANY section not listed above, add it to customSections with the exact heading and all content
 
-OUTPUT FORMAT (JSON only):
-{
-  "contact": {
-    "name": "Full Name",
-    "email": "email@example.com",
-    "phone": "+1234567890",
-    "linkedin": "linkedin.com/in/username",
-    "github": "github.com/username",
-    "website": "https://example.com",
-    "location": "City, State"
-  },
-  "summary": "Professional summary or objective (if present)",
-  "experience": [
-    {
-      "title": "Software Engineer",
-      "company": "Company Name",
-      "location": "City, State",
-      "startDate": "Jan 2020",
-      "endDate": "Dec 2022",
-      "bullets": ["Achievement 1", "Achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "institution": "University Name",
-      "degree": "Bachelor of Science",
-      "field": "Computer Science",
-      "location": "City, State",
-      "startDate": "Aug 2016",
-      "endDate": "May 2020",
-      "gpa": "3.8",
-      "honors": ["Dean's List"],
-      "relevantCoursework": ["Data Structures", "Algorithms"]
-    }
-  ],
-  "skills": {
-    "languages": ["Python", "JavaScript"],
-    "frameworks": ["React", "Django"],
-    "tools": ["Docker", "Git"],
-    "databases": ["PostgreSQL"]
-  },
-  "projects": [
-    {
-      "name": "Project Name",
-      "description": "Brief description",
-      "technologies": ["React", "Node.js"],
-      "bullets": ["Built X", "Implemented Y"],
-      "github": "https://github.com/user/repo"
-    }
-  ],
-  "certifications": [
-    {
-      "name": "AWS Certified Developer",
-      "issuer": "Amazon",
-      "date": "Jan 2023",
-      "credentialId": "ABC123"
-    }
-  ],
-  "awards": [
-    {
-      "name": "Dean's List",
-      "issuer": "University Name",
-      "date": "Spring 2019",
-      "description": "Awarded for academic excellence"
-    }
-  ],
-  "publications": [
-    {
-      "title": "Paper Title",
-      "authors": ["Author 1", "Author 2"],
-      "venue": "Conference Name",
-      "date": "Jun 2022",
-      "url": "https://example.com/paper"
-    }
-  ],
-  "languageProficiency": [
-    {
-      "language": "Spanish",
-      "proficiency": "Fluent",
-      "certification": "DELE C1"
-    }
-  ],
-  "volunteer": [
-    {
-      "organization": "Nonprofit Name",
-      "role": "Volunteer Role",
-      "location": "City, State",
-      "startDate": "Jan 2021",
-      "endDate": "Dec 2021",
-      "bullets": ["Helped with X", "Organized Y"]
-    }
-  ],
-  "hobbies": [
-    {
-      "name": "Photography"
-    }
-  ],
-  "references": ["Available upon request"],
-  "customSections": [
-    {
-      "heading": "Leadership Experience",
-      "content": ["Led team of 5", "Organized events"]
-    }
-  ]
-}
-
 RESUME TEXT:
 ${resumeText}
 
-CRITICAL: Return ONLY valid JSON. No markdown, no code blocks, no explanations. Extract EVERYTHING you see.`
+Extract EVERYTHING you see. Categorize skills correctly and never drop content.
+Your response must conform exactly to the provided JSON schema.`
 
   try {
-    const result = await retryWithBackoff(async () => {
-      const raw = await llmGenerate(prompt, { temperature: 0.2, maxTokens: 8192, jsonMode: true }, systemPrompt)
-      const parsed = parseModelJson<any>(raw)
-      if (!parsed) {
-        throw new Error("Invalid resume JSON from model")
-      }
-
-      // Validate with Zod
-      const { validatePartialResumeData } = await import('../schemas/resume-schema')
-      const validation = validatePartialResumeData(parsed)
-
-      if (!validation.success) {
-        console.warn('Extraction validation warnings:', validation.errors)
-      }
-
-      return validation.data || parsed
-    })
-
-    return result
+    return await retryWithBackoff(() =>
+      llmGenerateStructured<PartialResumeData>(prompt, {
+        jsonSchema: getResumeJsonSchema(),
+        schemaName: "resume_data",
+        validate: validatePartialResumeData,
+        systemPrompt,
+        temperature: 0.2,
+        maxTokens: 8192,
+      })
+    )
   } catch (error) {
     console.warn("Could not parse structured output. Fallback parser will be used.", error)
     return null
