@@ -161,9 +161,9 @@ export async function extractWithVerification(
     // LAYER 3: Field Classification and Validation (Skip if AI unavailable)
     // ========================================================================
 
-    const { isGeminiConfigured } = await import('../ai/gemini-service')
+    const { isLLMConfigured } = await import('../ai/llm-client')
 
-    if (isGeminiConfigured()) {
+    if (isLLMConfigured()) {
       // Validate contact name
       if (extractedData.contact?.name) {
         const nameValidation = await validateFieldPlacement(
@@ -257,7 +257,7 @@ export async function extractWithVerification(
       confidence: 0.8,
     }
 
-    if (isGeminiConfigured()) {
+    if (isLLMConfigured()) {
       completenessCheck = await verifyDataCompleteness(rawText, extractedData)
 
       if (!completenessCheck.complete) {

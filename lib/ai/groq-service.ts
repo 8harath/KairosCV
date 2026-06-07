@@ -1,7 +1,8 @@
 /**
  * AI service powered by Groq (primary) with Gemini fallback.
  *
- * Drop-in replacement for gemini-service.ts — exports identical interfaces.
+ * The single AI service for resume parsing and enhancement, provider-agnostic
+ * via the unified llm-client (Groq preferred, Gemini fallback).
  */
 
 import { llmGenerate, llmGenerateStructured, retryWithBackoff, isLLMConfigured } from "./llm-client"
