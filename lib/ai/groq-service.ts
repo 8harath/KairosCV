@@ -7,7 +7,7 @@
 import { llmGenerate, llmGenerateStructured, retryWithBackoff, isLLMConfigured } from "./llm-client"
 import { parseModelJson } from "./json-utils"
 import { getResumeJsonSchema } from "./resume-json-schema"
-import { validatePartialResumeData, type PartialResumeData } from "../schemas/resume-schema"
+import { validatePartialResumeData, type PartialResumeData, type ResumeData } from "../schemas/resume-schema"
 
 export interface SkillsCategories {
   languages: string[]
@@ -326,7 +326,7 @@ Your response must conform exactly to the provided JSON schema.`
 /**
  * Enhance extracted resume data with AI improvements
  */
-export async function enhanceExtractedData(extractedData: any, jobDescription?: string | null): Promise<any> {
+export async function enhanceExtractedData(extractedData: ResumeData, jobDescription?: string | null): Promise<ResumeData> {
   if (!isLLMConfigured() || !extractedData) {
     return extractedData
   }

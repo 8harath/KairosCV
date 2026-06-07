@@ -399,9 +399,9 @@ export async function* processResume(
       (skills.tools?.length || 0) > 0 ||
       (skills.databases?.length || 0) > 0
 
-    if (!hasExplicitSkills && enhancedData.projects?.length > 0) {
+    if (!hasExplicitSkills && (enhancedData.projects?.length ?? 0) > 0) {
       const inferredTech = new Set<string>()
-      for (const proj of enhancedData.projects) {
+      for (const proj of enhancedData.projects ?? []) {
         if (proj.technologies && Array.isArray(proj.technologies)) {
           proj.technologies.forEach((t: string) => inferredTech.add(t))
         }
@@ -424,16 +424,20 @@ export async function* processResume(
         location: enhancedData.contact?.location || "",
       },
       summary: enhancedData.summary,
-      experience: enhancedData.experience || [],
-      education: enhancedData.education || [],
+      // `ParsedResume` is the PDF-generation representation; it predates the Zod
+      // schema and types several fields more strictly (required location/field)
+      // or differently (certifications as string[]). The template renderer
+      // already accepts both shapes, so pass the validated objects through.
+      experience: (enhancedData.experience ?? []) as unknown as ParsedResume["experience"],
+      education: (enhancedData.education ?? []) as unknown as ParsedResume["education"],
       skills: enhancedData.skills || {
         languages: [],
         frameworks: [],
         tools: [],
         databases: [],
       },
-      projects: enhancedData.projects || [],
-      certifications: enhancedData.certifications || [],
+      projects: (enhancedData.projects ?? []) as unknown as ParsedResume["projects"],
+      certifications: (enhancedData.certifications ?? []) as unknown as ParsedResume["certifications"],
       // New comprehensive sections
       awards: enhancedData.awards,
       publications: enhancedData.publications,
