@@ -49,8 +49,9 @@ export function isLLMConfigured(): boolean {
 
 // ----- Groq path -----
 
-async function generateWithGroq(prompt: string, systemPrompt: string | undefined, opts: LLMGenerateOptions): Promise<string> {
+async function generateWithGroq(prompt: string, systemPrompt: string | undefined, opts: LLMGenerateOptions): Promise<LLMStructuredResponse> {
   const Groq = (await import("groq-sdk")).default
+  const { toGroqJsonSchema } = await import("./schema-adapters")
   const client = new Groq({ apiKey: getGroqApiKey() })
 
   const modelName = opts.fast ? getGroqFastModel() : getGroqModel()
@@ -61,15 +62,35 @@ async function generateWithGroq(prompt: string, systemPrompt: string | undefined
   }
   messages.push({ role: "user", content: prompt })
 
+  // Prefer schema-constrained output; fall back to plain JSON mode, then text.
+  let responseFormat: Record<string, unknown> | undefined
+  if (opts.schema) {
+    responseFormat = {
+      type: "json_schema",
+      json_schema: {
+        name: opts.schemaName || "response",
+        schema: toGroqJsonSchema(opts.schema),
+        strict: false,
+      },
+    }
+  } else if (opts.jsonMode) {
+    responseFormat = { type: "json_object" }
+  }
+
   const response = await client.chat.completions.create({
     model: modelName,
     messages,
     temperature: opts.temperature ?? 0.3,
     max_tokens: opts.maxTokens ?? 2048,
-    ...(opts.jsonMode ? { response_format: { type: "json_object" as const } } : {}),
+    ...(responseFormat ? { response_format: responseFormat as any } : {}),
   })
 
-  return response.choices[0]?.message?.content?.trim() || ""
+  const finishReason = response.choices[0]?.finish_reason as string | undefined
+  return {
+    text: response.choices[0]?.message?.content?.trim() || "",
+    finishReason,
+    truncated: finishReason === "length",
+  }
 }
 
 // ----- Gemini path -----
@@ -108,6 +129,27 @@ async function generateWithGemini(prompt: string, _systemPrompt: string | undefi
   }
 }
 
+// ----- Dispatch -----
+
+/**
+ * Dispatch a generation request to the active provider, returning the raw
+ * structured response (text + finish metadata).
+ */
+async function generateRaw(
+  prompt: string,
+  systemPrompt: string | undefined,
+  opts: LLMGenerateOptions
+): Promise<LLMStructuredResponse> {
+  const provider = getActiveProvider()
+  if (!provider) {
+    throw new Error("No LLM provider configured. Set GROQ_API_KEY or GOOGLE_GEMINI_API_KEY.")
+  }
+
+  return provider === "groq"
+    ? generateWithGroq(prompt, systemPrompt, opts)
+    : generateWithGemini(prompt, systemPrompt, opts)
+}
+
 // ----- Public API -----
 
 /**
@@ -119,15 +161,7 @@ export async function llmGenerate(
   opts: LLMGenerateOptions = {},
   systemPrompt?: string
 ): Promise<string> {
-  const provider = getActiveProvider()
-  if (!provider) {
-    throw new Error("No LLM provider configured. Set GROQ_API_KEY or GOOGLE_GEMINI_API_KEY.")
-  }
-
-  if (provider === "groq") {
-    return generateWithGroq(prompt, systemPrompt, opts)
-  }
-  return (await generateWithGemini(prompt, systemPrompt, opts)).text
+  return (await generateRaw(prompt, systemPrompt, opts)).text
 }
 
 /**
