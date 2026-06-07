@@ -35,6 +35,26 @@ export interface LLMStructuredResponse {
   truncated: boolean
 }
 
+// ----- Errors -----
+
+/** Thrown when a structured response was cut off by the output-token limit. */
+export class LLMTruncationError extends Error {
+  constructor(public readonly finishReason?: string) {
+    super(
+      `LLM response was truncated (finishReason: ${finishReason ?? "unknown"}). ` +
+        "Increase maxTokens or shorten the input."
+    )
+    this.name = "LLMTruncationError"
+  }
+}
+
+/** Throw if the provider reports the response was cut off mid-generation. */
+function assertNotTruncated(res: LLMStructuredResponse): void {
+  if (res.truncated) {
+    throw new LLMTruncationError(res.finishReason)
+  }
+}
+
 type Provider = "groq" | "gemini"
 
 function getActiveProvider(): Provider | null {
