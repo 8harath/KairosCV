@@ -239,7 +239,7 @@ Return ONLY the professional summary, no additional text.`
  * Extract complete structured resume data
  * This is the primary extraction method — the LLM does all the heavy lifting
  */
-export async function extractCompleteResumeData(resumeText: string): Promise<any> {
+export async function extractCompleteResumeData(resumeText: string): Promise<PartialResumeData | null> {
   if (!isLLMConfigured()) {
     console.warn("No LLM API key set. Cannot extract resume data.")
     return null

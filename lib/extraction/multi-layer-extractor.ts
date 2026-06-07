@@ -72,7 +72,10 @@ export async function extractWithVerification(
     // ========================================================================
     onProgress?.("extraction", 30, "Extracting structured data with AI...")
 
-    let extractedData = await extractCompleteResumeData(rawText)
+    // The extractor merges heterogeneous sources (LLM extraction, the fallback
+    // parser, visual extraction), so the working value is intentionally loose;
+    // extractCompleteResumeData itself now returns a typed PartialResumeData.
+    let extractedData: any = await extractCompleteResumeData(rawText)
 
     // Fallback to regex-based parser if AI extraction fails
     if (!extractedData) {
