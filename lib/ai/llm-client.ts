@@ -74,22 +74,38 @@ async function generateWithGroq(prompt: string, systemPrompt: string | undefined
 
 // ----- Gemini path -----
 
-async function generateWithGemini(prompt: string, _systemPrompt: string | undefined, opts: LLMGenerateOptions): Promise<string> {
+async function generateWithGemini(prompt: string, _systemPrompt: string | undefined, opts: LLMGenerateOptions): Promise<LLMStructuredResponse> {
   const { GoogleGenerativeAI } = await import("@google/generative-ai")
+  const { toGeminiResponseSchema } = await import("./schema-adapters")
   const genAI = new GoogleGenerativeAI(getGeminiApiKey())
+
+  const generationConfig: Record<string, unknown> = {
+    temperature: opts.temperature ?? 0.3,
+    maxOutputTokens: opts.maxTokens ?? 2048,
+  }
+
+  // Native structured output: constrain generation to JSON matching the schema.
+  if (opts.schema) {
+    generationConfig.responseMimeType = "application/json"
+    generationConfig.responseSchema = toGeminiResponseSchema(opts.schema)
+  } else if (opts.jsonMode) {
+    generationConfig.responseMimeType = "application/json"
+  }
 
   const model = genAI.getGenerativeModel({
     model: getGeminiTextModel(),
-    generationConfig: {
-      temperature: opts.temperature ?? 0.3,
-      maxOutputTokens: opts.maxTokens ?? 2048,
-    },
+    generationConfig: generationConfig as any,
   })
 
   // For Gemini, system prompt is prepended to the user prompt
   const fullPrompt = _systemPrompt ? `${_systemPrompt}\n\n${prompt}` : prompt
-  const response = await model.generateContent(fullPrompt)
-  return response.response.text().trim()
+  const result = await model.generateContent(fullPrompt)
+  const finishReason = result.response.candidates?.[0]?.finishReason as string | undefined
+  return {
+    text: result.response.text().trim(),
+    finishReason,
+    truncated: finishReason === "MAX_TOKENS",
+  }
 }
 
 // ----- Public API -----
@@ -111,7 +127,7 @@ export async function llmGenerate(
   if (provider === "groq") {
     return generateWithGroq(prompt, systemPrompt, opts)
   }
-  return generateWithGemini(prompt, systemPrompt, opts)
+  return (await generateWithGemini(prompt, systemPrompt, opts)).text
 }
 
 /**
