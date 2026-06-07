@@ -13,10 +13,26 @@ export interface LLMGenerateOptions {
   jsonMode?: boolean
   /** Use a smaller / faster model when available */
   fast?: boolean
+  /**
+   * Base JSON Schema to constrain output via provider-native structured output.
+   * Each provider path translates it into its own dialect before sending.
+   */
+  schema?: Record<string, unknown>
+  /** Name for the schema (Groq's json_schema requires one). */
+  schemaName?: string
 }
 
 export interface LLMResponse {
   text: string
+}
+
+/** Raw provider result, including enough metadata to detect truncation. */
+export interface LLMStructuredResponse {
+  text: string
+  /** Provider-reported stop reason (e.g. "stop", "length", "MAX_TOKENS"). */
+  finishReason?: string
+  /** True when the model hit its output-token ceiling mid-response. */
+  truncated: boolean
 }
 
 type Provider = "groq" | "gemini"
