@@ -31,6 +31,11 @@
   --radius: 10px;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px rgba(15, 23, 42, 0.06);
   --shadow-elevated: 0 1px 2px rgba(15, 23, 42, 0.06), 0 18px 42px rgba(15, 23, 42, 0.1);
+  --signal: #1f6feb;
+  --signal-strong: #1a5fd0;
+  --signal-soft: rgba(31, 111, 235, 0.1);
+  --grid-line: rgba(55, 53, 47, 0.05);
+  --grid-line-strong: rgba(55, 53, 47, 0.09);
 }
 
 .dark {
@@ -58,10 +63,16 @@
   --sidebar: rgba(32, 32, 31, 0.94);
   --sidebar-foreground: #efede8;
   --sidebar-border: rgba(255, 255, 255, 0.08);
+  --signal: #4f93f8;
+  --signal-strong: #6aa6ff;
+  --signal-soft: rgba(79, 147, 248, 0.14);
+  --grid-line: rgba(255, 255, 255, 0.035);
+  --grid-line-strong: rgba(255, 255, 255, 0.07);
 }
 
 @theme inline {
-  --font-sans: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -84,6 +95,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
@@ -112,7 +125,8 @@
   h3,
   h4 {
     @apply text-foreground;
-    letter-spacing: -0.03em;
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
   }
 
   h1 {
@@ -310,4 +324,264 @@
   .container {
     @apply px-4;
   }
+}
+
+/* ============================================================
+   Landing page — "Diagnostic Console" (technical / precise)
+   ============================================================ */
+
+@layer components {
+  /* Engineering graph-paper grid; faded to atmosphere via overlay */
+  .lp-grid {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--background);
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+    background-size:
+      28px 28px,
+      28px 28px,
+      140px 140px,
+      140px 140px;
+    background-position: -1px -1px;
+  }
+  .lp-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      125% 85% at 50% -10%,
+      transparent 0%,
+      transparent 42%,
+      var(--background) 100%
+    );
+  }
+
+  /* Mono labels / kickers */
+  .lp-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .lp-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hero display type */
+  .lp-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.032em;
+    line-height: 0.98;
+    font-size: clamp(2.55rem, 6vw, 4.85rem);
+    text-wrap: balance;
+  }
+
+  /* Instrument panel with crosshair corner ticks */
+  .lp-panel {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 14px;
+  }
+  .lp-ticks {
+    --tick: 11px;
+    --tickw: 1.5px;
+    --tickc: var(--border);
+    background-image:
+      linear-gradient(var(--tickc), var(--tickc)), linear-gradient(var(--tickc), var(--tickc)),
+      linear-gradient(var(--tickc), var(--tickc)), linear-gradient(var(--tickc), var(--tickc)),
+      linear-gradient(var(--tickc), var(--tickc)), linear-gradient(var(--tickc), var(--tickc)),
+      linear-gradient(var(--tickc), var(--tickc)), linear-gradient(var(--tickc), var(--tickc));
+    background-repeat: no-repeat;
+    background-size:
+      var(--tick) var(--tickw), var(--tickw) var(--tick),
+      var(--tick) var(--tickw), var(--tickw) var(--tick),
+      var(--tick) var(--tickw), var(--tickw) var(--tick),
+      var(--tick) var(--tickw), var(--tickw) var(--tick);
+    background-position:
+      top left, top left,
+      top right, top right,
+      bottom left, bottom left,
+      bottom right, bottom right;
+    transition: --tickc 0.2s ease;
+  }
+  .lp-ticks:hover {
+    --tickc: var(--signal);
+  }
+
+  /* Status dot — static by default; only the panel's live readout pulses */
+  .lp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--signal);
+  }
+  .lp-dot-live {
+    animation: lp-pulse 2.4s ease-out infinite;
+  }
+
+  /* Blinking caret */
+  .lp-caret {
+    display: inline-block;
+    width: 0.58ch;
+    height: 0.92em;
+    translate: 0.06ch 0.1em;
+    background: var(--signal);
+    animation: lp-blink 1.05s steps(1) infinite;
+  }
+
+  /* One-time scan-line sweep inside the hero panel */
+  .lp-scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--signal), transparent);
+    opacity: 0;
+    animation: lp-scan 2.3s cubic-bezier(0.4, 0, 0.2, 1) 0.35s 1 forwards;
+  }
+
+  /* Code-style diff */
+  .lp-diff {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .lp-diff-row {
+    display: grid;
+    grid-template-columns: 2.4ch 1fr;
+    align-items: baseline;
+  }
+  .lp-diff-del {
+    background: color-mix(in srgb, var(--destructive) 9%, transparent);
+    color: var(--foreground);
+  }
+  .lp-diff-add {
+    background: color-mix(in srgb, var(--success) 13%, transparent);
+    color: var(--foreground);
+  }
+  .lp-diff-mark-del { color: var(--destructive); }
+  .lp-diff-mark-add { color: var(--success); }
+
+  /* Pipeline connector (desktop) */
+  .lp-connector {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--border) 0,
+      var(--border) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  }
+
+  /* Load reveal + stagger */
+  .lp-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: lp-rise 0.72s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .lp-d1 { animation-delay: 0.06s; }
+  .lp-d2 { animation-delay: 0.14s; }
+  .lp-d3 { animation-delay: 0.22s; }
+  .lp-d4 { animation-delay: 0.3s; }
+  .lp-d5 { animation-delay: 0.4s; }
+  .lp-d6 { animation-delay: 0.5s; }
+
+  /* Signal-tinted CTA button */
+  .lp-btn-signal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--signal);
+    background: var(--signal);
+    color: #fff;
+    padding: 0.7rem 1.25rem;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 10px 26px var(--signal-soft);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  }
+  .lp-btn-signal:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 14px 34px var(--signal-soft);
+  }
+  .lp-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    padding: 0.7rem 1.1rem;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+  .lp-btn-ghost:hover {
+    border-color: var(--muted-foreground);
+    background: var(--secondary);
+  }
+}
+
+@property --tickc {
+  syntax: "<color>";
+  initial-value: #e6e4df;
+  inherits: false;
+}
+
+@keyframes lp-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lp-pulse {
+  0% { box-shadow: 0 0 0 0 var(--signal-soft); }
+  70% { box-shadow: 0 0 0 9px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes lp-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+@keyframes lp-scan {
+  0% { top: 0; opacity: 0; }
+  12% { opacity: 0.75; }
+  88% { opacity: 0.75; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-reveal,
+  .lp-dot-live,
+  .lp-caret,
+  .lp-scanline,
+  .lp-btn-signal {
+    animation: none !important;
+    transition: none !important;
+  }
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .lp-caret { opacity: 1; }
 }
