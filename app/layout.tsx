@@ -1,15 +1,24 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { IBM_Plex_Mono, Manrope } from "next/font/google"
+import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
-const manrope = Manrope({
-  weight: ["400", "500", "600", "700", "800"],
+// Display: engineered grotesque — mechanical, drafting-table character that
+// matches the graph-paper grid and instrument panel. Used for headings only.
+const spaceGrotesk = Space_Grotesk({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-display",
+})
+
+// Body: clean neutral workhorse for running text.
+const manrope = Manrope({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-body",
 })
 
 const plexMono = IBM_Plex_Mono({
@@ -138,7 +147,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
         <link rel="mask-icon" href="/favicon-32x32.png" color="#000000" />
       </head>
-      <body className={`${manrope.variable} ${plexMono.variable} antialiased`}>
+      <body className={`${spaceGrotesk.variable} ${manrope.variable} ${plexMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster />
